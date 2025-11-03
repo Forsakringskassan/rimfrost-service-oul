@@ -1,8 +1,8 @@
 package se.fk.github.rimfrost.operativt.uppgiftslager.logic;
 
 import jakarta.enterprise.context.ApplicationScoped;
-import se.fk.github.rimfrost.operativt.uppgiftslager.integration.dto.ImmutableOperativtUppgiftslagerNotification;
-import se.fk.github.rimfrost.operativt.uppgiftslager.integration.dto.OperativtUppgiftslagerNotification;
+import se.fk.github.rimfrost.operativt.uppgiftslager.integration.dto.ImmutableOperativtUppgiftslagerResponse;
+import se.fk.github.rimfrost.operativt.uppgiftslager.integration.dto.OperativtUppgiftslagerResponse;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.ImmutableOperativtUppgiftslagerUpdateResponse;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.OperativtUppgiftslagerUpdateResponse;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.UppgiftEntity;
@@ -11,14 +11,13 @@ import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.UppgiftEntity;
 public class LogicMapper
 {
 
-   public OperativtUppgiftslagerNotification toOperativtUppgiftslagerNotification(UppgiftEntity uppgift)
+   public OperativtUppgiftslagerResponse toOperativtUppgiftslagerResponse(UppgiftEntity uppgift)
    {
-      return ImmutableOperativtUppgiftslagerNotification.builder()
-            .uppgift(uppgift.beskrivning())
-            .status(uppgift.status().name())
+      return ImmutableOperativtUppgiftslagerResponse.builder()
             .processId(uppgift.processId())
             .personNummer(uppgift.personnummer())
             .resultat(true)
+            .status("AVSLUTAD")
             .build();
    }
 

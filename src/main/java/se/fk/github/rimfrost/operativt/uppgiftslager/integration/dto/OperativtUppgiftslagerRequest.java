@@ -4,7 +4,10 @@ import java.util.UUID;
 
 import org.immutables.value.Value;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+
 @Value.Immutable
+@JsonDeserialize(as = ImmutableOperativtUppgiftslagerRequest.class)
 public interface OperativtUppgiftslagerRequest
 {
    UUID processId();

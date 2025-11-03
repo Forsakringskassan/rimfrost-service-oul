@@ -1,7 +1,5 @@
 package se.fk.github.rimfrost.operativt.uppgiftslager.presentation;
 
-import java.util.UUID;
-
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;

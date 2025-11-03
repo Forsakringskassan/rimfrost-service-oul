@@ -102,6 +102,6 @@ public class OperativtUppgiftslagerService
 
    public void notifyTaskCompleted(UppgiftEntity uppgift)
    {
-      producer.publishTaskResponse(logicMapper.toOperativtUppgiftslagerNotification(uppgift));
+      producer.publishTaskResponse(logicMapper.toOperativtUppgiftslagerResponse(uppgift));
    }
 }
