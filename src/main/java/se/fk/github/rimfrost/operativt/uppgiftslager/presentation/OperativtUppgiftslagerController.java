@@ -41,14 +41,7 @@ public class OperativtUppgiftslagerController
 
    @GET
    @Path("/getAll")
-   @APIResponse(
-      responseCode = "200",
-      description = "All uppgifter",
-      content = @Content(
-         mediaType = MediaType.APPLICATION_JSON,
-         schema = @Schema(implementation = ImmutableUppgiftGetAllResponse.class)
-      )
-   )
+   @APIResponse(responseCode = "200", description = "All uppgifter", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ImmutableUppgiftGetAllResponse.class)))
    public UppgiftGetAllResponse getAll()
    {
       var uppgifter = operativtUppgiftslagerService.getUppgifter();
@@ -57,16 +50,9 @@ public class OperativtUppgiftslagerController
 
    @GET
    @Path("/get/{uppgift_id}")
-   @APIResponse(
-      responseCode = "200",
-      description = "Uppgift found",
-      content = @Content(
-         mediaType = MediaType.APPLICATION_JSON,
-         schema = @Schema(implementation = ImmutableUppgiftGetResponse.class)
-      )
-   )
+   @APIResponse(responseCode = "200", description = "Uppgift found", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ImmutableUppgiftGetResponse.class)))
    public UppgiftGetResponse get(@PathParam("uppgift_id") String uppgiftId)
-   {  
+   {
       log.info("Fetching task with ID: {}", uppgiftId);
       var uppgift = operativtUppgiftslagerService.getUppgift(Long.valueOf(uppgiftId));
       log.info("Fetched task: {}", uppgift);

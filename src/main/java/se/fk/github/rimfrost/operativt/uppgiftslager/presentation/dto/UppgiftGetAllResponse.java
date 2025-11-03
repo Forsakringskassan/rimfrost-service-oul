@@ -9,6 +9,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @Value.Immutable
 public interface UppgiftGetAllResponse
 {
-    @JsonProperty("uppgifter")
-    Collection<Uppgift> uppgifter();
+   @JsonProperty("uppgifter")
+   Collection<Uppgift> uppgifter();
 }

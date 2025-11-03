@@ -54,7 +54,8 @@ public class OperativtUppgiftslagerService
    {
       log.info("Getting all tasks");
       var tasks = taskMap.values();
-      for (UppgiftEntity task : tasks) {
+      for (UppgiftEntity task : tasks)
+      {
          log.info("Task ID: {}, Description: {}, Status: {}", task.uppgiftId(), task.beskrivning(), task.status());
       }
       return tasks;
@@ -63,7 +64,8 @@ public class OperativtUppgiftslagerService
    public UppgiftEntity getUppgift(Long id)
    {
       var task = taskMap.get(id);
-      if (task == null) {
+      if (task == null)
+      {
          log.info("Task with ID {} not found", id);
          return null;
       }
