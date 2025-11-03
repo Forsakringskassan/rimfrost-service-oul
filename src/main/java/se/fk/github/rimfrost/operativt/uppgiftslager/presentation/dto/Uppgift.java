@@ -5,17 +5,17 @@ import org.immutables.value.Value;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Value.Immutable
-public interface UppgiftRestDTO
+public interface Uppgift
 {
-    @JsonProperty("uppgift_id")
-    String uppgiftId();
+   @JsonProperty("uppgift_id")
+   String uppgiftId();
 
-    @JsonProperty("status")
-    String status();
+   @JsonProperty("status")
+   String status();
 
-    @JsonProperty("beskrivning")
-    String beskrivning();
+   @JsonProperty("beskrivning")
+   String beskrivning();
 
-    @JsonProperty("handlaggar_id")
-    String handlaggarId();
+   @JsonProperty("handlaggar_id")
+   String handlaggarId();
 }

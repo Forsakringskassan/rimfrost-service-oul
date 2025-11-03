@@ -28,11 +28,11 @@ public class OperativtUppgiftslagerConsumer
 
       //FLytta till mappper
       var addRequest = ImmutableOperativtUppgiftslagerAddRequest.builder()
-         .personNummer(operativtUppgiftslagerRequest.personNummer())
-         .processId(operativtUppgiftslagerRequest.processId())
-         .uppgift(operativtUppgiftslagerRequest.uppgift())
-         .build();
-         
+            .personNummer(operativtUppgiftslagerRequest.personNummer())
+            .processId(operativtUppgiftslagerRequest.processId())
+            .uppgift(operativtUppgiftslagerRequest.uppgift())
+            .build();
+
       operativtUppgiftslagerService.addOperativeTask(addRequest);
       log.info("Processed task for operativt uppgiftslager: {}", operativtUppgiftslagerRequest);
    }

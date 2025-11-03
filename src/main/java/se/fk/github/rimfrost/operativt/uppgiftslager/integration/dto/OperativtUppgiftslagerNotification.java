@@ -13,7 +13,7 @@ public interface OperativtUppgiftslagerNotification
 
    String uppgift();
 
-   String resultat();
+   boolean resultat();
 
    String status();
 }

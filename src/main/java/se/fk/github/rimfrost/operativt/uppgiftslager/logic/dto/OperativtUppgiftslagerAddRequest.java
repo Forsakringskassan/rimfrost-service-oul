@@ -5,8 +5,9 @@ import java.util.UUID;
 import org.immutables.value.Value;
 
 @Value.Immutable
-public interface OperativtUppgiftslagerAddRequest {
-    
+public interface OperativtUppgiftslagerAddRequest
+{
+
    UUID processId();
 
    String personNummer();

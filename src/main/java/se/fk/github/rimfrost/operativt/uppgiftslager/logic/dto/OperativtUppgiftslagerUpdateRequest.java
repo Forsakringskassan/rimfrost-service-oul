@@ -7,9 +7,9 @@ import org.immutables.value.Value;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.enums.UppgiftStatus;
 
 @Value.Immutable
-public interface OperativtUppgiftslagerUpdateRequest {
-    
-       UUID processId();
+public interface OperativtUppgiftslagerUpdateRequest
+{
+   UUID processId();
 
-       UppgiftStatus status();
+   UppgiftStatus status();
 }

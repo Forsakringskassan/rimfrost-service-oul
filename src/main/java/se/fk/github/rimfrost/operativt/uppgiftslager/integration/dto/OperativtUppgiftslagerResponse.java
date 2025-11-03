@@ -12,7 +12,7 @@ public interface OperativtUppgiftslagerResponse
    String personNummer();
 
    // TODO: Tänk ut hur denna ska fungera, måste vara dynamisk på något sätt
-   String resultat();
+   boolean resultat();
 
    // TODO: Onekligen onödig men hänger med från början
    String status();

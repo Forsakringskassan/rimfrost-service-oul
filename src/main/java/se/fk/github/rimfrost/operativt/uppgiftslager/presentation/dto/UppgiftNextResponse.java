@@ -5,7 +5,7 @@ import org.immutables.value.Value;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Value.Immutable
-public interface UppgfitNextResponseRestDTO 
+public interface UppgiftNextResponse 
 {
     @JsonProperty("uppgift_id")
     String uppgiftId();

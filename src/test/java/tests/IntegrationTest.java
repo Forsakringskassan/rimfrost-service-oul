@@ -26,9 +26,9 @@ class IntegrationTest
 
       assertThat(response).isNotNull();
       assertThat(response.alternatives()).hasSize(2);
-      assertThat(response.alternatives().get(0).id()).isEqualTo("1");
+      assertThat(response.alternatives().get(0).uppgiftId()).isEqualTo("1");
       assertThat(response.alternatives().get(0).name()).isEqualTo("Alt 1");
-      assertThat(response.alternatives().get(1).id()).isEqualTo("2");
+      assertThat(response.alternatives().get(1).uppgiftId()).isEqualTo("2");
       assertThat(response.alternatives().get(1).name()).isEqualTo("Alt 2");
    }
 
