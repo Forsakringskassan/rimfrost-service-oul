@@ -53,12 +53,6 @@ public class OperativtUppgiftslagerService
    public Collection<UppgiftEntity> getUppgifter()
    {
       log.info("Getting all tasks");
-      OperativtUppgiftslagerAddRequest dummyRequest = ImmutableOperativtUppgiftslagerAddRequest.builder()
-            .processId(UUID.randomUUID())
-            .personNummer("1991-01-01-9991")
-            .uppgift("Dummy uppgift")
-            .build();
-      addOperativeTask(dummyRequest);
       var tasks = taskMap.values();
       for (UppgiftEntity task : tasks) {
          log.info("Task ID: {}, Description: {}, Status: {}", task.uppgiftId(), task.beskrivning(), task.status());
@@ -68,7 +62,6 @@ public class OperativtUppgiftslagerService
 
    public UppgiftEntity getUppgift(Long id)
    {
-      log.info("Id is {}", id);
       var task = taskMap.get(id);
       if (task == null) {
          log.info("Task with ID {} not found", id);
