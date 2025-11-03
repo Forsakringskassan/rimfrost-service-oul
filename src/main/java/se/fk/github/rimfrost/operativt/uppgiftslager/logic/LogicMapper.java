@@ -1,51 +1,31 @@
-package se.fk.github.quarkustemplate.logic;
+package se.fk.github.rimfrost.operativt.uppgiftslager.logic;
 
 import jakarta.enterprise.context.ApplicationScoped;
-import se.fk.github.quarkustemplate.integration.dto.*;
-import se.fk.github.quarkustemplate.logic.dto.*;
-
-import java.util.Collections;
+import se.fk.github.rimfrost.operativt.uppgiftslager.integration.dto.ImmutableOperativtUppgiftslagerNotification;
+import se.fk.github.rimfrost.operativt.uppgiftslager.integration.dto.OperativtUppgiftslagerNotification;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.ImmutableOperativtUppgiftslagerUpdateResponse;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.OperativtUppgiftslagerUpdateResponse;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.UppgiftEntity;
 
 @ApplicationScoped
 public class LogicMapper
 {
 
-   public LogicAlternatives toLogic(IntegrationAlternativesResponse external)
-   {
-      if (external == null || external.alternatives() == null)
+      public OperativtUppgiftslagerNotification toOperativtUppgiftslagerNotification (UppgiftEntity uppgift)
       {
-         return ImmutableLogicAlternatives.builder()
-               .alternatives(Collections.emptyList())
+            return ImmutableOperativtUppgiftslagerNotification.builder()
+               .uppgift(uppgift.beskrivning())
+               .status(uppgift.status().name())
+               .processId(uppgift.processId())
+               .personNummer(uppgift.personnummer())
                .build();
       }
 
-      return ImmutableLogicAlternatives.builder()
-            .alternatives(
-                  external.alternatives().stream()
-                        .map(this::toLogic)
-                        .toList())
-            .build();
-   }
-
-   public LogicAlternative toLogic(IntegrationAlternative external)
-   {
-      return ImmutableLogicAlternative.builder()
-            .name(external.name())
-            .id(external.id())
-            .build();
-   }
-
-   public LogicOmbudResponse toLogic(IntegrationOmbudResponse external)
-   {
-      return ImmutableLogicOmbudResponse.builder()
-            .name(external.name())
-            .build();
-   }
-
-   public IntegrationOmbudRequest toIntegration(LogicOmbudRequest logic)
-   {
-      return ImmutableIntegrationOmbudRequest.builder()
-            .personnummer(logic.personnummer())
-            .build();
-   }
+      public OperativtUppgiftslagerUpdateResponse toOperativtUppgiftslagerUpdateResponse(UppgiftEntity uppgift)
+      {
+            return ImmutableOperativtUppgiftslagerUpdateResponse.builder()
+               .status(uppgift.status())
+               .processId(uppgift.processId())
+               .build();
+      }
 }

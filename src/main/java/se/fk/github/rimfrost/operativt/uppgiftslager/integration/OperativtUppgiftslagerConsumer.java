@@ -3,6 +3,7 @@ package se.fk.github.rimfrost.operativt.uppgiftslager.integration;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.OperativtUppgiftslagerService;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.ImmutableOperativtUppgiftslagerAddRequest;
 import se.fk.github.rimfrost.operativt.uppgiftslager.integration.dto.OperativtUppgiftslagerRequest;
 
 import org.eclipse.microprofile.reactive.messaging.Incoming;
@@ -24,9 +25,15 @@ public class OperativtUppgiftslagerConsumer
    public void handleIncomingTask(OperativtUppgiftslagerRequest operativtUppgiftslagerRequest)
    {
       log.info("Received task for operativt uppgiftslager: {}", operativtUppgiftslagerRequest);
-      // Logik för att lägga till en uppgift till uppgiftslagret
-      // Skicka även ett slags meddelande när den är ny
-      operativtUppgiftslagerService.addOperativeTask();
+
+      //FLytta till mappper
+      var addRequest = ImmutableOperativtUppgiftslagerAddRequest.builder()
+         .personNummer(operativtUppgiftslagerRequest.personNummer())
+         .processId(operativtUppgiftslagerRequest.processId())
+         .uppgift(operativtUppgiftslagerRequest.uppgift())
+         .build();
+         
+      operativtUppgiftslagerService.addOperativeTask(addRequest);
       log.info("Processed task for operativt uppgiftslager: {}", operativtUppgiftslagerRequest);
    }
 }

@@ -5,12 +5,10 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.PATCH;
-import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.OperativtUppgiftslagerService;
-import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.dto.UppgiftNextResponse;
 import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.dto.UppgiftStatusUpdateRequest;
 import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.dto.UppgiftStatusUpdateResponse;
 
@@ -22,17 +20,6 @@ public class OperativtUppgiftslagerController
 {
    @Inject
    OperativtUppgiftslagerService operativtUppgiftslagerService;
-   //   @Inject PresentationMapper mapper;
-
-   @POST
-   @Path("/{handlaggar_id}/next")
-   @Transactional
-   public UppgiftNextResponse next(@PathParam("handlaggar_id") String id)
-   {
-    //   var task = service.reserveNextFor(id);
-    //   return mapper.toNextResponse(task);
-        return null;
-   }
 
    @PATCH
    @Path("/{uppgift_id}")
