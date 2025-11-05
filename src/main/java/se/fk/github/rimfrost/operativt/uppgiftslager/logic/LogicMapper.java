@@ -1,8 +1,8 @@
 package se.fk.github.rimfrost.operativt.uppgiftslager.logic;
 
 import jakarta.enterprise.context.ApplicationScoped;
-import se.fk.github.rimfrost.operativt.uppgiftslager.integration.dto.ImmutableOperativtUppgiftslagerResponse;
-import se.fk.github.rimfrost.operativt.uppgiftslager.integration.dto.OperativtUppgiftslagerResponse;
+import se.fk.github.rimfrost.operativt.uppgiftslager.integration.kafka.dto.ImmutableOperativtUppgiftslagerResponse;
+import se.fk.github.rimfrost.operativt.uppgiftslager.integration.kafka.dto.OperativtUppgiftslagerResponse;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.ImmutableOperativtUppgiftslagerUpdateResponse;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.OperativtUppgiftslagerUpdateResponse;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.UppgiftEntity;

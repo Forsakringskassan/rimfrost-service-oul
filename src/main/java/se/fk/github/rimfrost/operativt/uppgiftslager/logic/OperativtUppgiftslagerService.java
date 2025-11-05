@@ -1,8 +1,6 @@
 package se.fk.github.rimfrost.operativt.uppgiftslager.logic;
 
-import java.time.OffsetDateTime;
 import java.util.Collection;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -11,8 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import se.fk.github.rimfrost.operativt.uppgiftslager.integration.OperativtUpggiftslagerProducer;
-import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.ImmutableOperativtUppgiftslagerAddRequest;
+import se.fk.github.rimfrost.operativt.uppgiftslager.integration.kafka.OperativtUpggiftslagerProducer;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.OperativtUppgiftslagerAddRequest;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.OperativtUppgiftslagerUpdateResponse;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.ImmutableUppgiftEntity;

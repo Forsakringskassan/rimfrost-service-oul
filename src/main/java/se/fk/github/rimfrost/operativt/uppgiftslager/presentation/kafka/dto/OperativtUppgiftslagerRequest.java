@@ -1,4 +1,4 @@
-package se.fk.github.rimfrost.operativt.uppgiftslager.integration.dto;
+package se.fk.github.rimfrost.operativt.uppgiftslager.presentation.kafka.dto;
 
 import java.util.UUID;
 

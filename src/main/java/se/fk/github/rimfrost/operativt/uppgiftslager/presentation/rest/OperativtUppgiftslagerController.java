@@ -1,4 +1,4 @@
-package se.fk.github.rimfrost.operativt.uppgiftslager.presentation;
+package se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest;
 
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
@@ -18,12 +18,13 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.OperativtUppgiftslagerService;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.enums.UppgiftStatus;
-import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.dto.ImmutableUppgiftGetAllResponse;
-import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.dto.ImmutableUppgiftGetResponse;
-import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.dto.UppgiftGetAllResponse;
-import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.dto.UppgiftGetResponse;
-import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.dto.UppgiftStatusUpdateRequest;
-import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.dto.UppgiftStatusUpdateResponse;
+import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.dto.ImmutableUppgiftGetAllResponse;
+import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.dto.ImmutableUppgiftGetResponse;
+import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.dto.UppgiftGetAllResponse;
+import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.dto.UppgiftGetResponse;
+import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.dto.UppgiftStatusUpdateRequest;
+import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.dto.UppgiftStatusUpdateResponse;
+import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.util.PresentationRestMapper;
 
 @Produces("application/json")
 @Consumes("application/json")
@@ -37,7 +38,7 @@ public class OperativtUppgiftslagerController
    OperativtUppgiftslagerService operativtUppgiftslagerService;
 
    @Inject
-   PresentationMapper presentationMapper;
+   PresentationRestMapper presentationRestMapper;
 
    @GET
    @Path("/getAll")
@@ -45,7 +46,7 @@ public class OperativtUppgiftslagerController
    public UppgiftGetAllResponse getAll()
    {
       var uppgifter = operativtUppgiftslagerService.getUppgifter();
-      return presentationMapper.toUppgiftGetAllResponse(uppgifter);
+      return presentationRestMapper.toUppgiftGetAllResponse(uppgifter);
    }
 
    @GET
@@ -56,7 +57,7 @@ public class OperativtUppgiftslagerController
       log.info("Fetching task with ID: {}", uppgiftId);
       var uppgift = operativtUppgiftslagerService.getUppgift(Long.valueOf(uppgiftId));
       log.info("Fetched task: {}", uppgift);
-      return presentationMapper.toUppgiftGetResponse(uppgift);
+      return presentationRestMapper.toUppgiftGetResponse(uppgift);
    }
 
    // @GET
@@ -76,6 +77,6 @@ public class OperativtUppgiftslagerController
    {
       var response = operativtUppgiftslagerService.updateOperativeTask(Long.valueOf(uppgiftId),
             UppgiftStatus.AVSLUTAD);
-      return presentationMapper.toUppgiftStatusUpdateResponse(response);
+      return presentationRestMapper.toUppgiftStatusUpdateResponse(response);
    }
 }

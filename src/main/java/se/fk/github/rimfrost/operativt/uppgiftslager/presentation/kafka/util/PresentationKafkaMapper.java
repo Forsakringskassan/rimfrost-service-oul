@@ -1,3 +1,4 @@
+package se.fk.github.rimfrost.operativt.uppgiftslager.presentation.kafka.util;
 // package se.fk.github.quarkustemplate.integration;
 
 // import jakarta.enterprise.context.ApplicationScoped;

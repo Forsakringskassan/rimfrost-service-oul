@@ -1,25 +1,23 @@
-package se.fk.github.rimfrost.operativt.uppgiftslager.presentation;
+package se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.util;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.stream.Collectors;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.OperativtUppgiftslagerUpdateResponse;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.UppgiftEntity;
-import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.dto.ImmutableUppgift;
-import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.dto.ImmutableUppgiftGetAllResponse;
-import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.dto.ImmutableUppgiftGetResponse;
-import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.dto.ImmutableUppgiftStatusUpdateResponse;
-import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.dto.Uppgift;
-import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.dto.UppgiftGetAllResponse;
-import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.dto.UppgiftGetResponse;
-import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.dto.UppgiftStatusUpdateResponse;
+import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.dto.ImmutableUppgift;
+import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.dto.ImmutableUppgiftGetAllResponse;
+import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.dto.ImmutableUppgiftGetResponse;
+import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.dto.ImmutableUppgiftStatusUpdateResponse;
+import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.dto.Uppgift;
+import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.dto.UppgiftGetAllResponse;
+import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.dto.UppgiftGetResponse;
+import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.dto.UppgiftStatusUpdateResponse;
 
 @ApplicationScoped
-public class PresentationMapper
+public class PresentationRestMapper
 {
-
    public UppgiftGetResponse toUppgiftGetResponse(UppgiftEntity uppgift)
    {
       return ImmutableUppgiftGetResponse.builder()
