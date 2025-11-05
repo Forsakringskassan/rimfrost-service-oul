@@ -1,10 +1,10 @@
-package se.fk.github.rimfrost.operativt.uppgiftslager.integration;
+package se.fk.github.rimfrost.operativt.uppgiftslager.presentation.kafka;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.OperativtUppgiftslagerService;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.ImmutableOperativtUppgiftslagerAddRequest;
-import se.fk.github.rimfrost.operativt.uppgiftslager.integration.dto.OperativtUppgiftslagerRequest;
+import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.kafka.dto.OperativtUppgiftslagerRequest;
 
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 import org.slf4j.Logger;
