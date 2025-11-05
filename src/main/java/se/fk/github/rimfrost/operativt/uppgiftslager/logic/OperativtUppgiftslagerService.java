@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import se.fk.github.rimfrost.operativt.uppgiftslager.integration.kafka.OperativtUpggiftslagerProducer;
+import se.fk.github.rimfrost.operativt.uppgiftslager.integration.kafka.OperativtUppgiftslagerProducer;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.OperativtUppgiftslagerAddRequest;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.OperativtUppgiftslagerUpdateResponse;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.ImmutableUppgiftEntity;
@@ -25,7 +25,7 @@ public class OperativtUppgiftslagerService
    LogicMapper logicMapper;
 
    @Inject
-   OperativtUpggiftslagerProducer producer;
+   OperativtUppgiftslagerProducer producer;
 
    private final ConcurrentHashMap<Long, UppgiftEntity> taskMap = new ConcurrentHashMap<>();
    private AtomicLong idCounter = new AtomicLong();

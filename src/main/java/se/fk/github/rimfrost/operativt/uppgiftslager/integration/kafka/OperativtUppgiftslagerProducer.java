@@ -9,9 +9,9 @@ import jakarta.enterprise.context.ApplicationScoped;
 import se.fk.github.rimfrost.operativt.uppgiftslager.integration.kafka.dto.OperativtUppgiftslagerResponse;
 
 @ApplicationScoped
-public class OperativtUpggiftslagerProducer
+public class OperativtUppgiftslagerProducer
 {
-   private static final Logger log = LoggerFactory.getLogger(OperativtUpggiftslagerProducer.class);
+   private static final Logger log = LoggerFactory.getLogger(OperativtUppgiftslagerProducer.class);
 
    @Channel("operativt-uppgiftslager-responses")
    Emitter<OperativtUppgiftslagerResponse> emitter;
