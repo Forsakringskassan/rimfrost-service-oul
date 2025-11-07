@@ -1,48 +1,45 @@
 package se.fk.github.rimfrost.operativt.uppgiftslager.presentation.kafka.util;
-// package se.fk.github.quarkustemplate.integration;
 
-// import jakarta.enterprise.context.ApplicationScoped;
-// import se.fk.github.quarkustemplate.integration.dto.*;
-// import se.fk.gradle.examples.jaxrsspec.controllers.generatedsource.model.AlternativesResponse;
-// import se.fk.gradle.examples.jaxrsspec.controllers.generatedsource.model.OmbudRequest;
-// import se.fk.gradle.examples.jaxrsspec.controllers.generatedsource.model.OmbudResponse;
+import java.util.UUID;
 
-// import java.util.Collections;
+import jakarta.enterprise.context.ApplicationScoped;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.ImmutableOperativtUppgiftslagerAddRequest;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.ImmutableOperativtUppgiftslagerRequestMetadata;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.OperativtUppgiftslagerAddRequest;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.OperativtUppgiftslagerRequestMetadata;
+import se.fk.rimfrost.OperativtUppgiftslagerRequestMessageData;
+import se.fk.rimfrost.OperativtUppgiftslagerRequestMessagePayload;
 
-// @ApplicationScoped
-// public class IntegrationMapper
-// {
-//    public IntegrationAlternativesResponse fromExternalApi(AlternativesResponse externalResponse)
-//    {
-//       if (externalResponse.getAlternatives() == null)
-//       {
-//          return ImmutableIntegrationAlternativesResponse.builder()
-//                .alternatives(Collections.emptyList())
-//                .build();
-//       }
+@ApplicationScoped
+public class PresentationKafkaMapper
+{
+   public OperativtUppgiftslagerAddRequest mapToLogicOulAddRequest(
+         OperativtUppgiftslagerRequestMessageData operativtUppgiftslagerRequestData)
+   {
+      return ImmutableOperativtUppgiftslagerAddRequest.builder()
+            .personNummer(operativtUppgiftslagerRequestData.getPersonNummer())
+            .processId(UUID.fromString(operativtUppgiftslagerRequestData.getProcessId()))
+            .uppgift(operativtUppgiftslagerRequestData.getUppgiftsBeskrivning())
+            .build();
+   }
 
-//       return ImmutableIntegrationAlternativesResponse.builder()
-//             .alternatives(
-//                   externalResponse.getAlternatives().stream()
-//                         .map(alt -> ImmutableIntegrationAlternative.builder()
-//                               .name(alt.getName())
-//                               .id(alt.getId())
-//                               .build())
-//                         .toList())
-//             .build();
-//    }
+   public OperativtUppgiftslagerRequestMetadata mapToLogicOulAddRequestMetadata(
+         OperativtUppgiftslagerRequestMessagePayload operativtUppgiftslagerRequest)
+   {
 
-//    public OmbudRequest toExternalApi(IntegrationOmbudRequest integrationRequest)
-//    {
-//       OmbudRequest request = new OmbudRequest();
-//       request.setPersonnummer(integrationRequest.personnummer());
-//       return request;
-//    }
-
-//    public IntegrationOmbudResponse fromExternalApi(OmbudResponse externalResponse)
-//    {
-//       return ImmutableIntegrationOmbudResponse.builder()
-//             .name(externalResponse.getName())
-//             .build();
-//    }
-// }
+      return ImmutableOperativtUppgiftslagerRequestMetadata.builder()
+            .specversion(operativtUppgiftslagerRequest.getSpecversion().name())
+            .id(UUID.fromString(operativtUppgiftslagerRequest.getId()))
+            .source(operativtUppgiftslagerRequest.getSource())
+            .type(operativtUppgiftslagerRequest.getType())
+            .kogitoparentprociid(UUID.fromString(operativtUppgiftslagerRequest.getKogitoparentprociid()))
+            .kogitorootprocid(operativtUppgiftslagerRequest.getKogitorootprocid())
+            .kogitoproctype(operativtUppgiftslagerRequest.getKogitoproctype().name())
+            .kogitoprocinstanceid(UUID.fromString(operativtUppgiftslagerRequest.getKogitoprocinstanceid()))
+            .kogitoprocist(operativtUppgiftslagerRequest.getKogitoprocist())
+            .kogitoprocversion(operativtUppgiftslagerRequest.getKogitoprocversion())
+            .kogitorootprociid(UUID.fromString(operativtUppgiftslagerRequest.getKogitoparentprociid()))
+            .kogitoprocid(operativtUppgiftslagerRequest.getKogitoprocid())
+            .build();
+   }
+}

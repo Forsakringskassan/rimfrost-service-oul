@@ -1,6 +1,7 @@
 package se.fk.github.rimfrost.operativt.uppgiftslager.logic;
 
 import java.util.Collection;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -11,9 +12,12 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import se.fk.github.rimfrost.operativt.uppgiftslager.integration.kafka.OperativtUppgiftslagerProducer;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.OperativtUppgiftslagerAddRequest;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.OperativtUppgiftslagerRequestMetadata;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.OperativtUppgiftslagerUpdateResponse;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.ImmutableUppgiftEntity;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.UppgiftEntity;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.RequestMetadataEntity;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.ImmutableRequestMetadataEntity;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.enums.UppgiftStatus;
 
 @ApplicationScoped
@@ -28,11 +32,12 @@ public class OperativtUppgiftslagerService
    OperativtUppgiftslagerProducer producer;
 
    private final ConcurrentHashMap<Long, UppgiftEntity> taskMap = new ConcurrentHashMap<>();
+   private final ConcurrentHashMap<UUID, RequestMetadataEntity> metadataMap = new ConcurrentHashMap<>();
    private AtomicLong idCounter = new AtomicLong();
 
-   public void addOperativeTask(OperativtUppgiftslagerAddRequest addRequest)
+   public void addOperativeTask(OperativtUppgiftslagerAddRequest addRequest,
+         OperativtUppgiftslagerRequestMetadata requestMetadata)
    {
-      //Kanske vara i mappern?
       log.info("Adding new task");
       var uppgift = ImmutableUppgiftEntity.builder()
             .personnummer(addRequest.personNummer())
@@ -43,7 +48,23 @@ public class OperativtUppgiftslagerService
             .handlaggarId("")
             .build();
 
+      var metadata = ImmutableRequestMetadataEntity.builder()
+            .specversion(requestMetadata.specversion())
+            .id(requestMetadata.id())
+            .source(requestMetadata.source())
+            .type(requestMetadata.type())
+            .kogitoparentprociid(requestMetadata.kogitoparentprociid())
+            .kogitorootprocid(requestMetadata.kogitorootprocid())
+            .kogitoproctype(requestMetadata.kogitoproctype())
+            .kogitoprocinstanceid(requestMetadata.kogitoprocinstanceid())
+            .kogitoprocist(requestMetadata.kogitoprocist())
+            .kogitoprocversion(requestMetadata.kogitoprocversion())
+            .kogitorootprociid(requestMetadata.kogitoparentprociid())
+            .kogitoprocid(requestMetadata.kogitoprocid())
+            .build();
+
       taskMap.put(uppgift.uppgiftId(), uppgift);
+      metadataMap.put(uppgift.processId(), metadata);
       log.info("Added new task");
    }
 
@@ -94,6 +115,9 @@ public class OperativtUppgiftslagerService
 
    public void notifyTaskCompleted(UppgiftEntity uppgift)
    {
-      producer.publishTaskResponse(logicMapper.toOperativtUppgiftslagerResponse(uppgift));
+      var metadata = metadataMap.get(uppgift.processId());
+      var responseData = logicMapper.toOperativtUppgiftslagerResponseData(uppgift);
+      var responsePayload = logicMapper.toOperativtUppgiftslagerResponsePayload(metadata, responseData);
+      producer.publishTaskResponse(responsePayload);
    }
 }

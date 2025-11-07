@@ -3,8 +3,8 @@ package se.fk.github.rimfrost.operativt.uppgiftslager.presentation.kafka;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.OperativtUppgiftslagerService;
-import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.ImmutableOperativtUppgiftslagerAddRequest;
-import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.kafka.dto.OperativtUppgiftslagerRequest;
+import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.kafka.util.PresentationKafkaMapper;
+import se.fk.rimfrost.OperativtUppgiftslagerRequestMessagePayload;
 
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 import org.slf4j.Logger;
@@ -20,20 +20,19 @@ public class OperativtUppgiftslagerConsumer
    @Inject
    OperativtUppgiftslagerService operativtUppgiftslagerService;
 
+   @Inject
+   PresentationKafkaMapper mapper;
+
    @Incoming("operativt-uppgiftslager-requests")
    @Blocking
-   public void handleIncomingTask(OperativtUppgiftslagerRequest operativtUppgiftslagerRequest)
+   public void onOperativtUppgiftsLagerRequest(OperativtUppgiftslagerRequestMessagePayload operativtUppgiftslagerRequest)
    {
       log.info("Received task for operativt uppgiftslager: {}", operativtUppgiftslagerRequest);
 
-      //FLytta till mappper
-      var addRequest = ImmutableOperativtUppgiftslagerAddRequest.builder()
-            .personNummer(operativtUppgiftslagerRequest.personNummer())
-            .processId(operativtUppgiftslagerRequest.processId())
-            .uppgift(operativtUppgiftslagerRequest.uppgift())
-            .build();
+      var oulAddRequest = mapper.mapToLogicOulAddRequest(operativtUppgiftslagerRequest.getData());
+      var oulAddRequestMetadata = mapper.mapToLogicOulAddRequestMetadata(operativtUppgiftslagerRequest);
 
-      operativtUppgiftslagerService.addOperativeTask(addRequest);
+      operativtUppgiftslagerService.addOperativeTask(oulAddRequest, oulAddRequestMetadata);
       log.info("Processed task for operativt uppgiftslager: {}", operativtUppgiftslagerRequest);
    }
 }
