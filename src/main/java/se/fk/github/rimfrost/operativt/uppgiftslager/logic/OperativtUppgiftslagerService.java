@@ -53,6 +53,7 @@ public class OperativtUppgiftslagerService
             .id(requestMetadata.id())
             .source(requestMetadata.source())
             .type(requestMetadata.type())
+            .time(requestMetadata.time())
             .kogitoparentprociid(requestMetadata.kogitoparentprociid())
             .kogitorootprocid(requestMetadata.kogitorootprocid())
             .kogitoproctype(requestMetadata.kogitoproctype())

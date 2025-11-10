@@ -1,5 +1,7 @@
 package se.fk.github.rimfrost.operativt.uppgiftslager.logic;
 
+import java.time.OffsetDateTime;
+
 import jakarta.enterprise.context.ApplicationScoped;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.ImmutableOperativtUppgiftslagerUpdateResponse;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.OperativtUppgiftslagerUpdateResponse;
@@ -45,6 +47,7 @@ public class LogicMapper
       payload.setSpecversion(SpecVersion.NUMBER_1_DOT_0);
       payload.setId(metadata.id().toString());
       payload.setSource(metadata.source());
+      payload.setTime(OffsetDateTime.now());
       payload.setType("operativt-uppgiftslager-responses");
       payload.setKogitoparentprociid(metadata.kogitoparentprociid().toString());
       payload.setKogitoprocid(metadata.kogitoprocid());

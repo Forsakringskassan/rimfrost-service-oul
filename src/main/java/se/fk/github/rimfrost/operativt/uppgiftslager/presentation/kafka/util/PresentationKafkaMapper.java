@@ -1,5 +1,6 @@
 package se.fk.github.rimfrost.operativt.uppgiftslager.presentation.kafka.util;
 
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -32,6 +33,7 @@ public class PresentationKafkaMapper
             .id(UUID.fromString(operativtUppgiftslagerRequest.getId()))
             .source(operativtUppgiftslagerRequest.getSource())
             .type(operativtUppgiftslagerRequest.getType())
+            .time(OffsetDateTime.now())
             .kogitoparentprociid(UUID.fromString(operativtUppgiftslagerRequest.getKogitoparentprociid()))
             .kogitorootprocid(operativtUppgiftslagerRequest.getKogitorootprocid())
             .kogitoproctype(operativtUppgiftslagerRequest.getKogitoproctype().name())
