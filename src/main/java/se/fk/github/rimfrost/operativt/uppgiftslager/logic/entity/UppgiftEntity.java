@@ -9,15 +9,15 @@ import se.fk.github.rimfrost.operativt.uppgiftslager.logic.enums.UppgiftStatus;
 @Value.Immutable
 public interface UppgiftEntity
 {
-    UUID processId();
+   UUID processId();
 
-    Long uppgiftId();
+   Long uppgiftId();
 
-    String handlaggarId();
+   String handlaggarId();
 
-    String personnummer();
+   String personnummer();
 
-    UppgiftStatus status();
+   UppgiftStatus status();
 
-    String beskrivning();
+   String beskrivning();
 }

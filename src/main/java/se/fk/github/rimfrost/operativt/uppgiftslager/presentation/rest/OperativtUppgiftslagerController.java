@@ -25,61 +25,62 @@ import se.fk.rimfrost.jaxrsspec.controllers.generatedsource.model.*;
 @Path("/uppgifter")
 public class OperativtUppgiftslagerController implements OperativtUppgiftslagerControllerApi
 {
-    private static final Logger log = LoggerFactory.getLogger(OperativtUppgiftslagerController.class);
+   private static final Logger log = LoggerFactory.getLogger(OperativtUppgiftslagerController.class);
 
-    @Inject
-    OperativtUppgiftslagerService operativtUppgiftslagerService;
+   @Inject
+   OperativtUppgiftslagerService operativtUppgiftslagerService;
 
-    @Inject
-    PresentationRestMapper presentationRestMapper;
+   @Inject
+   PresentationRestMapper presentationRestMapper;
 
-    @GET
-    @APIResponse(responseCode = "200", description = "Alla uppgifter", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = GetUppgifterResponse.class)))
-    public GetUppgifterResponse getUppgifter()
-    {
-        var uppgifter = operativtUppgiftslagerService.getUppgifter();
-        return presentationRestMapper.toGetUppgifterResponse(uppgifter);
-    }
+   @GET
+   @APIResponse(responseCode = "200", description = "Alla uppgifter", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = GetUppgifterResponse.class)))
+   public GetUppgifterResponse getUppgifter()
+   {
+      var uppgifter = operativtUppgiftslagerService.getUppgifter();
+      return presentationRestMapper.toGetUppgifterResponse(uppgifter);
+   }
 
-    @GET
-    @Path("/{uppgift_id}")
-    @APIResponse(responseCode = "200", description = "En uppgift", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = GetUppgiftResponse.class)))
-    @Override
-    public GetUppgiftResponse getUppgift(@PathParam("uppgift_id") String uppgiftId)
-    {
-        log.info("Fetching task with ID: {}", uppgiftId);
-        var uppgift = operativtUppgiftslagerService.getUppgift(Long.valueOf(uppgiftId));
-        log.info("Fetched task: {}", uppgift);
-        return presentationRestMapper.toGetUppgiftResponse(uppgift);
-    }
+   @GET
+   @Path("/{uppgift_id}")
+   @APIResponse(responseCode = "200", description = "En uppgift", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = GetUppgiftResponse.class)))
+   @Override
+   public GetUppgiftResponse getUppgift(@PathParam("uppgift_id") String uppgiftId)
+   {
+      log.info("Fetching task with ID: {}", uppgiftId);
+      var uppgift = operativtUppgiftslagerService.getUppgift(Long.valueOf(uppgiftId));
+      log.info("Fetched task: {}", uppgift);
+      return presentationRestMapper.toGetUppgiftResponse(uppgift);
+   }
 
-    @GET
-    @Path("/handlaggare/{handlaggar_id}")
-    @APIResponse(responseCode = "200", description = "Uppgifter för en handläggare", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = GetUppgifterHandlaggareResponse.class)))
-    @Override
-    public GetUppgifterHandlaggareResponse getUppgifterHandlaggare(@PathParam("handlaggar_id") String handlaggarId)
-    {
-        var uppgifter = operativtUppgiftslagerService.getUppgifterHandlaggare(handlaggarId);
-        return presentationRestMapper.toGetUppgifterHandlaggareResponse(uppgifter);
-    }
+   @GET
+   @Path("/handlaggare/{handlaggar_id}")
+   @APIResponse(responseCode = "200", description = "Uppgifter för en handläggare", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = GetUppgifterHandlaggareResponse.class)))
+   @Override
+   public GetUppgifterHandlaggareResponse getUppgifterHandlaggare(@PathParam("handlaggar_id") String handlaggarId)
+   {
+      var uppgifter = operativtUppgiftslagerService.getUppgifterHandlaggare(handlaggarId);
+      return presentationRestMapper.toGetUppgifterHandlaggareResponse(uppgifter);
+   }
 
-    @POST
-    @Path("/handlaggare/{handlaggar_id}")
-    @APIResponse(responseCode = "200", description = "Hämta uppgift för en handläggare", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = PostUppgifterHandlaggareResponse.class)))
-    public PostUppgifterHandlaggareResponse postUppgifterHandlaggare(@PathParam("handlaggar_id") String handlaggarId)
-    {
-        var uppgift = operativtUppgiftslagerService.assignNewTask(handlaggarId);
-        return presentationRestMapper.toPostUppgifterHandlaggareResponse(uppgift);
-    }
+   @POST
+   @Path("/handlaggare/{handlaggar_id}")
+   @APIResponse(responseCode = "200", description = "Hämta uppgift för en handläggare", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = PostUppgifterHandlaggareResponse.class)))
+   public PostUppgifterHandlaggareResponse postUppgifterHandlaggare(@PathParam("handlaggar_id") String handlaggarId)
+   {
+      var uppgift = operativtUppgiftslagerService.assignNewTask(handlaggarId);
+      return presentationRestMapper.toPostUppgifterHandlaggareResponse(uppgift);
+   }
 
-    @PATCH
-    @Path("/{uppgift_id}")
-    @Transactional
-    @Override
-    public PatchUppgiftResponse patchUppgift(@PathParam("uppgift_id") String uppgiftId, @Valid @NotNull PatchUppgiftRequest patchUppgiftRequest)
-    {
-        var updatedUppgift = operativtUppgiftslagerService.updateOperativeTask(Long.valueOf(uppgiftId),
-                UppgiftStatus.valueOf(patchUppgiftRequest.getStatus()));
-        return presentationRestMapper.toPatchUppgiftResponse(updatedUppgift);
-    }
+   @PATCH
+   @Path("/{uppgift_id}")
+   @Transactional
+   @Override
+   public PatchUppgiftResponse patchUppgift(@PathParam("uppgift_id") String uppgiftId,
+         @Valid @NotNull PatchUppgiftRequest patchUppgiftRequest)
+   {
+      var updatedUppgift = operativtUppgiftslagerService.updateOperativeTask(Long.valueOf(uppgiftId),
+            UppgiftStatus.valueOf(patchUppgiftRequest.getStatus()));
+      return presentationRestMapper.toPatchUppgiftResponse(updatedUppgift);
+   }
 }

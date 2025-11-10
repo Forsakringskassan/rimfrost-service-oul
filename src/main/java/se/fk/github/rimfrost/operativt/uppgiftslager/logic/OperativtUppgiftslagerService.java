@@ -76,69 +76,79 @@ public class OperativtUppgiftslagerService
       return tasks;
    }
 
-    public Collection<UppgiftEntity> getUppgifterHandlaggare(String handlaggarId) {
-        log.info("Getting all tasks for handlaggarId: " + handlaggarId);
-        var tasks = taskMap.values();
-        List<UppgiftEntity> handlaggarTasks = new ArrayList<>();
-        for (UppgiftEntity task : tasks) {
-            if (Objects.equals(task.handlaggarId(), handlaggarId)) {
-                handlaggarTasks.add(task);
-            }
-        }
-        return handlaggarTasks;
-    }
+   public Collection<UppgiftEntity> getUppgifterHandlaggare(String handlaggarId)
+   {
+      log.info("Getting all tasks for handlaggarId: " + handlaggarId);
+      var tasks = taskMap.values();
+      List<UppgiftEntity> handlaggarTasks = new ArrayList<>();
+      for (UppgiftEntity task : tasks)
+      {
+         if (Objects.equals(task.handlaggarId(), handlaggarId))
+         {
+            handlaggarTasks.add(task);
+         }
+      }
+      return handlaggarTasks;
+   }
 
-    public UppgiftEntity getUppgift(Long id) {
-        var task = taskMap.get(id);
-        if (task == null) {
-            log.info("Task with ID {} not found", id);
-            return null;
-        }
-        log.info("Task ID: {}, Description: {}, Status: {}", task.uppgiftId(), task.beskrivning(), task.status());
-        return task;
-    }
+   public UppgiftEntity getUppgift(Long id)
+   {
+      var task = taskMap.get(id);
+      if (task == null)
+      {
+         log.info("Task with ID {} not found", id);
+         return null;
+      }
+      log.info("Task ID: {}, Description: {}, Status: {}", task.uppgiftId(), task.beskrivning(), task.status());
+      return task;
+   }
 
-    public UppgiftEntity updateOperativeTask(Long uppgiftId, UppgiftStatus newStatus) {
-        var uppgift = taskMap.get(uppgiftId);
+   public UppgiftEntity updateOperativeTask(Long uppgiftId, UppgiftStatus newStatus)
+   {
+      var uppgift = taskMap.get(uppgiftId);
 
-        if (uppgift == null)
-            return null;
+      if (uppgift == null)
+         return null;
 
-        var updatedUppgift = ImmutableUppgiftEntity.builder()
-                .from(uppgift)
-                .status(newStatus)
-                .build();
+      var updatedUppgift = ImmutableUppgiftEntity.builder()
+            .from(uppgift)
+            .status(newStatus)
+            .build();
 
-        taskMap.put(uppgiftId, updatedUppgift);
+      taskMap.put(uppgiftId, updatedUppgift);
 
-        if (newStatus == UppgiftStatus.AVSLUTAD) {
-            notifyTaskCompleted(updatedUppgift);
-        }
+      if (newStatus == UppgiftStatus.AVSLUTAD)
+      {
+         notifyTaskCompleted(updatedUppgift);
+      }
 
-        return updatedUppgift;
-    }
+      return updatedUppgift;
+   }
 
+   public void notifyTaskCompleted(UppgiftEntity uppgift)
+   {
+      var metadata = metadataMap.get(uppgift.processId());
+      var responseData = logicMapper.toOperativtUppgiftslagerResponseData(uppgift);
+      var responsePayload = logicMapper.toOperativtUppgiftslagerResponsePayload(metadata, responseData);
+      producer.publishTaskResponse(responsePayload);
+   }
 
-    public void notifyTaskCompleted(UppgiftEntity uppgift) {
-        var metadata = metadataMap.get(uppgift.processId());
-        var responseData = logicMapper.toOperativtUppgiftslagerResponseData(uppgift);
-        var responsePayload = logicMapper.toOperativtUppgiftslagerResponsePayload(metadata, responseData);
-        producer.publishTaskResponse(responsePayload);
-    }
-
-    public UppgiftEntity assignNewTask(String handlaggarId) {
-        var tasks = taskMap.values();
-        for (UppgiftEntity task : tasks) {
-            if (Objects.equals(task.handlaggarId(), "")) {
-                var updatedTask = ImmutableUppgiftEntity.builder()
-                        .from(task)
-                        .status(UppgiftStatus.TILLDELAD)
-                        .handlaggarId(handlaggarId)
-                        .build();
-                taskMap.put(task.uppgiftId(), updatedTask);
-                return updatedTask;
-            }
-        }
-        return null;
-    }
+   public UppgiftEntity assignNewTask(String handlaggarId)
+   {
+      var tasks = taskMap.values();
+      for (UppgiftEntity task : tasks)
+      {
+         if (Objects.equals(task.handlaggarId(), ""))
+         {
+            var updatedTask = ImmutableUppgiftEntity.builder()
+                  .from(task)
+                  .status(UppgiftStatus.TILLDELAD)
+                  .handlaggarId(handlaggarId)
+                  .build();
+            taskMap.put(task.uppgiftId(), updatedTask);
+            return updatedTask;
+         }
+      }
+      return null;
+   }
 }
