@@ -45,11 +45,11 @@ public class PresentationRestMapper
 
    public Uppgift toUppgift(UppgiftEntity uppgiftEntity)
    {
-       Uppgiftsspecifikation dummySpec = new Uppgiftsspecifikation();
-       dummySpec.setId(UUID.randomUUID().toString());
-       dummySpec.setVersion("0.0.1");
-       dummySpec.setName("RTF-manuell Uppgift version 0.0.1");
-       String dummyPersonnummer = "12345678-1234";
+      Uppgiftsspecifikation dummySpec = new Uppgiftsspecifikation();
+      dummySpec.setId(UUID.randomUUID().toString());
+      dummySpec.setVersion("0.0.1");
+      dummySpec.setName("RTF-manuell Uppgift version 0.0.1");
+      String dummyPersonnummer = "12345678-1234";
 
       Uppgift uppgift = new Uppgift();
       uppgift.setUppgiftId(uppgiftEntity.uppgiftId().toString());
