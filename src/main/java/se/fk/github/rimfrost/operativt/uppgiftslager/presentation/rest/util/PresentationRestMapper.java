@@ -2,64 +2,67 @@ package se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.util;
 
 import java.util.ArrayList;
 import java.util.Collection;
-
 import jakarta.enterprise.context.ApplicationScoped;
-import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.OperativtUppgiftslagerUpdateResponse;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.UppgiftEntity;
-import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.dto.ImmutableUppgift;
-import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.dto.ImmutableUppgiftGetAllResponse;
-import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.dto.ImmutableUppgiftGetResponse;
-import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.dto.ImmutableUppgiftStatusUpdateResponse;
-import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.dto.Uppgift;
-import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.dto.UppgiftGetAllResponse;
-import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.dto.UppgiftGetResponse;
-import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.dto.UppgiftStatusUpdateResponse;
+import se.fk.rimfrost.jaxrsspec.controllers.generatedsource.model.*;
 
 @ApplicationScoped
 public class PresentationRestMapper
 {
-   public UppgiftGetResponse toUppgiftGetResponse(UppgiftEntity uppgift)
+   public GetUppgiftResponse toGetUppgiftResponse(UppgiftEntity uppgift)
    {
-      return ImmutableUppgiftGetResponse.builder()
-            .uppgift(toUppgift(uppgift))
-            .build();
+      GetUppgiftResponse response = new GetUppgiftResponse();
+      response.setUppgift(toUppgift(uppgift)); // toUppgift returns the DTO `Uppgift` (generated or own)
+      return response;
    }
 
-   public UppgiftGetAllResponse toUppgiftGetAllResponse(Collection<UppgiftEntity> uppgifter)
+   public GetUppgifterResponse toGetUppgifterResponse(Collection<UppgiftEntity> uppgifter)
    {
-      Collection<Uppgift> uppgifterDto = new ArrayList<>();
+      ArrayList<Uppgift> uppgifterDto = new ArrayList<>();
       for (UppgiftEntity uppgiftEntity : uppgifter)
       {
          uppgifterDto.add(toUppgift(uppgiftEntity));
       }
-
-      return ImmutableUppgiftGetAllResponse.builder()
-            .uppgifter(uppgifterDto)
-            .build();
+      GetUppgifterResponse response = new GetUppgifterResponse();
+      response.setUppgifter(uppgifterDto);
+      return response;
    }
 
-   public Uppgift toUppgift(UppgiftEntity uppgift)
+   public GetUppgifterHandlaggareResponse toGetUppgifterHandlaggareResponse(Collection<UppgiftEntity> uppgifter)
    {
-      return ImmutableUppgift.builder()
-            .uppgiftId(uppgift.uppgiftId().toString())
-            .status(uppgift.status().name())
-            .beskrivning(uppgift.beskrivning())
-            .handlaggarId(uppgift.handlaggarId().toString())
-            .build();
+      ArrayList<Uppgift> uppgifterDto = new ArrayList<>();
+      for (UppgiftEntity uppgiftEntity : uppgifter)
+      {
+         uppgifterDto.add(toUppgift(uppgiftEntity));
+      }
+      GetUppgifterHandlaggareResponse response = new GetUppgifterHandlaggareResponse();
+      response.setUppgifter(uppgifterDto);
+      return response;
    }
 
-   public UppgiftStatusUpdateResponse toUppgiftStatusUpdateResponse(
-         OperativtUppgiftslagerUpdateResponse response)
+   public Uppgift toUppgift(UppgiftEntity uppgiftEntity)
    {
-      var uppgift = ImmutableUppgift.builder()
-            .uppgiftId(response.uppgiftId().toString())
-            .status(response.status())
-            .beskrivning(response.beskrivning())
-            .handlaggarId(response.handlaggarId())
-            .build();
+      Uppgift uppgift = new Uppgift();
+      uppgift.setUppgiftId(uppgiftEntity.uppgiftId().toString());
+      uppgift.setStatus(uppgiftEntity.status().toString());
+      uppgift.setBeskrivning(uppgiftEntity.beskrivning());
+      uppgift.setHandlaggarId(uppgiftEntity.handlaggarId());
+      return uppgift;
+   }
 
-      return ImmutableUppgiftStatusUpdateResponse.builder()
-            .uppgift(uppgift)
-            .build();
+   public PatchUppgiftResponse toPatchUppgiftResponse(UppgiftEntity uppgiftEntity)
+   {
+      PatchUppgiftResponse response = new PatchUppgiftResponse();
+      response.setUppgift(toUppgift(uppgiftEntity));
+      return response;
+   }
+
+   public PostUppgifterHandlaggareResponse toPostUppgifterHandlaggareResponse(UppgiftEntity uppgiftEntity)
+   {
+      PostUppgifterHandlaggareResponse response = new PostUppgifterHandlaggareResponse();
+      response.setUppgiftId(uppgiftEntity.uppgiftId().toString());
+      response.setUppgiftBeskrivning(uppgiftEntity.beskrivning());
+      response.setPersonnummer(uppgiftEntity.personnummer());
+      return response;
    }
 }

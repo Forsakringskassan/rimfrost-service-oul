@@ -44,6 +44,23 @@
       <artifactId>awaitility</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>se.fk.rimfrost</groupId>
+      <artifactId>rimfrost-operativt-uppgiftslager-api-jaxrs-spec</artifactId>
+      <version>0.1.2</version>
+    </dependency>
+    <dependency>
+      <groupId>se.fk.rimfrost</groupId>
+      <artifactId>rimfrost-operativt-uppgiftslager-asyncapi</artifactId>
+      <version>0.2.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-junit-jupiter</artifactId>
+      <version>5.14.2</version>
+      <!-- use the latest version -->
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <repositories>

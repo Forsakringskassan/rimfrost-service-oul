@@ -1,36 +1,29 @@
 package se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.*;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.PATCH;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.OperativtUppgiftslagerService;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.enums.UppgiftStatus;
-import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.dto.ImmutableUppgiftGetAllResponse;
-import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.dto.ImmutableUppgiftGetResponse;
-import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.dto.UppgiftGetAllResponse;
-import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.dto.UppgiftGetResponse;
-import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.dto.UppgiftStatusUpdateRequest;
-import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.dto.UppgiftStatusUpdateResponse;
 import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.util.PresentationRestMapper;
+import se.fk.rimfrost.jaxrsspec.controllers.generatedsource.OperativtUppgiftslagerControllerApi;
+import se.fk.rimfrost.jaxrsspec.controllers.generatedsource.model.*;
 
+@SuppressWarnings("unused")
 @Produces("application/json")
 @Consumes("application/json")
 @ApplicationScoped
 @Path("/uppgifter")
-public class OperativtUppgiftslagerController
+public class OperativtUppgiftslagerController implements OperativtUppgiftslagerControllerApi
 {
    private static final Logger log = LoggerFactory.getLogger(OperativtUppgiftslagerController.class);
 
@@ -41,42 +34,53 @@ public class OperativtUppgiftslagerController
    PresentationRestMapper presentationRestMapper;
 
    @GET
-   @Path("/getAll")
-   @APIResponse(responseCode = "200", description = "All uppgifter", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ImmutableUppgiftGetAllResponse.class)))
-   public UppgiftGetAllResponse getAll()
+   @APIResponse(responseCode = "200", description = "Alla uppgifter", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = GetUppgifterResponse.class)))
+   public GetUppgifterResponse getUppgifter()
    {
       var uppgifter = operativtUppgiftslagerService.getUppgifter();
-      return presentationRestMapper.toUppgiftGetAllResponse(uppgifter);
+      return presentationRestMapper.toGetUppgifterResponse(uppgifter);
    }
 
    @GET
-   @Path("/get/{uppgift_id}")
-   @APIResponse(responseCode = "200", description = "Uppgift found", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ImmutableUppgiftGetResponse.class)))
-   public UppgiftGetResponse get(@PathParam("uppgift_id") String uppgiftId)
+   @Path("/{uppgift_id}")
+   @APIResponse(responseCode = "200", description = "En uppgift", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = GetUppgiftResponse.class)))
+   @Override
+   public GetUppgiftResponse getUppgift(@PathParam("uppgift_id") String uppgiftId)
    {
       log.info("Fetching task with ID: {}", uppgiftId);
       var uppgift = operativtUppgiftslagerService.getUppgift(Long.valueOf(uppgiftId));
       log.info("Fetched task: {}", uppgift);
-      return presentationRestMapper.toUppgiftGetResponse(uppgift);
+      return presentationRestMapper.toGetUppgiftResponse(uppgift);
    }
 
-   // @GET
-   // @Path("/{handlaggar_id}/next")
-   // @Transactional
-   // public UppgiftNextResponse next(@PathParam("handlaggar_id") String id)
-   // {
-   //    var uppgift = operativtUppgiftslagerService.getUppgifter().stream()
-   //       .findFirst().get();
-   //    return mapper.toNextResponse(task);
-   // }
+   @GET
+   @Path("/handlaggare/{handlaggar_id}")
+   @APIResponse(responseCode = "200", description = "Uppgifter för en handläggare", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = GetUppgifterHandlaggareResponse.class)))
+   @Override
+   public GetUppgifterHandlaggareResponse getUppgifterHandlaggare(@PathParam("handlaggar_id") String handlaggarId)
+   {
+      var uppgifter = operativtUppgiftslagerService.getUppgifterHandlaggare(handlaggarId);
+      return presentationRestMapper.toGetUppgifterHandlaggareResponse(uppgifter);
+   }
+
+   @POST
+   @Path("/handlaggare/{handlaggar_id}")
+   @APIResponse(responseCode = "200", description = "Hämta uppgift för en handläggare", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = PostUppgifterHandlaggareResponse.class)))
+   public PostUppgifterHandlaggareResponse postUppgifterHandlaggare(@PathParam("handlaggar_id") String handlaggarId)
+   {
+      var uppgift = operativtUppgiftslagerService.assignNewTask(handlaggarId);
+      return presentationRestMapper.toPostUppgifterHandlaggareResponse(uppgift);
+   }
 
    @PATCH
    @Path("/{uppgift_id}")
    @Transactional
-   public UppgiftStatusUpdateResponse update(@PathParam("uppgift_id") String uppgiftId, UppgiftStatusUpdateRequest body)
+   @Override
+   public PatchUppgiftResponse patchUppgift(@PathParam("uppgift_id") String uppgiftId,
+         @Valid @NotNull PatchUppgiftRequest patchUppgiftRequest)
    {
-      var response = operativtUppgiftslagerService.updateOperativeTask(Long.valueOf(uppgiftId),
-            UppgiftStatus.AVSLUTAD);
-      return presentationRestMapper.toUppgiftStatusUpdateResponse(response);
+      var updatedUppgift = operativtUppgiftslagerService.updateOperativeTask(Long.valueOf(uppgiftId),
+            UppgiftStatus.valueOf(patchUppgiftRequest.getStatus()));
+      return presentationRestMapper.toPatchUppgiftResponse(updatedUppgift);
    }
 }

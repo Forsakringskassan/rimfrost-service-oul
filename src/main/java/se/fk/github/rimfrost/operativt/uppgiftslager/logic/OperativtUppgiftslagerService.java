@@ -1,19 +1,15 @@
 package se.fk.github.rimfrost.operativt.uppgiftslager.logic;
 
-import java.util.Collection;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import se.fk.github.rimfrost.operativt.uppgiftslager.integration.kafka.OperativtUppgiftslagerProducer;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.OperativtUppgiftslagerAddRequest;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.OperativtUppgiftslagerRequestMetadata;
-import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.OperativtUppgiftslagerUpdateResponse;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.ImmutableUppgiftEntity;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.UppgiftEntity;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.RequestMetadataEntity;
@@ -80,6 +76,21 @@ public class OperativtUppgiftslagerService
       return tasks;
    }
 
+   public Collection<UppgiftEntity> getUppgifterHandlaggare(String handlaggarId)
+   {
+      log.info("Getting all tasks for handlaggarId: " + handlaggarId);
+      var tasks = taskMap.values();
+      List<UppgiftEntity> handlaggarTasks = new ArrayList<>();
+      for (UppgiftEntity task : tasks)
+      {
+         if (Objects.equals(task.handlaggarId(), handlaggarId))
+         {
+            handlaggarTasks.add(task);
+         }
+      }
+      return handlaggarTasks;
+   }
+
    public UppgiftEntity getUppgift(Long id)
    {
       var task = taskMap.get(id);
@@ -92,7 +103,7 @@ public class OperativtUppgiftslagerService
       return task;
    }
 
-   public OperativtUppgiftslagerUpdateResponse updateOperativeTask(Long uppgiftId, UppgiftStatus newStatus)
+   public UppgiftEntity updateOperativeTask(Long uppgiftId, UppgiftStatus newStatus)
    {
       var uppgift = taskMap.get(uppgiftId);
 
@@ -111,7 +122,7 @@ public class OperativtUppgiftslagerService
          notifyTaskCompleted(updatedUppgift);
       }
 
-      return logicMapper.toOperativtUppgiftslagerUpdateResponse(updatedUppgift);
+      return updatedUppgift;
    }
 
    public void notifyTaskCompleted(UppgiftEntity uppgift)
@@ -120,5 +131,24 @@ public class OperativtUppgiftslagerService
       var responseData = logicMapper.toOperativtUppgiftslagerResponseData(uppgift);
       var responsePayload = logicMapper.toOperativtUppgiftslagerResponsePayload(metadata, responseData);
       producer.publishTaskResponse(responsePayload);
+   }
+
+   public UppgiftEntity assignNewTask(String handlaggarId)
+   {
+      var tasks = taskMap.values();
+      for (UppgiftEntity task : tasks)
+      {
+         if (Objects.equals(task.handlaggarId(), ""))
+         {
+            var updatedTask = ImmutableUppgiftEntity.builder()
+                  .from(task)
+                  .status(UppgiftStatus.TILLDELAD)
+                  .handlaggarId(handlaggarId)
+                  .build();
+            taskMap.put(task.uppgiftId(), updatedTask);
+            return updatedTask;
+         }
+      }
+      return null;
    }
 }
