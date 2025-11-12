@@ -62,7 +62,7 @@ public class OperativtUppgiftslagerService
 
       taskMap.put(uppgift.uppgiftId(), uppgift);
       metadataMap.put(uppgift.processId(), metadata);
-      producer.publishTaskResponse(logicMapper.toOperativtUppgiftslagerStatusMessagePayload(uppgift));
+      notifyTaskUpdate(uppgift);
       log.info("Added new task");
    }
 
@@ -135,6 +135,7 @@ public class OperativtUppgiftslagerService
 
    public UppgiftEntity assignNewTask(String handlaggarId)
    {
+       log.info("Assigning new task to handlaggarId: {}", handlaggarId);
       var tasks = taskMap.values();
       for (UppgiftEntity task : tasks)
       {
@@ -146,9 +147,12 @@ public class OperativtUppgiftslagerService
                   .handlaggarId(handlaggarId)
                   .build();
             taskMap.put(task.uppgiftId(), updatedTask);
+            notifyTaskUpdate(updatedTask);
+            log.info("Assigned task {} to  handlaggarId: {}", updatedTask.uppgiftId(), handlaggarId);
             return updatedTask;
          }
       }
+      log.info("Failed to assign new task to handlaggarId: {}", handlaggarId);
       return null;
    }
 }
