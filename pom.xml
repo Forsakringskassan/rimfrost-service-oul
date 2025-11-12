@@ -23,12 +23,6 @@
       <version>1.3.0</version>
     </dependency>
 
-    <dependency>
-      <groupId>se.fk.rimfrost</groupId>
-      <artifactId>rimfrost-operativt-uppgiftslager-asyncapi</artifactId>
-      <version>0.2.0</version>
-    </dependency>
-
     <!-- Kafka -->
     <dependency>
       <groupId>io.quarkus</groupId>
@@ -47,7 +41,7 @@
     <dependency>
       <groupId>se.fk.rimfrost</groupId>
       <artifactId>rimfrost-operativt-uppgiftslager-api-jaxrs-spec</artifactId>
-      <version>0.1.2</version>
+      <version>0.1.3</version>
     </dependency>
     <dependency>
       <groupId>se.fk.rimfrost</groupId>

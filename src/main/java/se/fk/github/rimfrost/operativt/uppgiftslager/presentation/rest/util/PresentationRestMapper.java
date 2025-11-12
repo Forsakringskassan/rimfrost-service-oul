@@ -1,7 +1,10 @@
 package se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.util;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.UUID;
+
 import jakarta.enterprise.context.ApplicationScoped;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.UppgiftEntity;
 import se.fk.rimfrost.jaxrsspec.controllers.generatedsource.model.*;
@@ -42,11 +45,20 @@ public class PresentationRestMapper
 
    public Uppgift toUppgift(UppgiftEntity uppgiftEntity)
    {
+      Uppgiftsspecifikation dummySpec = new Uppgiftsspecifikation();
+      dummySpec.setId(UUID.randomUUID().toString());
+      dummySpec.setVersion("0.0.1");
+      dummySpec.setName("RTF-manuell Uppgift version 0.0.1");
+      String dummyPersonnummer = "12345678-1234";
+
       Uppgift uppgift = new Uppgift();
       uppgift.setUppgiftId(uppgiftEntity.uppgiftId().toString());
       uppgift.setStatus(uppgiftEntity.status().toString());
-      uppgift.setBeskrivning(uppgiftEntity.beskrivning());
-      uppgift.setHandlaggarId(uppgiftEntity.handlaggarId());
+      uppgift.setSkapad(LocalDateTime.now().toString());
+      uppgift.setSpec(dummySpec);
+      uppgift.setPersonnummer(dummyPersonnummer);
+      uppgift.setAktivitet(uppgiftEntity.beskrivning());
+      uppgift.setUtforarId(uppgiftEntity.handlaggarId());
       return uppgift;
    }
 
@@ -60,9 +72,7 @@ public class PresentationRestMapper
    public PostUppgifterHandlaggareResponse toPostUppgifterHandlaggareResponse(UppgiftEntity uppgiftEntity)
    {
       PostUppgifterHandlaggareResponse response = new PostUppgifterHandlaggareResponse();
-      response.setUppgiftId(uppgiftEntity.uppgiftId().toString());
-      response.setUppgiftBeskrivning(uppgiftEntity.beskrivning());
-      response.setPersonnummer(uppgiftEntity.personnummer());
+      response.setUppgift(toUppgift(uppgiftEntity));
       return response;
    }
 }
