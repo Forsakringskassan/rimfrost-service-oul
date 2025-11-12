@@ -135,7 +135,7 @@ public class OperativtUppgiftslagerService
 
    public UppgiftEntity assignNewTask(String handlaggarId)
    {
-       log.info("Assigning new task to handlaggarId: {}", handlaggarId);
+      log.info("Assigning new task to handlaggarId: {}", handlaggarId);
       var tasks = taskMap.values();
       for (UppgiftEntity task : tasks)
       {
