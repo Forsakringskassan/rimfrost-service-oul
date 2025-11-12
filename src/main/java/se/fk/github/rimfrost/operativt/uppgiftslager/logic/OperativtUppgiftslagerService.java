@@ -7,7 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import se.fk.github.rimfrost.operativt.uppgiftslager.integration.kafka.OperativtUppgiftslagerProducer;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.OperativtUppgiftslagerAddRequest;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.OperativtUppgiftslagerRequestMetadata;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.ImmutableUppgiftEntity;
@@ -23,9 +22,6 @@ public class OperativtUppgiftslagerService
 
    @Inject
    LogicMapper logicMapper;
-
-   @Inject
-   OperativtUppgiftslagerProducer producer;
 
    private final ConcurrentHashMap<Long, UppgiftEntity> taskMap = new ConcurrentHashMap<>();
    private final ConcurrentHashMap<UUID, RequestMetadataEntity> metadataMap = new ConcurrentHashMap<>();
@@ -117,20 +113,7 @@ public class OperativtUppgiftslagerService
 
       taskMap.put(uppgiftId, updatedUppgift);
 
-      if (newStatus == UppgiftStatus.AVSLUTAD)
-      {
-         notifyTaskCompleted(updatedUppgift);
-      }
-
       return updatedUppgift;
-   }
-
-   public void notifyTaskCompleted(UppgiftEntity uppgift)
-   {
-      var metadata = metadataMap.get(uppgift.processId());
-      var responseData = logicMapper.toOperativtUppgiftslagerResponseData(uppgift);
-      var responsePayload = logicMapper.toOperativtUppgiftslagerResponsePayload(metadata, responseData);
-      producer.publishTaskResponse(responsePayload);
    }
 
    public UppgiftEntity assignNewTask(String handlaggarId)
