@@ -22,4 +22,7 @@ public class OperativtUppgiftslagerProducer
       emitter.send(response);
       log.info("Published task response for operativt uppgiftslager: {}", response);
    }
+
+   @Channel("operativt-uppgiftslager-status-notification")
+   Emitter<OperativtUppgiftslagerStatusMessagePayload> avslutEmitter;
 }

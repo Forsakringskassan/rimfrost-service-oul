@@ -3,12 +3,15 @@ package se.fk.github.rimfrost.operativt.uppgiftslager.logic;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
+
+import org.jboss.resteasy.reactive.common.NotImplementedYet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import se.fk.github.rimfrost.operativt.uppgiftslager.integration.kafka.OperativtUppgiftslagerProducer;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.OperativtUppgiftslagerAddRequest;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.OperativtUppgiftslagerAvslutRequest;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.OperativtUppgiftslagerRequestMetadata;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.ImmutableUppgiftEntity;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.UppgiftEntity;
@@ -155,5 +158,18 @@ public class OperativtUppgiftslagerService
       }
       log.info("Failed to assign new task to handlaggarId: {}", handlaggarId);
       return null;
+   }
+
+   public void onTaskAvslutad(OperativtUppgiftslagerAvslutRequest request)
+   {
+      log.info("Avslutar task {}", request.uppgiftId());
+      var task = taskMap.get(Long.parseLong(request.uppgiftId()));
+      var avslutadTask = ImmutableUppgiftEntity.builder()
+            .from(task)
+            .status(request.status())
+            .build();
+      taskMap.put(task.uppgiftId(), avslutadTask);
+      notifyTaskUpdate(avslutadTask);
+      log.info("Task {} avslutad", avslutadTask.uppgiftId());
    }
 }
