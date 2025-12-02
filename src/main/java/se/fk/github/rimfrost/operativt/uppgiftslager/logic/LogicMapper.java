@@ -2,6 +2,8 @@ package se.fk.github.rimfrost.operativt.uppgiftslager.logic;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.ImmutableUppgiftDto;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.UppgiftDto;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.UppgiftEntity;
 import se.fk.github.rimfrost.operativt.uppgiftslager.util.EnumMapper;
 import se.fk.rimfrost.*;
@@ -12,14 +14,25 @@ public class LogicMapper
    @Inject
    EnumMapper enumMapper;
 
-   public OperativtUppgiftslagerStatusMessagePayload toOperativtUppgiftslagerStatusMessagePayload(UppgiftEntity uppgift)
+   public OperativtUppgiftslagerStatusMessage toStatusMessage(UppgiftEntity uppgift)
    {
-      var data = new OperativtUppgiftslagerStatusMessagePayload();
+      var data = new OperativtUppgiftslagerStatusMessage();
       data.setStatus(enumMapper.mapUppgiftStatusToStatus(uppgift.status()));
       data.setUppgiftId(uppgift.uppgiftId().toString());
-      data.setProcessId(uppgift.processId().toString());
-      if (uppgift.personnummer() != null)
-         data.setPersonnummer(uppgift.personnummer());
       return data;
+   }
+
+   public UppgiftDto toUppgiftDto(UppgiftEntity uppgift)
+   {
+      return ImmutableUppgiftDto.builder()
+            .kundbehovsflodeId(uppgift.kundbehovsflodeId())
+            .uppgiftId(uppgift.uppgiftId())
+            .handlaggarId(uppgift.handlaggarId())
+            .skapad(uppgift.skapad())
+            .planeradTill(uppgift.planeradTill())
+            .utford(uppgift.utford())
+            .status(uppgift.status())
+            .regelTyp(uppgift.regelTyp())
+            .build();
    }
 }

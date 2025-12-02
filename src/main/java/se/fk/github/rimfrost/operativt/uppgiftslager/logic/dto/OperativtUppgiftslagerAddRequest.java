@@ -8,10 +8,8 @@ import org.immutables.value.Value;
 public interface OperativtUppgiftslagerAddRequest
 {
 
-   UUID processId();
+   UUID kundbehovsflodeId();
 
-   String personNummer();
-
-   String uppgiftSpecId();
+   String regeltyp();
 
 }

@@ -1,4 +1,4 @@
-package se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity;
+package se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto;
 
 import java.time.LocalDate;
 import java.util.UUID;
@@ -9,8 +9,9 @@ import jakarta.annotation.Nullable;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.enums.UppgiftStatus;
 
 @Value.Immutable
-public interface UppgiftEntity
+public interface UppgiftDto
 {
+
    UUID kundbehovsflodeId();
 
    UUID uppgiftId();
@@ -29,4 +30,5 @@ public interface UppgiftEntity
    UppgiftStatus status();
 
    String regelTyp();
+
 }
