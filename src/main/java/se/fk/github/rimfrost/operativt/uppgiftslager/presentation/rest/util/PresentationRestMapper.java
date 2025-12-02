@@ -1,75 +1,55 @@
 package se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.util;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.UUID;
 
 import jakarta.enterprise.context.ApplicationScoped;
-import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.UppgiftEntity;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.UppgiftDto;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.enums.UppgiftStatus;
 import se.fk.rimfrost.jaxrsspec.controllers.generatedsource.model.*;
+import se.fk.rimfrost.jaxrsspec.controllers.generatedsource.model.Uppgift.StatusEnum;
 
 @ApplicationScoped
 public class PresentationRestMapper
 {
-   public GetUppgiftResponse toGetUppgiftResponse(UppgiftEntity uppgift)
+   public GetUppgifterHandlaggareResponse toGetUppgifterHandlaggareResponse(Collection<UppgiftDto> uppgifter)
    {
-      GetUppgiftResponse response = new GetUppgiftResponse();
-      response.setUppgift(toUppgift(uppgift)); // toUppgift returns the DTO `Uppgift` (generated or own)
-      return response;
-   }
-
-   public GetUppgifterResponse toGetUppgifterResponse(Collection<UppgiftEntity> uppgifter)
-   {
-      ArrayList<Uppgift> uppgifterDto = new ArrayList<>();
-      for (UppgiftEntity uppgiftEntity : uppgifter)
-      {
-         uppgifterDto.add(toUppgift(uppgiftEntity));
-      }
-      GetUppgifterResponse response = new GetUppgifterResponse();
-      response.setUppgifter(uppgifterDto);
-      return response;
-   }
-
-   public GetUppgifterHandlaggareResponse toGetUppgifterHandlaggareResponse(Collection<UppgiftEntity> uppgifter)
-   {
-      ArrayList<Uppgift> uppgifterDto = new ArrayList<>();
-      for (UppgiftEntity uppgiftEntity : uppgifter)
-      {
-         uppgifterDto.add(toUppgift(uppgiftEntity));
-      }
       GetUppgifterHandlaggareResponse response = new GetUppgifterHandlaggareResponse();
-      response.setUppgifter(uppgifterDto);
+      for (var uppgiftDto : uppgifter)
+      {
+         response.addUppgifterItem(toUppgift(uppgiftDto));
+      }
       return response;
    }
 
-   public Uppgift toUppgift(UppgiftEntity uppgiftEntity)
+   private Uppgift toUppgift(UppgiftDto uppgiftDto)
    {
-      Uppgiftsspecifikation dummySpec = new Uppgiftsspecifikation();
-      dummySpec.setId(UUID.randomUUID().toString());
-      dummySpec.setVersion("0.0.1");
-      dummySpec.setName("RTF-manuell Uppgift version 0.0.1");
-      String dummyPersonnummer = "12345678-1234";
-
       Uppgift uppgift = new Uppgift();
-      uppgift.setUppgiftId(uppgiftEntity.uppgiftId().toString());
-      uppgift.setStatus(uppgiftEntity.status().toString());
-      uppgift.setSkapad(LocalDateTime.now().toString());
-      uppgift.setSpec(dummySpec);
-      uppgift.setPersonnummer(dummyPersonnummer);
-      uppgift.setAktivitet(uppgiftEntity.beskrivning());
-      uppgift.setUtforarId(uppgiftEntity.handlaggarId());
+      uppgift.setKundbehovsflodeId(uppgiftDto.kundbehovsflodeId());
+      uppgift.setUppgiftId(uppgiftDto.uppgiftId());
+      uppgift.setHandlaggarId(uppgiftDto.handlaggarId());
+      uppgift.skapad(uppgiftDto.skapad());
+      uppgift.planeradTill(uppgiftDto.planeradTill());
+      uppgift.utford(uppgiftDto.utford());
+      uppgift.setStatus(mapStatus(uppgiftDto.status()));
+      uppgift.setRegeltyp(uppgiftDto.regelTyp());
       return uppgift;
    }
 
-   public PatchUppgiftResponse toPatchUppgiftResponse(UppgiftEntity uppgiftEntity)
+   private StatusEnum mapStatus(UppgiftStatus status)
    {
-      PatchUppgiftResponse response = new PatchUppgiftResponse();
-      response.setUppgift(toUppgift(uppgiftEntity));
-      return response;
+      switch (status)
+      {
+         case NY:
+            return StatusEnum.NY;
+         case TILLDELAD:
+            return StatusEnum.TILLDELAD;
+         case AVSLUTAD:
+         default:
+            return StatusEnum.AVSLUTAD;
+      }
    }
 
-   public PostUppgifterHandlaggareResponse toPostUppgifterHandlaggareResponse(UppgiftEntity uppgiftEntity)
+   public PostUppgifterHandlaggareResponse toPostUppgifterHandlaggareResponse(UppgiftDto uppgiftEntity)
    {
       PostUppgifterHandlaggareResponse response = new PostUppgifterHandlaggareResponse();
       response.setUppgift(toUppgift(uppgiftEntity));

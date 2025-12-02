@@ -1,22 +1,22 @@
 package se.fk.github.rimfrost.operativt.uppgiftslager.logic;
 
+import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import se.fk.github.rimfrost.operativt.uppgiftslager.integration.kafka.OperativtUppgiftslagerProducer;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.OperativtUppgiftslagerAddRequest;
-import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.OperativtUppgiftslagerRequestMetadata;
-import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.OperativtUppgiftslagerUpdateRequest;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.OperativtUppgiftslagerStatusUpdateRequest;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.UppgiftDto;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.ImmutableUppgiftEntity;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.UppgiftEntity;
-import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.RequestMetadataEntity;
-import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.ImmutableRequestMetadataEntity;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.enums.UppgiftStatus;
+import se.fk.rimfrost.Status;
 
 @ApplicationScoped
 public class OperativtUppgiftslagerService
@@ -29,120 +29,65 @@ public class OperativtUppgiftslagerService
    @Inject
    OperativtUppgiftslagerProducer producer;
 
-   private final ConcurrentHashMap<Long, UppgiftEntity> taskMap = new ConcurrentHashMap<>();
-   private final ConcurrentHashMap<UUID, RequestMetadataEntity> metadataMap = new ConcurrentHashMap<>();
-   private AtomicLong idCounter = new AtomicLong();
+   private final ConcurrentHashMap<UUID, UppgiftEntity> taskMap = new ConcurrentHashMap<>();
 
-   public String addOperativeTask(OperativtUppgiftslagerAddRequest addRequest,
-         OperativtUppgiftslagerRequestMetadata requestMetadata)
+   public void addOperativeTask(OperativtUppgiftslagerAddRequest addRequest)
    {
       log.info("Adding new task");
       var uppgift = ImmutableUppgiftEntity.builder()
-            .personnummer(addRequest.personNummer())
-            .processId(addRequest.processId())
-            .beskrivning(addRequest.uppgiftSpecId())
+            .uppgiftId(UUID.randomUUID())
+            .kundbehovsflodeId(addRequest.kundbehovsflodeId())
+            .skapad(LocalDate.now())
             .status(UppgiftStatus.NY)
-            .uppgiftId(idCounter.incrementAndGet())
-            .handlaggarId("")
-            .build();
-
-      var metadata = ImmutableRequestMetadataEntity.builder()
-            .specversion(requestMetadata.specversion())
-            .id(requestMetadata.id())
-            .source(requestMetadata.source())
-            .type(requestMetadata.type())
-            .time(requestMetadata.time())
-            .kogitoparentprociid(requestMetadata.kogitoparentprociid())
-            .kogitorootprocid(requestMetadata.kogitorootprocid())
-            .kogitoproctype(requestMetadata.kogitoproctype())
-            .kogitoprocinstanceid(requestMetadata.kogitoprocinstanceid())
-            .kogitoprocist(requestMetadata.kogitoprocist())
-            .kogitoprocversion(requestMetadata.kogitoprocversion())
-            .kogitorootprociid(requestMetadata.kogitoparentprociid())
-            .kogitoprocid(requestMetadata.kogitoprocid())
+            .regelTyp(addRequest.regeltyp())
             .build();
 
       taskMap.put(uppgift.uppgiftId(), uppgift);
-      metadataMap.put(uppgift.processId(), metadata);
-      notifyTaskUpdate(uppgift);
-      log.info("Added new task");
-      return uppgift.uppgiftId().toString();
+      notifyStatusUpdate(uppgift);
+      producer.publishTaskResponse(uppgift.kundbehovsflodeId(), uppgift.uppgiftId());
    }
 
-   public Collection<UppgiftEntity> getUppgifter()
+   public void onTaskStatusUpdated(OperativtUppgiftslagerStatusUpdateRequest statusUpdateRequest)
    {
-      log.info("Getting all tasks");
-      var tasks = taskMap.values();
-      for (UppgiftEntity task : tasks)
+      log.info("StatusUpdating task {} with status {}", statusUpdateRequest.uppgiftId(), statusUpdateRequest.status());
+      var task = taskMap.get(statusUpdateRequest.uppgiftId());
+      var updatedTask = ImmutableUppgiftEntity.builder()
+            .from(task)
+            .status(statusUpdateRequest.status())
+            .build();
+      taskMap.put(task.uppgiftId(), updatedTask);
+
+      if (updatedTask.status() == UppgiftStatus.AVSLUTAD)
       {
-         log.info("Task ID: {}, Description: {}, Status: {}", task.uppgiftId(), task.beskrivning(), task.status());
+         taskMap.remove(updatedTask.uppgiftId());
       }
-      return tasks;
+
+      notifyStatusUpdate(updatedTask);
+      log.info("Task StatusUpdate finished on {}", updatedTask.uppgiftId());
    }
 
-   public Collection<UppgiftEntity> getUppgifterHandlaggare(String handlaggarId)
+   public Collection<UppgiftDto> getUppgifterHandlaggare(UUID handlaggarId)
    {
       log.info("Getting all tasks for handlaggarId: " + handlaggarId);
-      var tasks = taskMap.values();
-      List<UppgiftEntity> handlaggarTasks = new ArrayList<>();
-      for (UppgiftEntity task : tasks)
+      var uppgifter = taskMap.values();
+      var handlaggarTasks = new ArrayList<UppgiftDto>();
+      for (UppgiftEntity uppgift : uppgifter)
       {
-         if (Objects.equals(task.handlaggarId(), handlaggarId))
+         if (Objects.equals(uppgift.handlaggarId(), handlaggarId))
          {
-            handlaggarTasks.add(task);
+            handlaggarTasks.add(logicMapper.toUppgiftDto(uppgift));
          }
       }
       return handlaggarTasks;
    }
 
-   public UppgiftEntity getUppgift(Long id)
-   {
-      var task = taskMap.get(id);
-      if (task == null)
-      {
-         log.info("Task with ID {} not found", id);
-         return null;
-      }
-      log.info("Task ID: {}, Description: {}, Status: {}", task.uppgiftId(), task.beskrivning(), task.status());
-      return task;
-   }
-
-   public UppgiftEntity updateOperativeTask(Long uppgiftId, UppgiftStatus newStatus)
-   {
-      log.info("Updating task with ID: {}, Status: {}", uppgiftId, newStatus);
-
-      var uppgift = taskMap.get(uppgiftId);
-
-      if (uppgift == null)
-         return null;
-
-      var updatedUppgift = ImmutableUppgiftEntity.builder()
-            .from(uppgift)
-            .status(newStatus)
-            .build();
-
-      taskMap.put(uppgiftId, updatedUppgift);
-
-      notifyTaskUpdate(updatedUppgift);
-
-      log.info("Updated task with ID: {}, Status: {}", uppgiftId, newStatus);
-
-      return updatedUppgift;
-   }
-
-   public void notifyTaskUpdate(UppgiftEntity uppgift)
-   {
-      var responsePayload = logicMapper.toOperativtUppgiftslagerStatusMessagePayload(uppgift);
-      producer.publishTaskResponse(responsePayload);
-   }
-
-   public UppgiftEntity assignNewTask(String handlaggarId)
+   public UppgiftDto assignNewTask(UUID handlaggarId)
    {
       log.info("Assigning new task to handlaggarId: {}", handlaggarId);
       var tasks = taskMap.values();
       for (UppgiftEntity task : tasks)
       {
-         if (Objects.equals(task.handlaggarId(), ""))
+         if (task.handlaggarId() == null)
          {
             var updatedTask = ImmutableUppgiftEntity.builder()
                   .from(task)
@@ -150,26 +95,18 @@ public class OperativtUppgiftslagerService
                   .handlaggarId(handlaggarId)
                   .build();
             taskMap.put(task.uppgiftId(), updatedTask);
-            notifyTaskUpdate(updatedTask);
+            notifyStatusUpdate(updatedTask);
             log.info("Assigned task {} to  handlaggarId: {}", updatedTask.uppgiftId(), handlaggarId);
-            return updatedTask;
+            return logicMapper.toUppgiftDto(updatedTask);
          }
       }
       log.info("Failed to assign new task to handlaggarId: {}", handlaggarId);
       return null;
    }
 
-   public void onTaskStatusUpdated(OperativtUppgiftslagerUpdateRequest request)
+   private void notifyStatusUpdate(UppgiftEntity uppgift)
    {
-      log.info("StatusUpdating task {}", request.uppgiftId());
-      var task = taskMap.get(Long.parseLong(request.uppgiftId().toString()));
-      var updatedTask = ImmutableUppgiftEntity.builder()
-            .from(task)
-            .status(request.status())
-            .build();
-      taskMap.put(task.uppgiftId(), updatedTask);
-      var responsePayload = logicMapper.toOperativtUppgiftslagerStatusMessagePayload(updatedTask);
-      producer.publishTaskStatusUpdate(responsePayload);
-      log.info("Task StatusUpdate finished on {}", updatedTask.uppgiftId());
+      var statusMessage = logicMapper.toStatusMessage(uppgift);
+      producer.publishTaskStatusUpdate(statusMessage);
    }
 }

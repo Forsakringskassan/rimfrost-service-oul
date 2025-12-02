@@ -7,9 +7,8 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.*;
 import se.fk.github.rimfrost.operativt.uppgiftslager.util.EnumMapper;
-import se.fk.rimfrost.OperativtUppgiftslagerRequestMessageData;
-import se.fk.rimfrost.OperativtUppgiftslagerRequestMessagePayload;
-import se.fk.rimfrost.OperativtUppgiftslagerStatusMessagePayload;
+import se.fk.rimfrost.OperativtUppgiftslagerRequestMessage;
+import se.fk.rimfrost.OperativtUppgiftslagerStatusMessage;
 
 @ApplicationScoped
 public class PresentationKafkaMapper
@@ -17,45 +16,21 @@ public class PresentationKafkaMapper
    @Inject
    EnumMapper enumMapper;
 
-   public OperativtUppgiftslagerAddRequest mapToLogicOulAddRequest(
-         OperativtUppgiftslagerRequestMessageData operativtUppgiftslagerRequestData)
+   public OperativtUppgiftslagerAddRequest toAddRequest(
+         OperativtUppgiftslagerRequestMessage operativtUppgiftslagerRequestMessage)
    {
       return ImmutableOperativtUppgiftslagerAddRequest.builder()
-            .personNummer(operativtUppgiftslagerRequestData.getPersonnummer())
-            .processId(UUID.fromString(operativtUppgiftslagerRequestData.getProcessId()))
-            .uppgiftSpecId(operativtUppgiftslagerRequestData.getUppgiftspecId())
+            .kundbehovsflodeId(UUID.fromString(operativtUppgiftslagerRequestMessage.getKundbehovsflodeId()))
             .build();
    }
 
-   public OperativtUppgiftslagerUpdateRequest mapToLogicOulStatusMessage(
-         OperativtUppgiftslagerStatusMessagePayload operativtUppgiftslagerStatusMessagePayload)
+   public OperativtUppgiftslagerStatusUpdateRequest toStatusUpdateRequest(
+         OperativtUppgiftslagerStatusMessage operativtUppgiftslagerStatusMessage)
    {
-      return ImmutableOperativtUppgiftslagerUpdateRequest.builder()
-            .uppgiftId(UUID.fromString(operativtUppgiftslagerStatusMessagePayload.getUppgiftId()))
-            .processId(operativtUppgiftslagerStatusMessagePayload.getProcessId())
-            .status(enumMapper.mapStatusToUppgiftStatus(operativtUppgiftslagerStatusMessagePayload.getStatus()))
-            .personnummer(operativtUppgiftslagerStatusMessagePayload.getPersonnummer())
+      return ImmutableOperativtUppgiftslagerStatusUpdateRequest.builder()
+            .uppgiftId(UUID.fromString(operativtUppgiftslagerStatusMessage.getUppgiftId()))
+            .status(enumMapper.mapStatusToUppgiftStatus(operativtUppgiftslagerStatusMessage.getStatus()))
             .build();
    }
 
-   public OperativtUppgiftslagerRequestMetadata mapToLogicOulAddRequestMetadata(
-         OperativtUppgiftslagerRequestMessagePayload operativtUppgiftslagerRequest)
-   {
-
-      return ImmutableOperativtUppgiftslagerRequestMetadata.builder()
-            .specversion(operativtUppgiftslagerRequest.getSpecversion().name())
-            .id(UUID.fromString(operativtUppgiftslagerRequest.getId()))
-            .source(operativtUppgiftslagerRequest.getSource())
-            .type(operativtUppgiftslagerRequest.getType())
-            .time(OffsetDateTime.now())
-            .kogitoparentprociid(UUID.fromString(operativtUppgiftslagerRequest.getKogitoparentprociid()))
-            .kogitorootprocid(operativtUppgiftslagerRequest.getKogitorootprocid())
-            .kogitoproctype(operativtUppgiftslagerRequest.getKogitoproctype().name())
-            .kogitoprocinstanceid(UUID.fromString(operativtUppgiftslagerRequest.getKogitoprocinstanceid()))
-            .kogitoprocist(operativtUppgiftslagerRequest.getKogitoprocist())
-            .kogitoprocversion(operativtUppgiftslagerRequest.getKogitoprocversion())
-            .kogitorootprociid(UUID.fromString(operativtUppgiftslagerRequest.getKogitoparentprociid()))
-            .kogitoprocid(operativtUppgiftslagerRequest.getKogitoprocid())
-            .build();
-   }
 }
