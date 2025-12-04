@@ -43,7 +43,6 @@ public class OperativtUppgiftslagerService
             .build();
 
       taskMap.put(uppgift.uppgiftId(), uppgift);
-      notifyStatusUpdate(uppgift);
       producer.publishTaskResponse(uppgift.kundbehovsflodeId(), uppgift.uppgiftId());
    }
 

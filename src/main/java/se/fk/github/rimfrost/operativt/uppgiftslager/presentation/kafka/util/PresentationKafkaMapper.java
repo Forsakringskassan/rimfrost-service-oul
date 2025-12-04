@@ -20,6 +20,7 @@ public class PresentationKafkaMapper
    {
       return ImmutableOperativtUppgiftslagerAddRequest.builder()
             .kundbehovsflodeId(UUID.fromString(operativtUppgiftslagerRequestMessage.getKundbehovsflodeId()))
+            .regeltyp(operativtUppgiftslagerRequestMessage.getRegeltyp())
             .build();
    }
 
