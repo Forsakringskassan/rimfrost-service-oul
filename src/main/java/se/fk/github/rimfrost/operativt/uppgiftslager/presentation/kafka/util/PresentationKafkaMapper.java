@@ -1,6 +1,5 @@
 package se.fk.github.rimfrost.operativt.uppgiftslager.presentation.kafka.util;
 
-import java.time.OffsetDateTime;
 import java.util.UUID;
 
 import jakarta.enterprise.context.ApplicationScoped;
