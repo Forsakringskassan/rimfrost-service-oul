@@ -46,7 +46,7 @@
     <dependency>
       <groupId>se.fk.rimfrost</groupId>
       <artifactId>rimfrost-service-oul-asyncapi</artifactId>
-      <version>0.3.2</version>
+      <version>0.3.3</version>
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>

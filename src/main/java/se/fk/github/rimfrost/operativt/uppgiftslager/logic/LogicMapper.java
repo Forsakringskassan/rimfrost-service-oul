@@ -17,6 +17,7 @@ public class LogicMapper
    public OperativtUppgiftslagerStatusMessage toStatusMessage(UppgiftEntity uppgift)
    {
       var data = new OperativtUppgiftslagerStatusMessage();
+      data.setKundbehovsflodeId(uppgift.kundbehovsflodeId().toString());
       data.setStatus(enumMapper.mapUppgiftStatusToStatus(uppgift.status()));
       data.setUppgiftId(uppgift.uppgiftId().toString());
       return data;
