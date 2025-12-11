@@ -24,14 +24,18 @@ public class PresentationRestMapper
    private Uppgift toUppgift(UppgiftDto uppgiftDto)
    {
       Uppgift uppgift = new Uppgift();
-      uppgift.setKundbehovsflodeId(uppgiftDto.kundbehovsflodeId());
-      uppgift.setUppgiftId(uppgiftDto.uppgiftId());
-      uppgift.setHandlaggarId(uppgiftDto.handlaggarId());
-      uppgift.skapad(uppgiftDto.skapad());
-      uppgift.planeradTill(uppgiftDto.planeradTill());
-      uppgift.utford(uppgiftDto.utford());
-      uppgift.setStatus(mapStatus(uppgiftDto.status()));
-      uppgift.setRegeltyp(uppgiftDto.regelTyp());
+      if (uppgiftDto != null)
+      {
+         System.out.printf("toUppgift uppgiftDto is not null: %s%n", uppgiftDto);
+         uppgift.setKundbehovsflodeId(uppgiftDto.kundbehovsflodeId());
+         uppgift.setUppgiftId(uppgiftDto.uppgiftId());
+         uppgift.setHandlaggarId(uppgiftDto.handlaggarId());
+         uppgift.skapad(uppgiftDto.skapad());
+         uppgift.planeradTill(uppgiftDto.planeradTill());
+         uppgift.utford(uppgiftDto.utford());
+         uppgift.setStatus(mapStatus(uppgiftDto.status()));
+         uppgift.setRegeltyp(uppgiftDto.regelTyp());
+      }
       return uppgift;
    }
 
@@ -52,7 +56,10 @@ public class PresentationRestMapper
    public PostUppgifterHandlaggareResponse toPostUppgifterHandlaggareResponse(UppgiftDto uppgiftEntity)
    {
       PostUppgifterHandlaggareResponse response = new PostUppgifterHandlaggareResponse();
-      response.setUppgift(toUppgift(uppgiftEntity));
+      if (uppgiftEntity != null)
+      {
+         response.setUppgift(toUppgift(uppgiftEntity));
+      }
       return response;
    }
 }

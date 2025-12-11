@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import se.fk.github.rimfrost.operativt.uppgiftslager.integration.kafka.OperativtUppgiftslagerProducer;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.ImmutableUppgiftDto;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.OperativtUppgiftslagerAddRequest;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.OperativtUppgiftslagerStatusUpdateRequest;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.UppgiftDto;
@@ -95,7 +96,7 @@ public class OperativtUppgiftslagerService
                   .build();
             taskMap.put(task.uppgiftId(), updatedTask);
             notifyStatusUpdate(updatedTask);
-            log.info("Assigned task {} to  handlaggarId: {}", updatedTask.uppgiftId(), handlaggarId);
+            log.info("Assigned task {} to handlaggarId: {}", updatedTask.uppgiftId(), handlaggarId);
             return logicMapper.toUppgiftDto(updatedTask);
          }
       }
