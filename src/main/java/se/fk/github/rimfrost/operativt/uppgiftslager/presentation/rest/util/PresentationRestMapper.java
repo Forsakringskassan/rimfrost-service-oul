@@ -6,7 +6,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.UppgiftDto;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.enums.UppgiftStatus;
 import se.fk.rimfrost.jaxrsspec.controllers.generatedsource.model.*;
-import se.fk.rimfrost.jaxrsspec.controllers.generatedsource.model.Uppgift.StatusEnum;
+import se.fk.rimfrost.jaxrsspec.controllers.generatedsource.model.OperativUppgift.StatusEnum;
 
 @ApplicationScoped
 public class PresentationRestMapper
@@ -16,14 +16,14 @@ public class PresentationRestMapper
       GetUppgifterHandlaggareResponse response = new GetUppgifterHandlaggareResponse();
       for (var uppgiftDto : uppgifter)
       {
-         response.addUppgifterItem(toUppgift(uppgiftDto));
+         response.addOperativaUppgifterItem(toUppgift(uppgiftDto));
       }
       return response;
    }
 
-   private Uppgift toUppgift(UppgiftDto uppgiftDto)
+   private OperativUppgift toUppgift(UppgiftDto uppgiftDto)
    {
-      Uppgift uppgift = new Uppgift();
+      OperativUppgift uppgift = new OperativUppgift();
       if (uppgiftDto != null)
       {
          System.out.printf("toUppgift uppgiftDto is not null: %s%n", uppgiftDto);
@@ -58,7 +58,7 @@ public class PresentationRestMapper
       PostUppgifterHandlaggareResponse response = new PostUppgifterHandlaggareResponse();
       if (uppgiftEntity != null)
       {
-         response.setUppgift(toUppgift(uppgiftEntity));
+         response.setOperativUppgift(toUppgift(uppgiftEntity));
       }
       return response;
    }
