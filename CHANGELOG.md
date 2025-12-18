@@ -2,6 +2,15 @@
 
 Changelog of rimfrost-service-oul.
 
+## 0.1.1 (2025-12-18)
+
+### Bug Fixes
+
+-  Döper om Uppgift till OperativUppgift ([3d67b](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/3d67bbf09c6fb7e) Ulf Slunga)  
+
+### Dependency updates
+
+- update dependency org.mockito:mockito-junit-jupiter to v5.21.0 ([33af8](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/33af87e9b85a538) renovate[bot])  
 ## 0.1.0 (2025-12-11)
 
 ### Features
