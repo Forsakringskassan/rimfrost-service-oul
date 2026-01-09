@@ -1,7 +1,6 @@
 package se.fk.github.rimfrost.operativt.uppgiftslager.presentation.kafka.util;
 
 import java.util.UUID;
-
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.*;
@@ -19,8 +18,14 @@ public class PresentationKafkaMapper
          OperativtUppgiftslagerRequestMessage operativtUppgiftslagerRequestMessage)
    {
       return ImmutableOperativtUppgiftslagerAddRequest.builder()
+            .version(operativtUppgiftslagerRequestMessage.getVersion())
             .kundbehovsflodeId(UUID.fromString(operativtUppgiftslagerRequestMessage.getKundbehovsflodeId()))
-            .regeltyp(operativtUppgiftslagerRequestMessage.getRegeltyp())
+            .kundbehov(operativtUppgiftslagerRequestMessage.getKundbehov())
+            .regel(operativtUppgiftslagerRequestMessage.getRegel())
+            .beskrivning(operativtUppgiftslagerRequestMessage.getBeskrivning())
+            .verksamhetslogik(operativtUppgiftslagerRequestMessage.getVerksamhetslogik())
+            .roll(operativtUppgiftslagerRequestMessage.getRoll())
+            .url(operativtUppgiftslagerRequestMessage.getUrl())
             .build();
    }
 
