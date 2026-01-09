@@ -3,21 +3,17 @@ package se.fk.github.rimfrost.operativt.uppgiftslager.logic;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import se.fk.github.rimfrost.operativt.uppgiftslager.integration.kafka.OperativtUppgiftslagerProducer;
-import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.ImmutableUppgiftDto;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.OperativtUppgiftslagerAddRequest;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.OperativtUppgiftslagerStatusUpdateRequest;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.UppgiftDto;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.ImmutableUppgiftEntity;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.UppgiftEntity;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.enums.UppgiftStatus;
-import se.fk.rimfrost.Status;
 
 @ApplicationScoped
 public class OperativtUppgiftslagerService
@@ -40,7 +36,12 @@ public class OperativtUppgiftslagerService
             .kundbehovsflodeId(addRequest.kundbehovsflodeId())
             .skapad(LocalDate.now())
             .status(UppgiftStatus.NY)
-            .regelTyp(addRequest.regeltyp())
+            .regel(addRequest.regel())
+            .kundbehov(addRequest.kundbehov())
+            .beskrivning(addRequest.beskrivning())
+            .verksamhetslogik(addRequest.verksamhetslogik())
+            .roll(addRequest.roll())
+            .url(addRequest.url())
             .build();
 
       taskMap.put(uppgift.uppgiftId(), uppgift);
@@ -68,7 +69,7 @@ public class OperativtUppgiftslagerService
 
    public Collection<UppgiftDto> getUppgifterHandlaggare(UUID handlaggarId)
    {
-      log.info("Getting all tasks for handlaggarId: " + handlaggarId);
+      log.info("Getting all tasks for handlaggarId: {}", handlaggarId);
       var uppgifter = taskMap.values();
       var handlaggarTasks = new ArrayList<UppgiftDto>();
       for (UppgiftEntity uppgift : uppgifter)

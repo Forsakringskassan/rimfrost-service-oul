@@ -33,7 +33,12 @@ public class LogicMapper
             .planeradTill(uppgift.planeradTill())
             .utford(uppgift.utford())
             .status(uppgift.status())
-            .regelTyp(uppgift.regelTyp())
+            .regel(uppgift.regel())
+            .kundbehov(uppgift.kundbehov())
+            .beskrivning(uppgift.beskrivning())
+            .verksamhetslogik(uppgift.verksamhetslogik())
+            .roll(uppgift.roll())
+            .url(uppgift.url())
             .build();
    }
 }

@@ -2,9 +2,7 @@ package se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity;
 
 import java.time.LocalDate;
 import java.util.UUID;
-
 import org.immutables.value.Value;
-
 import jakarta.annotation.Nullable;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.enums.UppgiftStatus;
 
@@ -28,5 +26,15 @@ public interface UppgiftEntity
 
    UppgiftStatus status();
 
-   String regelTyp();
+   String regel();
+
+   String kundbehov();
+
+   String beskrivning();
+
+   String verksamhetslogik();
+
+   String roll();
+
+   String url();
 }
