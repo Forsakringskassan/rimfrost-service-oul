@@ -29,6 +29,16 @@ public interface UppgiftDto
 
    UppgiftStatus status();
 
-   String regelTyp();
+   String regel();
+
+   String kundbehov();
+
+   String beskrivning();
+
+   String verksamhetslogik();
+
+   String roll();
+
+   String url();
 
 }
