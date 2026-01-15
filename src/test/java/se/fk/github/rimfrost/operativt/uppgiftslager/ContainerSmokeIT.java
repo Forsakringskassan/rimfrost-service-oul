@@ -336,12 +336,12 @@ public class ContainerSmokeIT
    @ParameterizedTest
    @CsvSource(
    {
-         "5367f6b8-cc4a-11f0-8de9-199901011234"
+         "5367f6b8-cc4a-11f0-8de9-199901011234", "TestKundbehov", "TestRegel", "RegelBeskrivning", "TestVerksamhetslogik", "TestRoll", "TestUrl"
    })
-   void TestRtfManuellSmoke(String kundbehovsflodeId) throws Exception
+   void TestSmoke(String kundbehovsflodeId, String kundbehov, String regel, String beskrivning, String verksamhetslogik, String roll, String url) throws Exception
    {
-      System.out.printf("Starting TestRtfManuellSmoke. %S%n", kundbehovsflodeId);
-      // Send Rtf manuell request to start workflow
+      System.out.printf("Starting TestSmoke. %S%n", kundbehovsflodeId);
+      String version = "1.0";
       sendOulRequest(kundbehovsflodeId, version, kundbehov, regel, beskrivning, roll, url);
       // Start background Kafka responder handling request to Operativt uppgiftslager
       ExecutorService executorOul = Executors.newSingleThreadExecutor();
