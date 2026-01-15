@@ -2,6 +2,12 @@
 
 Changelog of rimfrost-service-oul.
 
+## 0.2.0 (2026-01-15)
+
+### Bug Fixes
+
+-  add health check to app ([5dd5f](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/5dd5f65c9f542ee) Nils Elveros)  
+
 ## 0.1.1 (2025-12-18)
 
 ### Bug Fixes
