@@ -20,6 +20,7 @@ public class LogicMapper
       data.setKundbehovsflodeId(uppgift.kundbehovsflodeId().toString());
       data.setStatus(enumMapper.mapUppgiftStatusToStatus(uppgift.status()));
       data.setUppgiftId(uppgift.uppgiftId().toString());
+      data.setUtforarId(uppgift.handlaggarId().toString());
       return data;
    }
 
