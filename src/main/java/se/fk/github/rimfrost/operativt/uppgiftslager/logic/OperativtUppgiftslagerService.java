@@ -42,10 +42,11 @@ public class OperativtUppgiftslagerService
             .verksamhetslogik(addRequest.verksamhetslogik())
             .roll(addRequest.roll())
             .url(addRequest.url())
+            .subTopic(addRequest.subTopic())
             .build();
 
       taskMap.put(uppgift.uppgiftId(), uppgift);
-      producer.publishTaskResponse(uppgift.kundbehovsflodeId(), uppgift.uppgiftId());
+      producer.publishTaskResponse(uppgift.kundbehovsflodeId(), uppgift.uppgiftId(), uppgift.subTopic());
    }
 
    public void onTaskStatusUpdated(OperativtUppgiftslagerStatusUpdateRequest statusUpdateRequest)
@@ -108,6 +109,6 @@ public class OperativtUppgiftslagerService
    private void notifyStatusUpdate(UppgiftEntity uppgift)
    {
       var statusMessage = logicMapper.toStatusMessage(uppgift);
-      producer.publishTaskStatusUpdate(statusMessage);
+      producer.publishTaskStatusUpdate(statusMessage, uppgift.subTopic());
    }
 }

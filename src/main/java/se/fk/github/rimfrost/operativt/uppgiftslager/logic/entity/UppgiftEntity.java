@@ -37,4 +37,6 @@ public interface UppgiftEntity
    String roll();
 
    String url();
+
+   String subTopic();
 }

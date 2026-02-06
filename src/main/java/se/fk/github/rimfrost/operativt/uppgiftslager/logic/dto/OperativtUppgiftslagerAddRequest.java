@@ -23,4 +23,6 @@ public interface OperativtUppgiftslagerAddRequest
 
    String url();
 
+   String subTopic();
+
 }
