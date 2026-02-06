@@ -15,7 +15,7 @@ public class PresentationKafkaMapper
    EnumMapper enumMapper;
 
    public OperativtUppgiftslagerAddRequest toAddRequest(
-         OperativtUppgiftslagerRequestMessage operativtUppgiftslagerRequestMessage)
+         OperativtUppgiftslagerRequestMessage operativtUppgiftslagerRequestMessage, String subTopic)
    {
       return ImmutableOperativtUppgiftslagerAddRequest.builder()
             .version(operativtUppgiftslagerRequestMessage.getVersion())
@@ -26,6 +26,7 @@ public class PresentationKafkaMapper
             .verksamhetslogik(operativtUppgiftslagerRequestMessage.getVerksamhetslogik())
             .roll(operativtUppgiftslagerRequestMessage.getRoll())
             .url(operativtUppgiftslagerRequestMessage.getUrl())
+            .subTopic(subTopic)
             .build();
    }
 

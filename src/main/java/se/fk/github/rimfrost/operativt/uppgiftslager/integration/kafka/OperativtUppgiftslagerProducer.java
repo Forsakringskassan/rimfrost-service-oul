@@ -4,9 +4,11 @@ import java.util.UUID;
 
 import org.eclipse.microprofile.reactive.messaging.Channel;
 import org.eclipse.microprofile.reactive.messaging.Emitter;
+import org.eclipse.microprofile.reactive.messaging.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.smallrye.reactive.messaging.kafka.api.OutgoingKafkaRecordMetadata;
 import jakarta.enterprise.context.ApplicationScoped;
 import se.fk.rimfrost.OperativtUppgiftslagerResponseMessage;
 import se.fk.rimfrost.OperativtUppgiftslagerStatusMessage;
@@ -16,26 +18,45 @@ public class OperativtUppgiftslagerProducer
 {
    private static final Logger log = LoggerFactory.getLogger(OperativtUppgiftslagerProducer.class);
 
+   private static final String OUL_RESPONSES_TOPIC = "operativt-uppgiftslager-responses.";
+   private static final String OUL_STATUS_NOTIFICATION_TOPIC = "operativt-uppgiftslager-status-notification.";
+
    @Channel("operativt-uppgiftslager-responses")
    Emitter<OperativtUppgiftslagerResponseMessage> emitter;
 
-   public void publishTaskResponse(UUID kundbehovsflodeId, UUID uppgiftId)
+   public void publishTaskResponse(UUID kundbehovsflodeId, UUID uppgiftId, String subTopic)
    {
       var response = new OperativtUppgiftslagerResponseMessage();
       response.setKundbehovsflodeId(kundbehovsflodeId.toString());
       response.setUppgiftId(uppgiftId.toString());
-      log.info("Publishing task response for operativt uppgiftslager: {}", response);
-      emitter.send(response);
-      log.info("Published task response for operativt uppgiftslager: {}", response);
+
+      var topic = OUL_RESPONSES_TOPIC + subTopic;
+
+      var metadata = OutgoingKafkaRecordMetadata.builder()
+            .withTopic(topic)
+            .build();
+
+      var message = Message.of(response).addMetadata(metadata);
+
+      log.info("Publishing task response to topic '{}': {}", topic, response);
+      emitter.send(message);
    }
 
    @Channel("operativt-uppgiftslager-status-notification")
    Emitter<OperativtUppgiftslagerStatusMessage> statusUpdateEmitter;
 
-   public void publishTaskStatusUpdate(OperativtUppgiftslagerStatusMessage statusMessage)
+   public void publishTaskStatusUpdate(OperativtUppgiftslagerStatusMessage statusMessage, String subTopic)
    {
-      log.info("Publishing task StatusUpdate: {}", statusMessage);
-      statusUpdateEmitter.send(statusMessage);
-      log.info("Published task StatusUpdate: {}", statusMessage);
+
+      var topic = OUL_STATUS_NOTIFICATION_TOPIC + subTopic;
+
+      var metadata = OutgoingKafkaRecordMetadata.builder()
+            .withTopic(topic)
+            .build();
+
+      var message = Message.of(statusMessage).addMetadata(metadata);
+
+      log.info("Publishing task StatusUpdate to topic '{}': {}", topic, statusMessage);
+      statusUpdateEmitter.send(message);
    }
 }
