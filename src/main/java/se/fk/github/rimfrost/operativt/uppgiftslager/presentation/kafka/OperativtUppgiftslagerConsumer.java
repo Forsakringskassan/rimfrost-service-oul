@@ -31,7 +31,8 @@ public class OperativtUppgiftslagerConsumer
 
    @Incoming("operativt-uppgiftslager-requests")
    @Blocking
-   public CompletionStage<Void> onOperativtUppgiftsLagerRequest(Message<OperativtUppgiftslagerRequestMessage> operativtUppgiftslagerRequest)
+   public CompletionStage<Void> onOperativtUppgiftsLagerRequest(
+         Message<OperativtUppgiftslagerRequestMessage> operativtUppgiftslagerRequest)
    {
       log.info("Received task for operativt uppgiftslager: {}", operativtUppgiftslagerRequest);
       IncomingKafkaRecordMetadata<String, String> metadata = operativtUppgiftslagerRequest

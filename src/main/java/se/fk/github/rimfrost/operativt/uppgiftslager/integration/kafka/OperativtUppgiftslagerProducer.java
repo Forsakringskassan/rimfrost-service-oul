@@ -2,6 +2,7 @@ package se.fk.github.rimfrost.operativt.uppgiftslager.integration.kafka;
 
 import java.util.UUID;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.reactive.messaging.Channel;
 import org.eclipse.microprofile.reactive.messaging.Emitter;
 import org.eclipse.microprofile.reactive.messaging.Message;
@@ -18,8 +19,11 @@ public class OperativtUppgiftslagerProducer
 {
    private static final Logger log = LoggerFactory.getLogger(OperativtUppgiftslagerProducer.class);
 
-   private static final String OUL_RESPONSES_TOPIC = "operativt-uppgiftslager-responses.";
-   private static final String OUL_STATUS_NOTIFICATION_TOPIC = "operativt-uppgiftslager-status-notification.";
+   @ConfigProperty(name = "kafka.oul_responses_topic_base")
+   String oulResponseTopicBase;
+
+   @ConfigProperty(name = "kafka.oul_status_notification_topic_base")
+   String oulStatusNotificationTopicBase;
 
    @Channel("operativt-uppgiftslager-responses")
    Emitter<OperativtUppgiftslagerResponseMessage> emitter;
@@ -30,7 +34,7 @@ public class OperativtUppgiftslagerProducer
       response.setKundbehovsflodeId(kundbehovsflodeId.toString());
       response.setUppgiftId(uppgiftId.toString());
 
-      var topic = OUL_RESPONSES_TOPIC + subTopic;
+      var topic = oulResponseTopicBase + subTopic;
 
       var metadata = OutgoingKafkaRecordMetadata.builder()
             .withTopic(topic)
@@ -48,7 +52,7 @@ public class OperativtUppgiftslagerProducer
    public void publishTaskStatusUpdate(OperativtUppgiftslagerStatusMessage statusMessage, String subTopic)
    {
 
-      var topic = OUL_STATUS_NOTIFICATION_TOPIC + subTopic;
+      var topic = oulStatusNotificationTopicBase + subTopic;
 
       var metadata = OutgoingKafkaRecordMetadata.builder()
             .withTopic(topic)
