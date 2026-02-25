@@ -2,6 +2,21 @@
 
 Changelog of rimfrost-service-oul.
 
+## 0.2.1 (2026-02-06)
+
+### Bug Fixes
+
+-  extract final variables to properties ([96e4e](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/96e4e46c5154008) Nils Elveros)  
+-  add utforarId to status update ([21237](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/2123715c3c6414a) Nils Elveros)  
+
+### Other changes
+
+**Send OULresponse and StatusNotifcation on replyToSubTopic**
+
+
+[6221d](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/6221d8f00a5c1b7) Nils Elveros *2026-02-06 09:19:32*
+
+
 ## 0.2.0 (2026-01-15)
 
 ### Bug Fixes
