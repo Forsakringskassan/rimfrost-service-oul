@@ -12,7 +12,7 @@ import se.fk.github.rimfrost.operativt.uppgiftslager.logic.enums.UppgiftStatus;
 public interface UppgiftDto
 {
 
-   UUID kundbehovsflodeId();
+   UUID handlaggningId();
 
    UUID uppgiftId();
 
@@ -31,7 +31,7 @@ public interface UppgiftDto
 
    String regel();
 
-   String kundbehov();
+   String yrkande();
 
    String beskrivning();
 

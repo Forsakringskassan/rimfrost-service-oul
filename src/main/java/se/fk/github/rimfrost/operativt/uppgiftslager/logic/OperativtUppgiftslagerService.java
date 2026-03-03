@@ -33,11 +33,11 @@ public class OperativtUppgiftslagerService
       log.info("Adding new task");
       var uppgift = ImmutableUppgiftEntity.builder()
             .uppgiftId(UUID.randomUUID())
-            .kundbehovsflodeId(addRequest.kundbehovsflodeId())
+            .handlaggningId(addRequest.handlaggningId())
             .skapad(LocalDate.now())
             .status(UppgiftStatus.NY)
             .regel(addRequest.regel())
-            .kundbehov(addRequest.kundbehov())
+            .yrkande(addRequest.yrkande())
             .beskrivning(addRequest.beskrivning())
             .verksamhetslogik(addRequest.verksamhetslogik())
             .roll(addRequest.roll())
@@ -46,7 +46,7 @@ public class OperativtUppgiftslagerService
             .build();
 
       taskMap.put(uppgift.uppgiftId(), uppgift);
-      producer.publishTaskResponse(uppgift.kundbehovsflodeId(), uppgift.uppgiftId(), uppgift.subTopic());
+      producer.publishTaskResponse(uppgift.handlaggningId(), uppgift.uppgiftId(), uppgift.subTopic());
    }
 
    public void onTaskStatusUpdated(OperativtUppgiftslagerStatusUpdateRequest statusUpdateRequest)

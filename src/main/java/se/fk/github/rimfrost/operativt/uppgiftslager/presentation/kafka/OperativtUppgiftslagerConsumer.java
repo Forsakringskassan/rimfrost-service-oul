@@ -6,15 +6,12 @@ import se.fk.github.rimfrost.operativt.uppgiftslager.logic.OperativtUppgiftslage
 import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.kafka.util.PresentationKafkaMapper;
 import se.fk.rimfrost.OperativtUppgiftslagerRequestMessage;
 import se.fk.rimfrost.OperativtUppgiftslagerStatusMessage;
-
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CompletionStage;
-
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 import org.eclipse.microprofile.reactive.messaging.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import io.smallrye.common.annotation.Blocking;
 import io.smallrye.reactive.messaging.kafka.api.IncomingKafkaRecordMetadata;
 

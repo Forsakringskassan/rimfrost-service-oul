@@ -9,9 +9,9 @@ public interface OperativtUppgiftslagerAddRequest
 
    String version();
 
-   String kundbehov();
+   String yrkande();
 
-   UUID kundbehovsflodeId();
+   UUID handlaggningId();
 
    String regel();
 

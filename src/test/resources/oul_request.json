@@ -1,7 +1,7 @@
 {
   "version" : "1.0",
-  "kundbehovsflode_id" : "5367f6b8-cc4a-11f0-8de9-199901011234",
-  "kundbehov" : "Vård av husdjur",
+  "handlaggning_id" : "5367f6b8-cc4a-11f0-8de9-199901011234",
+  "yrkande" : "Vård av husdjur",
   "regel" : "TestUppgiftNamn",
   "beskrivning" : "TestUppgiftBeskrivning",
   "verksamhetslogik" : "TestUppgiftVerksamhetslogik",
