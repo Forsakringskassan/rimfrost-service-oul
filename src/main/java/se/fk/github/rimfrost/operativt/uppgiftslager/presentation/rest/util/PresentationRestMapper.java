@@ -26,7 +26,7 @@ public class PresentationRestMapper
       if (uppgiftDto != null)
       {
          System.out.printf("toUppgift uppgiftDto is not null: %s%n", uppgiftDto);
-         uppgift.setKundbehovsflodeId(uppgiftDto.kundbehovsflodeId());
+         uppgift.setHandlaggningId(uppgiftDto.handlaggningId());
          uppgift.setUppgiftId(uppgiftDto.uppgiftId());
          uppgift.setHandlaggarId(uppgiftDto.handlaggarId());
          uppgift.skapad(uppgiftDto.skapad());
@@ -34,7 +34,7 @@ public class PresentationRestMapper
          uppgift.utford(uppgiftDto.utford());
          uppgift.setStatus(mapStatus(uppgiftDto.status()));
          uppgift.setRegel(uppgiftDto.regel());
-         uppgift.setKundbehov(uppgiftDto.kundbehov());
+         uppgift.setYrkande(uppgiftDto.yrkande());
          uppgift.setBeskrivning(uppgiftDto.beskrivning());
          uppgift.setVerksamhetslogik(uppgiftDto.verksamhetslogik());
          uppgift.setRoll(uppgiftDto.roll());

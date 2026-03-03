@@ -19,8 +19,8 @@ public class PresentationKafkaMapper
    {
       return ImmutableOperativtUppgiftslagerAddRequest.builder()
             .version(operativtUppgiftslagerRequestMessage.getVersion())
-            .kundbehovsflodeId(UUID.fromString(operativtUppgiftslagerRequestMessage.getKundbehovsflodeId()))
-            .kundbehov(operativtUppgiftslagerRequestMessage.getKundbehov())
+            .handlaggningId(UUID.fromString(operativtUppgiftslagerRequestMessage.getHandlaggningId()))
+            .yrkande(operativtUppgiftslagerRequestMessage.getYrkande())
             .regel(operativtUppgiftslagerRequestMessage.getRegel())
             .beskrivning(operativtUppgiftslagerRequestMessage.getBeskrivning())
             .verksamhetslogik(operativtUppgiftslagerRequestMessage.getVerksamhetslogik())

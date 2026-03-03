@@ -9,7 +9,7 @@ import se.fk.github.rimfrost.operativt.uppgiftslager.logic.enums.UppgiftStatus;
 @Value.Immutable
 public interface UppgiftEntity
 {
-   UUID kundbehovsflodeId();
+   UUID handlaggningId();
 
    UUID uppgiftId();
 
@@ -28,7 +28,7 @@ public interface UppgiftEntity
 
    String regel();
 
-   String kundbehov();
+   String yrkande();
 
    String beskrivning();
 

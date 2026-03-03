@@ -17,7 +17,7 @@ public class LogicMapper
    public OperativtUppgiftslagerStatusMessage toStatusMessage(UppgiftEntity uppgift)
    {
       var data = new OperativtUppgiftslagerStatusMessage();
-      data.setKundbehovsflodeId(uppgift.kundbehovsflodeId().toString());
+      data.setHandlaggningId(uppgift.handlaggningId().toString());
       data.setStatus(enumMapper.mapUppgiftStatusToStatus(uppgift.status()));
       data.setUppgiftId(uppgift.uppgiftId().toString());
       data.setUtforarId(uppgift.handlaggarId().toString());
@@ -27,7 +27,7 @@ public class LogicMapper
    public UppgiftDto toUppgiftDto(UppgiftEntity uppgift)
    {
       return ImmutableUppgiftDto.builder()
-            .kundbehovsflodeId(uppgift.kundbehovsflodeId())
+            .handlaggningId(uppgift.handlaggningId())
             .uppgiftId(uppgift.uppgiftId())
             .handlaggarId(uppgift.handlaggarId())
             .skapad(uppgift.skapad())
@@ -35,7 +35,7 @@ public class LogicMapper
             .utford(uppgift.utford())
             .status(uppgift.status())
             .regel(uppgift.regel())
-            .kundbehov(uppgift.kundbehov())
+            .yrkande(uppgift.yrkande())
             .beskrivning(uppgift.beskrivning())
             .verksamhetslogik(uppgift.verksamhetslogik())
             .roll(uppgift.roll())

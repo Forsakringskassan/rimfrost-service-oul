@@ -10,7 +10,7 @@
 
   <groupId>se.fk.github.rimfrost</groupId>
   <artifactId>rimfrost-operativt-uppgiftslager</artifactId>
-  <version>0.0.1</version>
+  <version>1.0.0-SNAPSHOT</version>
 
   <properties>
     <violations.maxViolations>0</violations.maxViolations>
@@ -45,12 +45,12 @@
     <dependency>
       <groupId>se.fk.rimfrost</groupId>
       <artifactId>rimfrost-service-oul-openapi-jaxrs-spec</artifactId>
-      <version>0.2.0</version>
+      <version>0.2.1</version>
     </dependency>
     <dependency>
       <groupId>se.fk.rimfrost</groupId>
       <artifactId>rimfrost-service-oul-asyncapi</artifactId>
-      <version>0.4.2</version>
+      <version>0.4.3</version>
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>

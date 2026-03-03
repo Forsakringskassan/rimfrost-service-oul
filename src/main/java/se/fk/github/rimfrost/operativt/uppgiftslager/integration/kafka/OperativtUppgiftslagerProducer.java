@@ -28,10 +28,10 @@ public class OperativtUppgiftslagerProducer
    @Channel("operativt-uppgiftslager-responses")
    Emitter<OperativtUppgiftslagerResponseMessage> emitter;
 
-   public void publishTaskResponse(UUID kundbehovsflodeId, UUID uppgiftId, String subTopic)
+   public void publishTaskResponse(UUID handlaggningId, UUID uppgiftId, String subTopic)
    {
       var response = new OperativtUppgiftslagerResponseMessage();
-      response.setKundbehovsflodeId(kundbehovsflodeId.toString());
+      response.setHandlaggningId(handlaggningId.toString());
       response.setUppgiftId(uppgiftId.toString());
 
       var topic = oulResponseTopicBase + subTopic;
