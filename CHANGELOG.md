@@ -2,6 +2,12 @@
 
 Changelog of rimfrost-service-oul.
 
+## 0.2.2 (2026-03-03)
+
+### Bug Fixes
+
+-  Bump to trigger release flow ([34ea8](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/34ea803ae571169) Lars Persson)  
+
 ## 0.2.1 (2026-02-06)
 
 ### Bug Fixes
