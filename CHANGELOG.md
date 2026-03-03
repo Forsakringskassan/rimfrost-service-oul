@@ -2,6 +2,12 @@
 
 Changelog of rimfrost-service-oul.
 
+## 0.2.3 (2026-03-03)
+
+### Bug Fixes
+
+-  renaming handlaggning ([5e626](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/5e626f00a1c5fa8) Ulf Slunga)  
+
 ## 0.2.2 (2026-03-03)
 
 ### Bug Fixes
