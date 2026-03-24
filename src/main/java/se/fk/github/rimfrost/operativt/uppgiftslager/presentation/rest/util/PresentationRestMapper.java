@@ -1,6 +1,7 @@
 package se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.util;
 
 import java.util.Collection;
+import java.util.List;
 import jakarta.enterprise.context.ApplicationScoped;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.UppgiftDto;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.enums.UppgiftStatus;
@@ -34,7 +35,7 @@ public class PresentationRestMapper
          uppgift.utford(uppgiftDto.utford());
          uppgift.setStatus(mapStatus(uppgiftDto.status()));
          uppgift.setRegel(uppgiftDto.regel());
-         uppgift.setYrkande(uppgiftDto.yrkande());
+         uppgift.setIndivider(List.of(uppgiftDto.individer()));
          uppgift.setBeskrivning(uppgiftDto.beskrivning());
          uppgift.setVerksamhetslogik(uppgiftDto.verksamhetslogik());
          uppgift.setRoll(uppgiftDto.roll());

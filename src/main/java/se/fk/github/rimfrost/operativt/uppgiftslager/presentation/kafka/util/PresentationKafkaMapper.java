@@ -1,5 +1,6 @@
 package se.fk.github.rimfrost.operativt.uppgiftslager.presentation.kafka.util;
 
+import java.util.Arrays;
 import java.util.UUID;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -20,7 +21,9 @@ public class PresentationKafkaMapper
       return ImmutableOperativtUppgiftslagerAddRequest.builder()
             .version(operativtUppgiftslagerRequestMessage.getVersion())
             .handlaggningId(UUID.fromString(operativtUppgiftslagerRequestMessage.getHandlaggningId()))
-            .yrkande(operativtUppgiftslagerRequestMessage.getYrkande())
+            .individer(Arrays.stream(operativtUppgiftslagerRequestMessage.getIndivider())
+                  .map(UUID::fromString)
+                  .toArray(UUID[]::new))
             .regel(operativtUppgiftslagerRequestMessage.getRegel())
             .beskrivning(operativtUppgiftslagerRequestMessage.getBeskrivning())
             .verksamhetslogik(operativtUppgiftslagerRequestMessage.getVerksamhetslogik())

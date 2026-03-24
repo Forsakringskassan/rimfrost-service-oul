@@ -28,7 +28,7 @@ public interface UppgiftEntity
 
    String regel();
 
-   String yrkande();
+   UUID[] individer();
 
    String beskrivning();
 

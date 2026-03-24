@@ -9,7 +9,7 @@ public interface OperativtUppgiftslagerAddRequest
 
    String version();
 
-   String yrkande();
+   UUID[] individer();
 
    UUID handlaggningId();
 

@@ -2,9 +2,7 @@ package se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto;
 
 import java.time.LocalDate;
 import java.util.UUID;
-
 import org.immutables.value.Value;
-
 import jakarta.annotation.Nullable;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.enums.UppgiftStatus;
 
@@ -31,7 +29,7 @@ public interface UppgiftDto
 
    String regel();
 
-   String yrkande();
+   UUID[] individer();
 
    String beskrivning();
 
