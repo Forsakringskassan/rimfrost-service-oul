@@ -37,7 +37,7 @@ public class OperativtUppgiftslagerService
             .skapad(LocalDate.now())
             .status(UppgiftStatus.NY)
             .regel(addRequest.regel())
-            .yrkande(addRequest.yrkande())
+            .individer(addRequest.individer())
             .beskrivning(addRequest.beskrivning())
             .verksamhetslogik(addRequest.verksamhetslogik())
             .roll(addRequest.roll())

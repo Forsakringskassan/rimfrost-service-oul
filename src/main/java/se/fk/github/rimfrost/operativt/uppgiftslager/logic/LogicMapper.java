@@ -7,6 +7,7 @@ import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.UppgiftDto;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.UppgiftEntity;
 import se.fk.github.rimfrost.operativt.uppgiftslager.util.EnumMapper;
 import se.fk.rimfrost.*;
+import java.util.Objects;
 
 @ApplicationScoped
 public class LogicMapper
@@ -20,7 +21,7 @@ public class LogicMapper
       data.setHandlaggningId(uppgift.handlaggningId().toString());
       data.setStatus(enumMapper.mapUppgiftStatusToStatus(uppgift.status()));
       data.setUppgiftId(uppgift.uppgiftId().toString());
-      data.setUtforarId(uppgift.handlaggarId().toString());
+      data.setUtforarId(Objects.requireNonNull(uppgift.handlaggarId()).toString());
       return data;
    }
 
@@ -35,7 +36,7 @@ public class LogicMapper
             .utford(uppgift.utford())
             .status(uppgift.status())
             .regel(uppgift.regel())
-            .yrkande(uppgift.yrkande())
+            .individer(uppgift.individer())
             .beskrivning(uppgift.beskrivning())
             .verksamhetslogik(uppgift.verksamhetslogik())
             .roll(uppgift.roll())
