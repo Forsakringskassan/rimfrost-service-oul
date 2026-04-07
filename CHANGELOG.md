@@ -2,6 +2,16 @@
 
 Changelog of rimfrost-service-oul.
 
+## 0.2.4 (2026-03-25)
+
+### Bug Fixes
+
+-  Add basic test for verifying OUL functionality ([19a9a](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/19a9a129979b203) Lars Persson)  
+-  hanterar individer ist för yrkande ([99ada](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/99ada930d542bbd) Ulf Slunga)  
+
+### Dependency updates
+
+- update dependency org.mockito:mockito-junit-jupiter to v5.22.0 ([0b2be](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/0b2bedaa15cfb84) renovate[bot])  
 ## 0.2.3 (2026-03-03)
 
 ### Bug Fixes
