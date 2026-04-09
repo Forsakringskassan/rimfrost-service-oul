@@ -22,8 +22,8 @@ public class PresentationKafkaMapper
             .version(operativtUppgiftslagerRequestMessage.getVersion())
             .handlaggningId(UUID.fromString(operativtUppgiftslagerRequestMessage.getHandlaggningId()))
             .individer(Arrays.stream(operativtUppgiftslagerRequestMessage.getIndivider())
-                  .map(UUID::fromString)
-                  .toArray(UUID[]::new))
+                  .map(this::toIdtyp)
+                  .toArray(Idtyp[]::new))
             .regel(operativtUppgiftslagerRequestMessage.getRegel())
             .beskrivning(operativtUppgiftslagerRequestMessage.getBeskrivning())
             .verksamhetslogik(operativtUppgiftslagerRequestMessage.getVerksamhetslogik())
@@ -39,6 +39,14 @@ public class PresentationKafkaMapper
       return ImmutableOperativtUppgiftslagerStatusUpdateRequest.builder()
             .uppgiftId(UUID.fromString(operativtUppgiftslagerStatusMessage.getUppgiftId()))
             .status(enumMapper.mapStatusToUppgiftStatus(operativtUppgiftslagerStatusMessage.getStatus()))
+            .build();
+   }
+
+   private Idtyp toIdtyp(se.fk.rimfrost.Idtyp idtyp)
+   {
+      return ImmutableIdtyp.builder()
+            .typId(idtyp.getTypId())
+            .varde(idtyp.getVarde())
             .build();
    }
 

@@ -34,7 +34,7 @@ public class OperativtUppgiftslagerController implements OperativtUppgiftslagerC
    @Path("/handlaggare/{handlaggar_id}")
    @APIResponse(responseCode = "200", description = "Uppgifter för en handläggare", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = GetUppgifterHandlaggareResponse.class)))
    @Override
-   public GetUppgifterHandlaggareResponse getUppgifterHandlaggare(@PathParam("handlaggar_id") UUID handlaggarId)
+   public GetUppgifterHandlaggareResponse getUppgifterHandlaggare(@PathParam("handlaggar_id") String handlaggarId)
    {
       var uppgifter = operativtUppgiftslagerService.getUppgifterHandlaggare(handlaggarId);
       return presentationRestMapper.toGetUppgifterHandlaggareResponse(uppgifter);
@@ -43,7 +43,7 @@ public class OperativtUppgiftslagerController implements OperativtUppgiftslagerC
    @POST
    @Path("/handlaggare/{handlaggar_id}")
    @APIResponse(responseCode = "200", description = "Hämta uppgift för en handläggare", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = PostUppgifterHandlaggareResponse.class)))
-   public PostUppgifterHandlaggareResponse postUppgifterHandlaggare(@PathParam("handlaggar_id") UUID handlaggarId)
+   public PostUppgifterHandlaggareResponse postUppgifterHandlaggare(@PathParam("handlaggar_id") String handlaggarId)
    {
       var uppgift = operativtUppgiftslagerService.assignNewTask(handlaggarId);
       return presentationRestMapper.toPostUppgifterHandlaggareResponse(uppgift);

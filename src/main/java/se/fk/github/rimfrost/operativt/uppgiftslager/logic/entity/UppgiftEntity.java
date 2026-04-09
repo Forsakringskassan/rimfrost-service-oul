@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.UUID;
 import org.immutables.value.Value;
 import jakarta.annotation.Nullable;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.Idtyp;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.enums.UppgiftStatus;
 
 @Value.Immutable
@@ -14,7 +15,7 @@ public interface UppgiftEntity
    UUID uppgiftId();
 
    @Nullable
-   UUID handlaggarId();
+   String handlaggarId();
 
    LocalDate skapad();
 
@@ -28,7 +29,7 @@ public interface UppgiftEntity
 
    String regel();
 
-   UUID[] individer();
+   Idtyp[] individer();
 
    String beskrivning();
 

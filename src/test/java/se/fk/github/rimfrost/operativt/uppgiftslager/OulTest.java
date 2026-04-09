@@ -17,6 +17,7 @@ import org.eclipse.microprofile.reactive.messaging.Message;
 import org.eclipse.microprofile.reactive.messaging.spi.Connector;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import se.fk.rimfrost.Idtyp;
 import se.fk.rimfrost.OperativtUppgiftslagerRequestMessage;
 import se.fk.rimfrost.OperativtUppgiftslagerResponseMessage;
 import se.fk.rimfrost.OperativtUppgiftslagerStatusMessage;
@@ -61,10 +62,14 @@ public class OulTest
 
    private void sendOulRequest(String handlaggningId)
    {
+      Idtyp individ = new Idtyp();
+      individ.setTypId("d8bc00b6-445e-4085-ac31-d743cfb5f303");
+      individ.setVarde("19900101-1234");
+
       OperativtUppgiftslagerRequestMessage message = new OperativtUppgiftslagerRequestMessage();
       message.setVersion("1.0");
       message.setHandlaggningId(handlaggningId);
-      message.setIndivider(List.of("9aab14f3-b551-4bca-a890-add6e67c8f6a").toArray(String[]::new));
+      message.setIndivider(List.of(individ).toArray(Idtyp[]::new));
       message.setRegel("Test Regel");
       message.setRoll("Test Roll");
       message.setBeskrivning("Test Beskrivning");
@@ -147,6 +152,10 @@ public class OulTest
       var handlaggarId = UUID.randomUUID();
       var assignResponse = assignTaskToHandlaggare(handlaggarId);
 
+      var expectedIndivid = new se.fk.rimfrost.jaxrsspec.controllers.generatedsource.model.Idtyp();
+      expectedIndivid.setTypId("d8bc00b6-445e-4085-ac31-d743cfb5f303");
+      expectedIndivid.setVarde("19900101-1234");
+
       assertNotNull(assignResponse.getOperativUppgift());
       assertEquals(UUID.fromString(uppgiftId), assignResponse.getOperativUppgift().getUppgiftId());
       assertEquals("Test Regel", assignResponse.getOperativUppgift().getRegel());
@@ -154,8 +163,8 @@ public class OulTest
       assertEquals("Test Beskrivning", assignResponse.getOperativUppgift().getBeskrivning());
       assertEquals("Test Verksamhetslogik", assignResponse.getOperativUppgift().getVerksamhetslogik());
       assertEquals("/test/url/", assignResponse.getOperativUppgift().getUrl());
-      assertEquals(handlaggarId, assignResponse.getOperativUppgift().getHandlaggarId());
-      assertEquals(List.of(UUID.fromString("9aab14f3-b551-4bca-a890-add6e67c8f6a")),
+      assertEquals(handlaggarId.toString(), assignResponse.getOperativUppgift().getHandlaggarId());
+      assertEquals(List.of(expectedIndivid),
             assignResponse.getOperativUppgift().getIndivider());
       assertEquals(OperativUppgift.StatusEnum.TILLDELAD, assignResponse.getOperativUppgift().getStatus());
       assertNotNull(assignResponse.getOperativUppgift().getSkapad());

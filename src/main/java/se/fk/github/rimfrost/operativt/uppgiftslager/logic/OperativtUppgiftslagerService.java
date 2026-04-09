@@ -68,7 +68,7 @@ public class OperativtUppgiftslagerService
       log.info("Task StatusUpdate finished on {}", updatedTask.uppgiftId());
    }
 
-   public Collection<UppgiftDto> getUppgifterHandlaggare(UUID handlaggarId)
+   public Collection<UppgiftDto> getUppgifterHandlaggare(String handlaggarId)
    {
       log.info("Getting all tasks for handlaggarId: {}", handlaggarId);
       var uppgifter = taskMap.values();
@@ -83,7 +83,7 @@ public class OperativtUppgiftslagerService
       return handlaggarTasks;
    }
 
-   public UppgiftDto assignNewTask(UUID handlaggarId)
+   public UppgiftDto assignNewTask(String handlaggarId)
    {
       log.info("Assigning new task to handlaggarId: {}", handlaggarId);
       var tasks = taskMap.values();
