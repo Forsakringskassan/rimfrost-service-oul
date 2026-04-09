@@ -1,8 +1,10 @@
 package se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.util;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import jakarta.enterprise.context.ApplicationScoped;
+import org.yaml.snakeyaml.util.ArrayUtils;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.UppgiftDto;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.enums.UppgiftStatus;
 import se.fk.rimfrost.jaxrsspec.controllers.generatedsource.model.*;
@@ -35,7 +37,7 @@ public class PresentationRestMapper
          uppgift.utford(uppgiftDto.utford());
          uppgift.setStatus(mapStatus(uppgiftDto.status()));
          uppgift.setRegel(uppgiftDto.regel());
-         uppgift.setIndivider(List.of(uppgiftDto.individer()));
+         uppgift.setIndivider(Arrays.stream(uppgiftDto.individer()).map(this::toApiIdtyp).toList());
          uppgift.setBeskrivning(uppgiftDto.beskrivning());
          uppgift.setVerksamhetslogik(uppgiftDto.verksamhetslogik());
          uppgift.setRoll(uppgiftDto.roll());
@@ -66,5 +68,14 @@ public class PresentationRestMapper
          response.setOperativUppgift(toUppgift(uppgiftEntity));
       }
       return response;
+   }
+
+   private Idtyp toApiIdtyp(se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.Idtyp idTyp)
+   {
+      Idtyp apiIdtyp = new Idtyp();
+      apiIdtyp.setTypId(idTyp.typId());
+      apiIdtyp.setVarde(idTyp.varde());
+
+      return apiIdtyp;
    }
 }

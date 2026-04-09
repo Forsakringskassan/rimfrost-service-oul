@@ -2,12 +2,12 @@ package se.fk.github.rimfrost.operativt.uppgiftslager.logic;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import java.util.Objects;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.ImmutableUppgiftDto;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.UppgiftDto;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.UppgiftEntity;
 import se.fk.github.rimfrost.operativt.uppgiftslager.util.EnumMapper;
 import se.fk.rimfrost.*;
-import java.util.Objects;
 
 @ApplicationScoped
 public class LogicMapper
@@ -43,4 +43,5 @@ public class LogicMapper
             .url(uppgift.url())
             .build();
    }
+
 }

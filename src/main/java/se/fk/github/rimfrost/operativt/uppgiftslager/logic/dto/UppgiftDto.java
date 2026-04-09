@@ -15,7 +15,7 @@ public interface UppgiftDto
    UUID uppgiftId();
 
    @Nullable
-   UUID handlaggarId();
+   String handlaggarId();
 
    LocalDate skapad();
 
@@ -29,7 +29,7 @@ public interface UppgiftDto
 
    String regel();
 
-   UUID[] individer();
+   Idtyp[] individer();
 
    String beskrivning();
 
