@@ -86,13 +86,15 @@ public class OulTest
 
    private PostUppgifterHandlaggareResponse assignTaskToHandlaggare(UUID handlaggarId)
    {
-      return given().contentType(ContentType.JSON).when().post("/uppgifter/handlaggare/{handlaggarId}", handlaggarId).then()
+      return given().contentType(ContentType.JSON).when()
+            .post("/uppgifter/handlaggare/116759e4-18fd-4209-849c-90abbd257d22/{handlaggarId}", handlaggarId).then()
             .statusCode(200).extract().as(PostUppgifterHandlaggareResponse.class);
    }
 
    private GetUppgifterHandlaggareResponse getAssignedTasks(UUID handlaggarId)
    {
-      return given().contentType(ContentType.JSON).when().get("/uppgifter/handlaggare/{handlaggarId}", handlaggarId).then()
+      return given().contentType(ContentType.JSON).when()
+            .get("/uppgifter/handlaggare/116759e4-18fd-4209-849c-90abbd257d22/{handlaggarId}", handlaggarId).then()
             .statusCode(200).extract().as(GetUppgifterHandlaggareResponse.class);
    }
 
@@ -156,6 +158,10 @@ public class OulTest
       expectedIndivid.setTypId("d8bc00b6-445e-4085-ac31-d743cfb5f303");
       expectedIndivid.setVarde("19900101-1234");
 
+      var expectedAssignedHandlaggare = new se.fk.rimfrost.jaxrsspec.controllers.generatedsource.model.Idtyp();
+      expectedAssignedHandlaggare.setTypId("116759e4-18fd-4209-849c-90abbd257d22");
+      expectedAssignedHandlaggare.setVarde(handlaggarId.toString());
+
       assertNotNull(assignResponse.getOperativUppgift());
       assertEquals(UUID.fromString(uppgiftId), assignResponse.getOperativUppgift().getUppgiftId());
       assertEquals("Test Regel", assignResponse.getOperativUppgift().getRegel());
@@ -163,7 +169,7 @@ public class OulTest
       assertEquals("Test Beskrivning", assignResponse.getOperativUppgift().getBeskrivning());
       assertEquals("Test Verksamhetslogik", assignResponse.getOperativUppgift().getVerksamhetslogik());
       assertEquals("/test/url/", assignResponse.getOperativUppgift().getUrl());
-      assertEquals(handlaggarId.toString(), assignResponse.getOperativUppgift().getHandlaggarId());
+      assertEquals(expectedAssignedHandlaggare, assignResponse.getOperativUppgift().getHandlaggarId());
       assertEquals(List.of(expectedIndivid),
             assignResponse.getOperativUppgift().getIndivider());
       assertEquals(OperativUppgift.StatusEnum.TILLDELAD, assignResponse.getOperativUppgift().getStatus());
@@ -178,10 +184,14 @@ public class OulTest
       message = messages.getFirst().getPayload();
       assertInstanceOf(OperativtUppgiftslagerStatusMessage.class, message);
 
+      var expectedUtforare = new se.fk.rimfrost.Idtyp();
+      expectedUtforare.setTypId("116759e4-18fd-4209-849c-90abbd257d22");
+      expectedUtforare.setVarde(handlaggarId.toString());
+
       var oulStatusMessage = (OperativtUppgiftslagerStatusMessage) message;
       assertEquals(handlaggningId, oulStatusMessage.getHandlaggningId());
       assertEquals(uppgiftId, oulStatusMessage.getUppgiftId());
-      assertEquals(handlaggarId.toString(), oulStatusMessage.getUtforarId());
+      assertEquals(expectedUtforare, oulStatusMessage.getUtforarId());
       assertEquals(Status.TILLDELAD, oulStatusMessage.getStatus());
 
       inMemoryConnector.sink(oulStatusNotificationChannel).clear();
@@ -215,7 +225,7 @@ public class OulTest
       oulStatusMessage = (OperativtUppgiftslagerStatusMessage) message;
       assertEquals(handlaggningId, oulStatusMessage.getHandlaggningId());
       assertEquals(uppgiftId, oulStatusMessage.getUppgiftId());
-      assertEquals(handlaggarId.toString(), oulStatusMessage.getUtforarId());
+      assertEquals(expectedUtforare, oulStatusMessage.getUtforarId());
       assertEquals(Status.AVSLUTAD, oulStatusMessage.getStatus());
 
       inMemoryConnector.sink(oulStatusNotificationChannel).clear();

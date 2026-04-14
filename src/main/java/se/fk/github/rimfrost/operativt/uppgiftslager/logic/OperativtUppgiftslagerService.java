@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import se.fk.github.rimfrost.operativt.uppgiftslager.integration.kafka.OperativtUppgiftslagerProducer;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.ImmutableIdtyp;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.OperativtUppgiftslagerAddRequest;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.OperativtUppgiftslagerStatusUpdateRequest;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.UppgiftDto;
@@ -68,14 +69,18 @@ public class OperativtUppgiftslagerService
       log.info("Task StatusUpdate finished on {}", updatedTask.uppgiftId());
    }
 
-   public Collection<UppgiftDto> getUppgifterHandlaggare(String handlaggarId)
+   public Collection<UppgiftDto> getUppgifterHandlaggare(String idTyp, String handlaggarId)
    {
       log.info("Getting all tasks for handlaggarId: {}", handlaggarId);
       var uppgifter = taskMap.values();
       var handlaggarTasks = new ArrayList<UppgiftDto>();
+      var handlaggare = ImmutableIdtyp.builder()
+            .typId(idTyp)
+            .varde(handlaggarId)
+            .build();
       for (UppgiftEntity uppgift : uppgifter)
       {
-         if (Objects.equals(uppgift.handlaggarId(), handlaggarId))
+         if (Objects.equals(uppgift.handlaggarId(), handlaggare))
          {
             handlaggarTasks.add(logicMapper.toUppgiftDto(uppgift));
          }
@@ -83,18 +88,23 @@ public class OperativtUppgiftslagerService
       return handlaggarTasks;
    }
 
-   public UppgiftDto assignNewTask(String handlaggarId)
+   public UppgiftDto assignNewTask(String idTyp, String handlaggarId)
    {
-      log.info("Assigning new task to handlaggarId: {}", handlaggarId);
+      log.info("Assigning new task to handlaggarId: {} with type: {}", handlaggarId, idTyp);
       var tasks = taskMap.values();
       for (UppgiftEntity task : tasks)
       {
          if (task.handlaggarId() == null)
          {
+            var handlaggare = ImmutableIdtyp.builder()
+                  .typId(idTyp)
+                  .varde(handlaggarId)
+                  .build();
+
             var updatedTask = ImmutableUppgiftEntity.builder()
                   .from(task)
                   .status(UppgiftStatus.TILLDELAD)
-                  .handlaggarId(handlaggarId)
+                  .handlaggarId(handlaggare)
                   .build();
             taskMap.put(task.uppgiftId(), updatedTask);
             notifyStatusUpdate(updatedTask);

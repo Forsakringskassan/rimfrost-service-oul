@@ -17,11 +17,17 @@ public class LogicMapper
 
    public OperativtUppgiftslagerStatusMessage toStatusMessage(UppgiftEntity uppgift)
    {
+      var handlaggareId = Objects.requireNonNull(uppgift.handlaggarId());
+
+      var utforarId = new Idtyp();
+      utforarId.setTypId(handlaggareId.typId());
+      utforarId.setVarde(handlaggareId.varde());
+
       var data = new OperativtUppgiftslagerStatusMessage();
       data.setHandlaggningId(uppgift.handlaggningId().toString());
       data.setStatus(enumMapper.mapUppgiftStatusToStatus(uppgift.status()));
       data.setUppgiftId(uppgift.uppgiftId().toString());
-      data.setUtforarId(Objects.requireNonNull(uppgift.handlaggarId()).toString());
+      data.setUtforarId(utforarId);
       return data;
    }
 

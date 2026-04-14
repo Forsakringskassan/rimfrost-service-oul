@@ -31,7 +31,7 @@ public class PresentationRestMapper
          System.out.printf("toUppgift uppgiftDto is not null: %s%n", uppgiftDto);
          uppgift.setHandlaggningId(uppgiftDto.handlaggningId());
          uppgift.setUppgiftId(uppgiftDto.uppgiftId());
-         uppgift.setHandlaggarId(uppgiftDto.handlaggarId());
+         uppgift.setHandlaggarId(toApiIdtyp(uppgiftDto.handlaggarId()));
          uppgift.skapad(uppgiftDto.skapad());
          uppgift.planeradTill(uppgiftDto.planeradTill());
          uppgift.utford(uppgiftDto.utford());
@@ -72,6 +72,11 @@ public class PresentationRestMapper
 
    private Idtyp toApiIdtyp(se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.Idtyp idTyp)
    {
+      if (idTyp == null)
+      {
+         return null;
+      }
+
       Idtyp apiIdtyp = new Idtyp();
       apiIdtyp.setTypId(idTyp.typId());
       apiIdtyp.setVarde(idTyp.varde());
