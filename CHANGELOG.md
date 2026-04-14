@@ -2,6 +2,12 @@
 
 Changelog of rimfrost-service-oul.
 
+## 0.2.6 (2026-04-14)
+
+### Bug Fixes
+
+-  Bump rimfrost-service-oul-asyncapi and rimfrost-service-oul-openapi versions ([9f826](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/9f826b1c4a1f7cb) Lars Persson)  
+
 ## 0.2.5 (2026-04-09)
 
 ### Bug Fixes
