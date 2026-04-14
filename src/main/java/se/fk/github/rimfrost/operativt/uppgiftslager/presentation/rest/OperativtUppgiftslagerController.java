@@ -31,21 +31,23 @@ public class OperativtUppgiftslagerController implements OperativtUppgiftslagerC
    PresentationRestMapper presentationRestMapper;
 
    @GET
-   @Path("/handlaggare/{handlaggar_id}")
+   @Path("/handlaggare/{id_typ}/{handlaggar_id}")
    @APIResponse(responseCode = "200", description = "Uppgifter för en handläggare", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = GetUppgifterHandlaggareResponse.class)))
    @Override
-   public GetUppgifterHandlaggareResponse getUppgifterHandlaggare(@PathParam("handlaggar_id") String handlaggarId)
+   public GetUppgifterHandlaggareResponse getUppgifterHandlaggare(@PathParam("id_typ") String idTyp,
+         @PathParam("handlaggar_id") String handlaggarId)
    {
-      var uppgifter = operativtUppgiftslagerService.getUppgifterHandlaggare(handlaggarId);
+      var uppgifter = operativtUppgiftslagerService.getUppgifterHandlaggare(idTyp, handlaggarId);
       return presentationRestMapper.toGetUppgifterHandlaggareResponse(uppgifter);
    }
 
    @POST
-   @Path("/handlaggare/{handlaggar_id}")
+   @Path("/handlaggare/{id_typ}/{handlaggar_id}")
    @APIResponse(responseCode = "200", description = "Hämta uppgift för en handläggare", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = PostUppgifterHandlaggareResponse.class)))
-   public PostUppgifterHandlaggareResponse postUppgifterHandlaggare(@PathParam("handlaggar_id") String handlaggarId)
+   public PostUppgifterHandlaggareResponse postUppgifterHandlaggare(@PathParam("id_typ") String idTyp,
+         @PathParam("handlaggar_id") String handlaggarId)
    {
-      var uppgift = operativtUppgiftslagerService.assignNewTask(handlaggarId);
+      var uppgift = operativtUppgiftslagerService.assignNewTask(idTyp, handlaggarId);
       return presentationRestMapper.toPostUppgifterHandlaggareResponse(uppgift);
    }
 }

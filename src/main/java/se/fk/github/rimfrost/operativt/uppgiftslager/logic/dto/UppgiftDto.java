@@ -15,7 +15,7 @@ public interface UppgiftDto
    UUID uppgiftId();
 
    @Nullable
-   String handlaggarId();
+   Idtyp handlaggarId();
 
    LocalDate skapad();
 
