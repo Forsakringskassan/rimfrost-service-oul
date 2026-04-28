@@ -2,6 +2,23 @@
 
 Changelog of rimfrost-service-oul.
 
+## 1.0.0 (2026-04-28)
+
+### Breaking changes
+
+-  release 1.0 ([cb86d](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/cb86d0ba60b4121) Lars Persson)  
+
+### Features
+
+-  release 1.0 ([cb86d](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/cb86d0ba60b4121) Lars Persson)  
+
+### Bug Fixes
+
+-  Bump to released api versions ([00bd3](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/00bd3da3a90d920) Lars Persson)  
+
+### Dependency updates
+
+- update dependency org.mockito:mockito-junit-jupiter to v5.23.0 ([30841](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/3084162e60724c9) renovate[bot])  
 ## 0.2.6 (2026-04-14)
 
 ### Bug Fixes
