@@ -30,6 +30,7 @@ public class PresentationKafkaMapper
             .roll(operativtUppgiftslagerRequestMessage.getRoll())
             .url(operativtUppgiftslagerRequestMessage.getUrl())
             .subTopic(subTopic)
+            .cloudeventAttributes(operativtUppgiftslagerRequestMessage.getCloudeventAttributes())
             .build();
    }
 

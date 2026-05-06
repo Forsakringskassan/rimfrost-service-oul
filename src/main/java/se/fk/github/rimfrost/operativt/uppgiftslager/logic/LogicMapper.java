@@ -28,6 +28,7 @@ public class LogicMapper
       data.setStatus(enumMapper.mapUppgiftStatusToStatus(uppgift.status()));
       data.setUppgiftId(uppgift.uppgiftId().toString());
       data.setUtforarId(utforarId);
+      data.setCloudeventAttributes(uppgift.cloudeventAttributes());
       return data;
    }
 

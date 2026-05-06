@@ -1,6 +1,7 @@
 package se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity;
 
 import java.time.LocalDate;
+import java.util.Map;
 import java.util.UUID;
 import org.immutables.value.Value;
 import jakarta.annotation.Nullable;
@@ -40,4 +41,6 @@ public interface UppgiftEntity
    String url();
 
    String subTopic();
+
+   Map<String, String> cloudeventAttributes();
 }
