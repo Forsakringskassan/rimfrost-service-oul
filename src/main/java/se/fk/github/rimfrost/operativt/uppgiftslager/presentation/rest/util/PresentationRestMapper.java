@@ -2,9 +2,7 @@ package se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.util;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 import jakarta.enterprise.context.ApplicationScoped;
-import org.yaml.snakeyaml.util.ArrayUtils;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.UppgiftDto;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.enums.UppgiftStatus;
 import se.fk.rimfrost.jaxrsspec.controllers.generatedsource.model.*;
@@ -48,16 +46,13 @@ public class PresentationRestMapper
 
    private StatusEnum mapStatus(UppgiftStatus status)
    {
-      switch (status)
+      return switch (status)
       {
-         case NY:
-            return StatusEnum.NY;
-         case TILLDELAD:
-            return StatusEnum.TILLDELAD;
-         case AVSLUTAD:
-         default:
-            return StatusEnum.AVSLUTAD;
-      }
+         case NY -> StatusEnum.NY;
+         case TILLDELAD -> StatusEnum.TILLDELAD;
+         case AVSLUTAD -> StatusEnum.AVSLUTAD;
+         case AVBRUTEN -> StatusEnum.AVBRUTEN;
+      };
    }
 
    public PostUppgifterHandlaggareResponse toPostUppgifterHandlaggareResponse(UppgiftDto uppgiftEntity)

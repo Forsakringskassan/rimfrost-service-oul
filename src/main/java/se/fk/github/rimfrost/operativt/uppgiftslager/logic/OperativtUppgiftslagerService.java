@@ -61,7 +61,7 @@ public class OperativtUppgiftslagerService
             .build();
       taskMap.put(task.uppgiftId(), updatedTask);
 
-      if (updatedTask.status() == UppgiftStatus.AVSLUTAD)
+      if (updatedTask.status() == UppgiftStatus.AVSLUTAD || updatedTask.status() == UppgiftStatus.AVBRUTEN)
       {
          taskMap.remove(updatedTask.uppgiftId());
       }
