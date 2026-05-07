@@ -2,6 +2,14 @@
 
 Changelog of rimfrost-service-oul.
 
+## 1.0.1 (2026-05-07)
+
+### Bug Fixes
+
+-  lägger till status Avbruten ([71b2a](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/71b2a1f64e41b5c) Ulf Slunga)  
+-  hanterar cloudevent_attributes ([b914a](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/b914a615ea326db) Ulf Slunga)  
+-  **deps**  update dependency se.fk.maven:fk-maven-quarkus-parent to v1.12.0 ([17512](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/175122a47e4a7d5) renovate[bot])  
+
 ## 1.0.0 (2026-04-28)
 
 ### Breaking changes
