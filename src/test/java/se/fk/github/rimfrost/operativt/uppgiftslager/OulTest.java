@@ -7,6 +7,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -23,7 +24,6 @@ import se.fk.rimfrost.OperativtUppgiftslagerResponseMessage;
 import se.fk.rimfrost.OperativtUppgiftslagerStatusMessage;
 import se.fk.rimfrost.Status;
 import se.fk.rimfrost.jaxrsspec.controllers.generatedsource.model.*;
-
 import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.when;
 import static org.awaitility.Awaitility.await;
@@ -75,6 +75,7 @@ public class OulTest
       message.setBeskrivning("Test Beskrivning");
       message.setVerksamhetslogik("Test Verksamhetslogik");
       message.setUrl("/test/url/");
+      message.setCloudeventAttributes(Map.of("kogitoprocinstanceid", "test-proc-instance-id"));
 
       RecordHeaders headers = new RecordHeaders();
       headers.add(new RecordHeader("replyTo", regelSubTopic.getBytes(StandardCharsets.UTF_8)));
@@ -193,6 +194,7 @@ public class OulTest
       assertEquals(uppgiftId, oulStatusMessage.getUppgiftId());
       assertEquals(expectedUtforare, oulStatusMessage.getUtforarId());
       assertEquals(Status.TILLDELAD, oulStatusMessage.getStatus());
+      assertEquals(Map.of("kogitoprocinstanceid", "test-proc-instance-id"), oulStatusMessage.getCloudeventAttributes());
 
       inMemoryConnector.sink(oulStatusNotificationChannel).clear();
 

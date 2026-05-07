@@ -44,6 +44,7 @@ public class OperativtUppgiftslagerService
             .roll(addRequest.roll())
             .url(addRequest.url())
             .subTopic(addRequest.subTopic())
+            .cloudeventAttributes(addRequest.cloudeventAttributes())
             .build();
 
       taskMap.put(uppgift.uppgiftId(), uppgift);
