@@ -1,14 +1,13 @@
 package se.fk.github.rimfrost.operativt.uppgiftslager.integration.kafka;
 
+import java.util.Map;
 import java.util.UUID;
-
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.reactive.messaging.Channel;
 import org.eclipse.microprofile.reactive.messaging.Emitter;
 import org.eclipse.microprofile.reactive.messaging.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import io.smallrye.reactive.messaging.kafka.api.OutgoingKafkaRecordMetadata;
 import jakarta.enterprise.context.ApplicationScoped;
 import se.fk.rimfrost.OperativtUppgiftslagerResponseMessage;
@@ -28,11 +27,12 @@ public class OperativtUppgiftslagerProducer
    @Channel("operativt-uppgiftslager-responses")
    Emitter<OperativtUppgiftslagerResponseMessage> emitter;
 
-   public void publishTaskResponse(UUID handlaggningId, UUID uppgiftId, String subTopic)
+   public void publishTaskResponse(UUID handlaggningId, UUID uppgiftId, String subTopic, Map<String, String> cloudeventAttributes)
    {
       var response = new OperativtUppgiftslagerResponseMessage();
       response.setHandlaggningId(handlaggningId.toString());
       response.setUppgiftId(uppgiftId.toString());
+      response.setCloudeventAttributes(cloudeventAttributes);
 
       var topic = oulResponseTopicBase + subTopic;
 
