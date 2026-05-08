@@ -48,7 +48,8 @@ public class OperativtUppgiftslagerService
             .build();
 
       taskMap.put(uppgift.uppgiftId(), uppgift);
-      producer.publishTaskResponse(uppgift.handlaggningId(), uppgift.uppgiftId(), uppgift.subTopic());
+      producer.publishTaskResponse(uppgift.handlaggningId(), uppgift.uppgiftId(), uppgift.subTopic(),
+            uppgift.cloudeventAttributes());
    }
 
    public void onTaskStatusUpdated(OperativtUppgiftslagerStatusUpdateRequest statusUpdateRequest)

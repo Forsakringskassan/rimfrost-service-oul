@@ -18,6 +18,8 @@ import org.eclipse.microprofile.reactive.messaging.Message;
 import org.eclipse.microprofile.reactive.messaging.spi.Connector;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import se.fk.rimfrost.Idtyp;
 import se.fk.rimfrost.OperativtUppgiftslagerRequestMessage;
 import se.fk.rimfrost.OperativtUppgiftslagerResponseMessage;
@@ -146,6 +148,7 @@ public class OulTest
       var uppgiftId = oulResponseMessage.getUppgiftId();
       assertEquals(handlaggningId, oulResponseMessage.getHandlaggningId());
       assertNotNull(uppgiftId);
+      assertEquals(Map.of("kogitoprocinstanceid", "test-proc-instance-id"), oulResponseMessage.getCloudeventAttributes());
 
       inMemoryConnector.sink(oulResponsesChannel).clear();
 
@@ -229,6 +232,7 @@ public class OulTest
       assertEquals(uppgiftId, oulStatusMessage.getUppgiftId());
       assertEquals(expectedUtforare, oulStatusMessage.getUtforarId());
       assertEquals(Status.AVSLUTAD, oulStatusMessage.getStatus());
+      assertEquals(Map.of("kogitoprocinstanceid", "test-proc-instance-id"), oulStatusMessage.getCloudeventAttributes());
 
       inMemoryConnector.sink(oulStatusNotificationChannel).clear();
 
@@ -240,4 +244,40 @@ public class OulTest
       assertNotNull(assignedTasks);
       assertNull(assignedTasks.getOperativaUppgifter());
    }
+
+   @ParameterizedTest
+   @CsvSource(
+   {
+         "TILLDELAD, true", "AVSLUTAD, false", "AVBRUTEN, false"
+   })
+   public void testUppgiftPresenceAfterStatusUpdate(Status status, boolean expectedUppgiftPresence)
+   {
+      sendOulRequest(UUID.randomUUID().toString());
+
+      var messages = waitForMessages(oulResponsesChannel);
+      var uppgiftId = ((OperativtUppgiftslagerResponseMessage) messages.getFirst().getPayload()).getUppgiftId();
+      inMemoryConnector.sink(oulResponsesChannel).clear();
+
+      var handlaggarId = UUID.randomUUID();
+      assignTaskToHandlaggare(handlaggarId);
+      waitForMessages(oulStatusNotificationChannel);
+      inMemoryConnector.sink(oulStatusNotificationChannel).clear();
+
+      sendStatusUpdateRequest(uppgiftId, status);
+      waitForMessages(oulStatusNotificationChannel);
+      inMemoryConnector.sink(oulStatusNotificationChannel).clear();
+
+      var assignedTasks = getAssignedTasks(handlaggarId);
+      assertNotNull(assignedTasks);
+      if (expectedUppgiftPresence)
+      {
+         assertNotNull(assignedTasks.getOperativaUppgifter());
+         assertEquals(1, assignedTasks.getOperativaUppgifter().size());
+      }
+      else
+      {
+         assertNull(assignedTasks.getOperativaUppgifter());
+      }
+   }
+
 }
