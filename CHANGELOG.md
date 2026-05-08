@@ -2,6 +2,12 @@
 
 Changelog of rimfrost-service-oul.
 
+## 1.0.2 (2026-05-08)
+
+### Bug Fixes
+
+-  hanterar status Avbruten och tar bort uppgiften ([16658](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/16658fbaf1a4129) Ulf Slunga)  
+
 ## 1.0.1 (2026-05-07)
 
 ### Bug Fixes
