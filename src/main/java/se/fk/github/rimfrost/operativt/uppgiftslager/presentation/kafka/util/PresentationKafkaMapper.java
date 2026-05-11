@@ -1,12 +1,10 @@
 package se.fk.github.rimfrost.operativt.uppgiftslager.presentation.kafka.util;
 
-import java.util.Arrays;
 import java.util.UUID;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.*;
 import se.fk.github.rimfrost.operativt.uppgiftslager.util.EnumMapper;
-import se.fk.rimfrost.OperativtUppgiftslagerRequestMessage;
 import se.fk.rimfrost.OperativtUppgiftslagerStatusMessage;
 
 @ApplicationScoped
@@ -14,25 +12,6 @@ public class PresentationKafkaMapper
 {
    @Inject
    EnumMapper enumMapper;
-
-   public OperativtUppgiftslagerAddRequest toAddRequest(
-         OperativtUppgiftslagerRequestMessage operativtUppgiftslagerRequestMessage, String subTopic)
-   {
-      return ImmutableOperativtUppgiftslagerAddRequest.builder()
-            .version(operativtUppgiftslagerRequestMessage.getVersion())
-            .handlaggningId(UUID.fromString(operativtUppgiftslagerRequestMessage.getHandlaggningId()))
-            .individer(Arrays.stream(operativtUppgiftslagerRequestMessage.getIndivider())
-                  .map(this::toIdtyp)
-                  .toArray(Idtyp[]::new))
-            .regel(operativtUppgiftslagerRequestMessage.getRegel())
-            .beskrivning(operativtUppgiftslagerRequestMessage.getBeskrivning())
-            .verksamhetslogik(operativtUppgiftslagerRequestMessage.getVerksamhetslogik())
-            .roll(operativtUppgiftslagerRequestMessage.getRoll())
-            .url(operativtUppgiftslagerRequestMessage.getUrl())
-            .subTopic(subTopic)
-            .cloudeventAttributes(operativtUppgiftslagerRequestMessage.getCloudeventAttributes())
-            .build();
-   }
 
    public OperativtUppgiftslagerStatusUpdateRequest toStatusUpdateRequest(
          OperativtUppgiftslagerStatusMessage operativtUppgiftslagerStatusMessage)
@@ -42,13 +21,4 @@ public class PresentationKafkaMapper
             .status(enumMapper.mapStatusToUppgiftStatus(operativtUppgiftslagerStatusMessage.getStatus()))
             .build();
    }
-
-   private Idtyp toIdtyp(se.fk.rimfrost.Idtyp idtyp)
-   {
-      return ImmutableIdtyp.builder()
-            .typId(idtyp.getTypId())
-            .varde(idtyp.getVarde())
-            .build();
-   }
-
 }

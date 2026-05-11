@@ -1,6 +1,5 @@
 package se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto;
 
-import java.util.Map;
 import java.util.UUID;
 import org.immutables.value.Value;
 
@@ -23,9 +22,5 @@ public interface OperativtUppgiftslagerAddRequest
    String roll();
 
    String url();
-
-   String subTopic();
-
-   Map<String, String> cloudeventAttributes();
 
 }

@@ -1,28 +1,19 @@
 package se.fk.github.rimfrost.operativt.uppgiftslager;
 
 import io.restassured.http.ContentType;
-import io.smallrye.reactive.messaging.kafka.api.IncomingKafkaRecordMetadata;
 import io.smallrye.reactive.messaging.memory.InMemoryConnector;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.common.header.internals.RecordHeader;
-import org.apache.kafka.common.header.internals.RecordHeaders;
-import org.apache.kafka.common.record.TimestampType;
 import org.eclipse.microprofile.reactive.messaging.Message;
 import org.eclipse.microprofile.reactive.messaging.spi.Connector;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import se.fk.rimfrost.Idtyp;
-import se.fk.rimfrost.OperativtUppgiftslagerRequestMessage;
-import se.fk.rimfrost.OperativtUppgiftslagerResponseMessage;
 import se.fk.rimfrost.OperativtUppgiftslagerStatusMessage;
 import se.fk.rimfrost.Status;
 import se.fk.rimfrost.jaxrsspec.controllers.generatedsource.model.*;
@@ -38,11 +29,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 @QuarkusTest
 public class OulTest
 {
-   private static final String oulRequestsChannel = "operativt-uppgiftslager-requests";
-   private static final String oulResponsesChannel = "operativt-uppgiftslager-responses";
    private static final String oulStatusNotificationChannel = "operativt-uppgiftslager-status-notification";
    private static final String oulStatusControlChannel = "operativt-uppgiftslager-status-control";
-   private static final String regelSubTopic = "test";
 
    @Inject
    @Connector("smallrye-in-memory")
@@ -54,37 +42,28 @@ public class OulTest
       return inMemoryConnector.sink(channel).received();
    }
 
-   private IncomingKafkaRecordMetadata<String, String> createIncomingKafkaRecordMetadata(String channel, RecordHeaders headers)
+   private UppgiftResponse createUppgift(UUID handlaggningId)
    {
-      // Workaround for IncomingKafkaRecordMetadata not being created on receiving side when in-memory-connector is used
-      ConsumerRecord<String, String> record = new ConsumerRecord<>("", 0, 0L, 0L, TimestampType.NO_TIMESTAMP_TYPE, 0, 0, "", "",
-            headers, null);
-      return new IncomingKafkaRecordMetadata<>(record, channel);
-   }
-
-   private void sendOulRequest(String handlaggningId)
-   {
-      Idtyp individ = new Idtyp();
+      var individ = new Idtyp();
       individ.setTypId("d8bc00b6-445e-4085-ac31-d743cfb5f303");
       individ.setVarde("19900101-1234");
 
-      OperativtUppgiftslagerRequestMessage message = new OperativtUppgiftslagerRequestMessage();
-      message.setVersion("1.0");
-      message.setHandlaggningId(handlaggningId);
-      message.setIndivider(List.of(individ).toArray(Idtyp[]::new));
-      message.setRegel("Test Regel");
-      message.setRoll("Test Roll");
-      message.setBeskrivning("Test Beskrivning");
-      message.setVerksamhetslogik("Test Verksamhetslogik");
-      message.setUrl("/test/url/");
-      message.setCloudeventAttributes(Map.of("kogitoprocinstanceid", "test-proc-instance-id"));
+      var request = new CreateUppgiftRequest();
+      request.setVersion("1.0");
+      request.setHandlaggningId(handlaggningId);
+      request.setIndivider(List.of(individ));
+      request.setRegel("Test Regel");
+      request.setRoll("Test Roll");
+      request.setBeskrivning("Test Beskrivning");
+      request.setVerksamhetslogik("Test Verksamhetslogik");
+      request.setUrl("/test/url/");
+      request.setReplyTopic("test");
+      request.setCloudeventAttributes(Map.of("kogitoprocinstanceid", "test-proc-instance-id"));
 
-      RecordHeaders headers = new RecordHeaders();
-      headers.add(new RecordHeader("replyTo", regelSubTopic.getBytes(StandardCharsets.UTF_8)));
-      Message<OperativtUppgiftslagerRequestMessage> payload = Message.of(message)
-            .addMetadata(createIncomingKafkaRecordMetadata(oulRequestsChannel, headers));
-
-      inMemoryConnector.source(oulRequestsChannel).send(payload);
+      return given().contentType(ContentType.JSON).body(request)
+            .when().post("/uppgifter")
+            .then().statusCode(200)
+            .extract().as(UppgiftResponse.class);
    }
 
    private PostUppgifterHandlaggareResponse assignTaskToHandlaggare(UUID handlaggarId)
@@ -113,7 +92,6 @@ public class OulTest
    @BeforeEach
    public void setup()
    {
-      inMemoryConnector.sink(oulResponsesChannel).clear();
       inMemoryConnector.sink(oulStatusNotificationChannel).clear();
    }
 
@@ -130,27 +108,15 @@ public class OulTest
    @Test
    public void testOulSmoke()
    {
-      String handlaggningId = UUID.randomUUID().toString();
-
-      // Send OUL request to start workflow
-      sendOulRequest(handlaggningId);
+      var handlaggningId = UUID.randomUUID();
 
       //
-      // Verify OUL response message produced
+      // Create uppgift via REST
       //
-      var messages = waitForMessages(oulResponsesChannel);
-      assertEquals(1, messages.size());
-
-      var message = messages.getFirst().getPayload();
-      assertInstanceOf(OperativtUppgiftslagerResponseMessage.class, message);
-
-      var oulResponseMessage = (OperativtUppgiftslagerResponseMessage) message;
-      var uppgiftId = oulResponseMessage.getUppgiftId();
-      assertEquals(handlaggningId, oulResponseMessage.getHandlaggningId());
-      assertNotNull(uppgiftId);
-      assertEquals(Map.of("kogitoprocinstanceid", "test-proc-instance-id"), oulResponseMessage.getCloudeventAttributes());
-
-      inMemoryConnector.sink(oulResponsesChannel).clear();
+      var createResponse = createUppgift(handlaggningId);
+      assertNotNull(createResponse.getUppgiftId());
+      assertEquals(handlaggningId, createResponse.getHandlaggningId());
+      var uppgiftId = createResponse.getUppgiftId().toString();
 
       //
       // Assign new task to handlaggare
@@ -158,34 +124,33 @@ public class OulTest
       var handlaggarId = UUID.randomUUID();
       var assignResponse = assignTaskToHandlaggare(handlaggarId);
 
-      var expectedIndivid = new se.fk.rimfrost.jaxrsspec.controllers.generatedsource.model.Idtyp();
+      var expectedIndivid = new Idtyp();
       expectedIndivid.setTypId("d8bc00b6-445e-4085-ac31-d743cfb5f303");
       expectedIndivid.setVarde("19900101-1234");
 
-      var expectedAssignedHandlaggare = new se.fk.rimfrost.jaxrsspec.controllers.generatedsource.model.Idtyp();
+      var expectedAssignedHandlaggare = new Idtyp();
       expectedAssignedHandlaggare.setTypId("116759e4-18fd-4209-849c-90abbd257d22");
       expectedAssignedHandlaggare.setVarde(handlaggarId.toString());
 
       assertNotNull(assignResponse.getOperativUppgift());
-      assertEquals(UUID.fromString(uppgiftId), assignResponse.getOperativUppgift().getUppgiftId());
+      assertEquals(createResponse.getUppgiftId(), assignResponse.getOperativUppgift().getUppgiftId());
       assertEquals("Test Regel", assignResponse.getOperativUppgift().getRegel());
       assertEquals("Test Roll", assignResponse.getOperativUppgift().getRoll());
       assertEquals("Test Beskrivning", assignResponse.getOperativUppgift().getBeskrivning());
       assertEquals("Test Verksamhetslogik", assignResponse.getOperativUppgift().getVerksamhetslogik());
       assertEquals("/test/url/", assignResponse.getOperativUppgift().getUrl());
       assertEquals(expectedAssignedHandlaggare, assignResponse.getOperativUppgift().getHandlaggarId());
-      assertEquals(List.of(expectedIndivid),
-            assignResponse.getOperativUppgift().getIndivider());
+      assertEquals(List.of(expectedIndivid), assignResponse.getOperativUppgift().getIndivider());
       assertEquals(OperativUppgift.StatusEnum.TILLDELAD, assignResponse.getOperativUppgift().getStatus());
       assertNotNull(assignResponse.getOperativUppgift().getSkapad());
 
       //
       // Verify OUL status notification is produced
       //
-      messages = waitForMessages(oulStatusNotificationChannel);
+      var messages = waitForMessages(oulStatusNotificationChannel);
       assertEquals(1, messages.size());
 
-      message = messages.getFirst().getPayload();
+      var message = messages.getFirst().getPayload();
       assertInstanceOf(OperativtUppgiftslagerStatusMessage.class, message);
 
       var expectedUtforare = new se.fk.rimfrost.Idtyp();
@@ -193,11 +158,10 @@ public class OulTest
       expectedUtforare.setVarde(handlaggarId.toString());
 
       var oulStatusMessage = (OperativtUppgiftslagerStatusMessage) message;
-      assertEquals(handlaggningId, oulStatusMessage.getHandlaggningId());
+      assertEquals(handlaggningId.toString(), oulStatusMessage.getHandlaggningId());
       assertEquals(uppgiftId, oulStatusMessage.getUppgiftId());
       assertEquals(expectedUtforare, oulStatusMessage.getUtforarId());
       assertEquals(Status.TILLDELAD, oulStatusMessage.getStatus());
-      assertEquals(Map.of("kogitoprocinstanceid", "test-proc-instance-id"), oulStatusMessage.getCloudeventAttributes());
 
       inMemoryConnector.sink(oulStatusNotificationChannel).clear();
 
@@ -211,7 +175,7 @@ public class OulTest
       assertEquals(1, assignedTasks.getOperativaUppgifter().size());
 
       var assignedTask = assignedTasks.getOperativaUppgifter().getFirst();
-      assertEquals(UUID.fromString(uppgiftId), assignedTask.getUppgiftId());
+      assertEquals(createResponse.getUppgiftId(), assignedTask.getUppgiftId());
 
       //
       // Simulate rule being finished by sending avslutad status update
@@ -228,11 +192,10 @@ public class OulTest
       assertInstanceOf(OperativtUppgiftslagerStatusMessage.class, message);
 
       oulStatusMessage = (OperativtUppgiftslagerStatusMessage) message;
-      assertEquals(handlaggningId, oulStatusMessage.getHandlaggningId());
+      assertEquals(handlaggningId.toString(), oulStatusMessage.getHandlaggningId());
       assertEquals(uppgiftId, oulStatusMessage.getUppgiftId());
       assertEquals(expectedUtforare, oulStatusMessage.getUtforarId());
       assertEquals(Status.AVSLUTAD, oulStatusMessage.getStatus());
-      assertEquals(Map.of("kogitoprocinstanceid", "test-proc-instance-id"), oulStatusMessage.getCloudeventAttributes());
 
       inMemoryConnector.sink(oulStatusNotificationChannel).clear();
 
@@ -246,17 +209,11 @@ public class OulTest
    }
 
    @ParameterizedTest
-   @CsvSource(
+   @CsvSource({"TILLDELAD, true", "AVSLUTAD, false", "AVBRUTEN, false"})
+   public void testUppgiftPresenceAfterStatusUpdate(Status status, boolean expectedPresent)
    {
-         "TILLDELAD, true", "AVSLUTAD, false", "AVBRUTEN, false"
-   })
-   public void testUppgiftPresenceAfterStatusUpdate(Status status, boolean expectedUppgiftPresence)
-   {
-      sendOulRequest(UUID.randomUUID().toString());
-
-      var messages = waitForMessages(oulResponsesChannel);
-      var uppgiftId = ((OperativtUppgiftslagerResponseMessage) messages.getFirst().getPayload()).getUppgiftId();
-      inMemoryConnector.sink(oulResponsesChannel).clear();
+      var createResponse = createUppgift(UUID.randomUUID());
+      var uppgiftId = createResponse.getUppgiftId().toString();
 
       var handlaggarId = UUID.randomUUID();
       assignTaskToHandlaggare(handlaggarId);
@@ -269,7 +226,7 @@ public class OulTest
 
       var assignedTasks = getAssignedTasks(handlaggarId);
       assertNotNull(assignedTasks);
-      if (expectedUppgiftPresence)
+      if (expectedPresent)
       {
          assertNotNull(assignedTasks.getOperativaUppgifter());
          assertEquals(1, assignedTasks.getOperativaUppgifter().size());

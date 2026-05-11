@@ -29,7 +29,8 @@ public class OperativtUppgiftslagerService
 
    private final ConcurrentHashMap<UUID, UppgiftEntity> taskMap = new ConcurrentHashMap<>();
 
-   public void addOperativeTask(OperativtUppgiftslagerAddRequest addRequest)
+   public UppgiftDto addOperativeTask(OperativtUppgiftslagerAddRequest addRequest, String notificationTopic,
+         Map<String, String> cloudeventAttributes)
    {
       log.info("Adding new task");
       var uppgift = ImmutableUppgiftEntity.builder()
@@ -43,13 +44,12 @@ public class OperativtUppgiftslagerService
             .verksamhetslogik(addRequest.verksamhetslogik())
             .roll(addRequest.roll())
             .url(addRequest.url())
-            .subTopic(addRequest.subTopic())
-            .cloudeventAttributes(addRequest.cloudeventAttributes())
+            .subTopic(notificationTopic)
+            .cloudeventAttributes(cloudeventAttributes)
             .build();
 
       taskMap.put(uppgift.uppgiftId(), uppgift);
-      producer.publishTaskResponse(uppgift.handlaggningId(), uppgift.uppgiftId(), uppgift.subTopic(),
-            uppgift.cloudeventAttributes());
+      return logicMapper.toUppgiftDto(uppgift);
    }
 
    public void onTaskStatusUpdated(OperativtUppgiftslagerStatusUpdateRequest statusUpdateRequest)
