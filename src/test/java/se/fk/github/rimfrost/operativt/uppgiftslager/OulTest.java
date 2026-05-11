@@ -30,7 +30,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 public class OulTest
 {
    private static final String oulStatusNotificationChannel = "operativt-uppgiftslager-status-notification";
-   private static final String oulStatusControlChannel = "operativt-uppgiftslager-status-control";
 
    @Inject
    @Connector("smallrye-in-memory")
@@ -80,13 +79,15 @@ public class OulTest
             .statusCode(200).extract().as(GetUppgifterHandlaggareResponse.class);
    }
 
-   private void sendStatusUpdateRequest(String uppgiftId, Status status)
+   private UppgiftResponse endUppgift(UUID uppgiftId, String reason)
    {
-      OperativtUppgiftslagerStatusMessage message = new OperativtUppgiftslagerStatusMessage();
-      message.setUppgiftId(uppgiftId);
-      message.setStatus(status);
+      var request = new EndUppgiftRequest();
+      request.setReason(reason);
 
-      inMemoryConnector.source(oulStatusControlChannel).send(message);
+      return given().contentType(ContentType.JSON).body(request)
+            .when().post("/uppgifter/{uppgiftId}/end", uppgiftId)
+            .then().statusCode(200)
+            .extract().as(UppgiftResponse.class);
    }
 
    @BeforeEach
@@ -178,9 +179,9 @@ public class OulTest
       assertEquals(createResponse.getUppgiftId(), assignedTask.getUppgiftId());
 
       //
-      // Simulate rule being finished by sending avslutad status update
+      // End uppgift via REST
       //
-      sendStatusUpdateRequest(uppgiftId, Status.AVSLUTAD);
+      endUppgift(UUID.fromString(uppgiftId), "Test reason");
 
       //
       // Verify OUL status notification is produced
@@ -209,20 +210,23 @@ public class OulTest
    }
 
    @ParameterizedTest
-   @CsvSource({"TILLDELAD, true", "AVSLUTAD, false", "AVBRUTEN, false"})
-   public void testUppgiftPresenceAfterStatusUpdate(Status status, boolean expectedPresent)
+   @CsvSource({"false, true", "true, false"})
+   public void testUppgiftPresenceAfterStatusUpdate(boolean endTask, boolean expectedPresent)
    {
       var createResponse = createUppgift(UUID.randomUUID());
-      var uppgiftId = createResponse.getUppgiftId().toString();
+      var uppgiftId = createResponse.getUppgiftId();
 
       var handlaggarId = UUID.randomUUID();
       assignTaskToHandlaggare(handlaggarId);
       waitForMessages(oulStatusNotificationChannel);
       inMemoryConnector.sink(oulStatusNotificationChannel).clear();
 
-      sendStatusUpdateRequest(uppgiftId, status);
-      waitForMessages(oulStatusNotificationChannel);
-      inMemoryConnector.sink(oulStatusNotificationChannel).clear();
+      if (endTask)
+      {
+         endUppgift(uppgiftId, "Test reason");
+         waitForMessages(oulStatusNotificationChannel);
+         inMemoryConnector.sink(oulStatusNotificationChannel).clear();
+      }
 
       var assignedTasks = getAssignedTasks(handlaggarId);
       assertNotNull(assignedTasks);

@@ -43,4 +43,7 @@ public interface UppgiftEntity
    String subTopic();
 
    Map<String, String> cloudeventAttributes();
+
+   @Nullable
+   String reason();
 }

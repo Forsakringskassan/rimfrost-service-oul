@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.OperativtUppgiftslagerService;
 import se.fk.rimfrost.jaxrsspec.controllers.generatedsource.DefaultApi;
 import se.fk.rimfrost.jaxrsspec.controllers.generatedsource.model.CreateUppgiftRequest;
+import se.fk.rimfrost.jaxrsspec.controllers.generatedsource.model.EndUppgiftRequest;
 import se.fk.rimfrost.jaxrsspec.controllers.generatedsource.model.UppgiftResponse;
 
 @ApplicationScoped
@@ -42,8 +43,13 @@ public class ManagementController implements DefaultApi
    }
 
    @Override
-   public UppgiftResponse endUppgift(UUID uppgiftId)
+   public UppgiftResponse endUppgift(UUID uppgiftId, EndUppgiftRequest endUppgiftRequest)
    {
-      throw new UnsupportedOperationException("Not yet implemented");
+      log.info("Ending uppgift: {}", uppgiftId);
+      var uppgift = operativtUppgiftslagerService.endTask(uppgiftId, endUppgiftRequest.getReason());
+      var response = new UppgiftResponse();
+      response.setUppgiftId(uppgift.uppgiftId());
+      response.setHandlaggningId(uppgift.handlaggningId());
+      return response;
    }
 }
