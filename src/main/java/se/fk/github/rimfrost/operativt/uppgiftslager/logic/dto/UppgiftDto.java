@@ -1,6 +1,7 @@
 package se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto;
 
 import java.time.LocalDate;
+import java.util.Map;
 import java.util.UUID;
 import org.immutables.value.Value;
 import jakarta.annotation.Nullable;
@@ -39,4 +40,5 @@ public interface UppgiftDto
 
    String url();
 
+   Map<String, String> cloudeventAttributes();
 }
