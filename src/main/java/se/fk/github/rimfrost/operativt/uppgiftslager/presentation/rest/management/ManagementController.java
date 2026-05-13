@@ -9,6 +9,7 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.OperativtUppgiftslagerService;
+import se.fk.github.rimfrost.operativt.uppgiftslager.util.EnumMapper;
 import se.fk.rimfrost.jaxrsspec.controllers.generatedsource.DefaultApi;
 import se.fk.rimfrost.jaxrsspec.controllers.generatedsource.model.CreateUppgiftRequest;
 import se.fk.rimfrost.jaxrsspec.controllers.generatedsource.model.EndUppgiftRequest;
@@ -27,18 +28,22 @@ public class ManagementController implements DefaultApi
 
    @Inject
    ManagementMapper managementMapper;
+   @Inject
+   EnumMapper enumMapper;
 
    @Override
    public UppgiftResponse createUppgift(CreateUppgiftRequest createUppgiftRequest)
    {
       log.info("Creating uppgift for handlaggningId: {}", createUppgiftRequest.getHandlaggningId());
       var addRequest = managementMapper.toAddRequest(createUppgiftRequest);
-      var uppgift = operativtUppgiftslagerService.addOperativeTask(addRequest, createUppgiftRequest.getReplyTopic(),
+      var uppgift = operativtUppgiftslagerService.addOperativeTask(addRequest, createUppgiftRequest.getSubTopic(),
             createUppgiftRequest.getCloudeventAttributes());
 
       var response = new UppgiftResponse();
       response.setUppgiftId(uppgift.uppgiftId());
       response.setHandlaggningId(uppgift.handlaggningId());
+      response.setStatus(enumMapper.mapUppgiftStatusToStatus(uppgift.status()));
+      response.setCloudeventAttributes(uppgift.cloudeventAttributes());
       return response;
    }
 
@@ -50,6 +55,8 @@ public class ManagementController implements DefaultApi
       var response = new UppgiftResponse();
       response.setUppgiftId(uppgift.uppgiftId());
       response.setHandlaggningId(uppgift.handlaggningId());
+      response.setStatus(enumMapper.mapUppgiftStatusToStatus(uppgift.status()));
+      response.setCloudeventAttributes(uppgift.cloudeventAttributes());
       return response;
    }
 }

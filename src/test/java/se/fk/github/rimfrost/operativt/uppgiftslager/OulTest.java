@@ -15,7 +15,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import se.fk.rimfrost.OperativtUppgiftslagerStatusMessage;
-import se.fk.rimfrost.Status;
 import se.fk.rimfrost.jaxrsspec.controllers.generatedsource.model.*;
 import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.when;
@@ -56,7 +55,7 @@ public class OulTest
       request.setBeskrivning("Test Beskrivning");
       request.setVerksamhetslogik("Test Verksamhetslogik");
       request.setUrl("/test/url/");
-      request.setReplyTopic("test");
+      request.setSubTopic("test");
       request.setCloudeventAttributes(Map.of("kogitoprocinstanceid", "test-proc-instance-id"));
 
       return given().contentType(ContentType.JSON).body(request)
@@ -162,7 +161,7 @@ public class OulTest
       assertEquals(handlaggningId.toString(), oulStatusMessage.getHandlaggningId());
       assertEquals(uppgiftId, oulStatusMessage.getUppgiftId());
       assertEquals(expectedUtforare, oulStatusMessage.getUtforarId());
-      assertEquals(Status.TILLDELAD, oulStatusMessage.getStatus());
+      assertEquals("TILLDELAD", oulStatusMessage.getStatus());
 
       inMemoryConnector.sink(oulStatusNotificationChannel).clear();
 
@@ -196,7 +195,7 @@ public class OulTest
       assertEquals(handlaggningId.toString(), oulStatusMessage.getHandlaggningId());
       assertEquals(uppgiftId, oulStatusMessage.getUppgiftId());
       assertEquals(expectedUtforare, oulStatusMessage.getUtforarId());
-      assertEquals(Status.AVSLUTAD, oulStatusMessage.getStatus());
+      assertEquals("AVSLUTAD", oulStatusMessage.getStatus());
 
       inMemoryConnector.sink(oulStatusNotificationChannel).clear();
 
@@ -210,7 +209,10 @@ public class OulTest
    }
 
    @ParameterizedTest
-   @CsvSource({"false, true", "true, false"})
+   @CsvSource(
+   {
+         "false, true", "true, false"
+   })
    public void testUppgiftPresenceAfterStatusUpdate(boolean endTask, boolean expectedPresent)
    {
       var createResponse = createUppgift(UUID.randomUUID());
