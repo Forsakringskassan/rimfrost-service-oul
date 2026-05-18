@@ -180,24 +180,14 @@ public class OulTest
       //
       // End uppgift via REST
       //
-      endUppgift(UUID.fromString(uppgiftId), "Test reason");
+      var endResponse = endUppgift(UUID.fromString(uppgiftId), "Test reason");
 
       //
-      // Verify OUL status notification is produced
+      // Verify end response values
       //
-      messages = waitForMessages(oulStatusNotificationChannel);
-      assertEquals(1, messages.size());
-
-      message = messages.getFirst().getPayload();
-      assertInstanceOf(OperativtUppgiftslagerStatusMessage.class, message);
-
-      oulStatusMessage = (OperativtUppgiftslagerStatusMessage) message;
-      assertEquals(handlaggningId.toString(), oulStatusMessage.getHandlaggningId());
-      assertEquals(uppgiftId, oulStatusMessage.getUppgiftId());
-      assertEquals(expectedUtforare, oulStatusMessage.getUtforarId());
-      assertEquals("AVSLUTAD", oulStatusMessage.getStatus());
-
-      inMemoryConnector.sink(oulStatusNotificationChannel).clear();
+      assertEquals(handlaggningId, endResponse.getHandlaggningId());
+      assertEquals(UUID.fromString(uppgiftId), endResponse.getUppgiftId());
+      assertEquals("AVSLUTAD", endResponse.getStatus());
 
       //
       // Verify assigned task is not included in GET response
@@ -226,8 +216,6 @@ public class OulTest
       if (endTask)
       {
          endUppgift(uppgiftId, "Test reason");
-         waitForMessages(oulStatusNotificationChannel);
-         inMemoryConnector.sink(oulStatusNotificationChannel).clear();
       }
 
       var assignedTasks = getAssignedTasks(handlaggarId);
