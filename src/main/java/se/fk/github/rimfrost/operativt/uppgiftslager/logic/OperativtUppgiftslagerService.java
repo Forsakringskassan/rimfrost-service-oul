@@ -61,7 +61,6 @@ public class OperativtUppgiftslagerService
             .reason(reason)
             .build();
       taskMap.remove(uppgiftId);
-      notifyStatusUpdate(endedTask);
       log.info("Task {} ended", uppgiftId);
       return logicMapper.toUppgiftDto(endedTask);
    }
