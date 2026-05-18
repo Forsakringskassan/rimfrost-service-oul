@@ -48,6 +48,7 @@ public class LogicMapper
             .verksamhetslogik(uppgift.verksamhetslogik())
             .roll(uppgift.roll())
             .url(uppgift.url())
+            .cloudeventAttributes(uppgift.cloudeventAttributes())
             .build();
    }
 

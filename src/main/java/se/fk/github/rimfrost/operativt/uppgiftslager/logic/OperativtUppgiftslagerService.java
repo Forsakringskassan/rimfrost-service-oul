@@ -10,7 +10,6 @@ import jakarta.inject.Inject;
 import se.fk.github.rimfrost.operativt.uppgiftslager.integration.kafka.OperativtUppgiftslagerProducer;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.ImmutableIdtyp;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.OperativtUppgiftslagerAddRequest;
-import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.OperativtUppgiftslagerStatusUpdateRequest;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.UppgiftDto;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.ImmutableUppgiftEntity;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.UppgiftEntity;
@@ -29,7 +28,8 @@ public class OperativtUppgiftslagerService
 
    private final ConcurrentHashMap<UUID, UppgiftEntity> taskMap = new ConcurrentHashMap<>();
 
-   public void addOperativeTask(OperativtUppgiftslagerAddRequest addRequest)
+   public UppgiftDto addOperativeTask(OperativtUppgiftslagerAddRequest addRequest, String notificationTopic,
+         Map<String, String> cloudeventAttributes)
    {
       log.info("Adding new task");
       var uppgift = ImmutableUppgiftEntity.builder()
@@ -43,32 +43,27 @@ public class OperativtUppgiftslagerService
             .verksamhetslogik(addRequest.verksamhetslogik())
             .roll(addRequest.roll())
             .url(addRequest.url())
-            .subTopic(addRequest.subTopic())
-            .cloudeventAttributes(addRequest.cloudeventAttributes())
+            .subTopic(notificationTopic)
+            .cloudeventAttributes(cloudeventAttributes)
             .build();
 
       taskMap.put(uppgift.uppgiftId(), uppgift);
-      producer.publishTaskResponse(uppgift.handlaggningId(), uppgift.uppgiftId(), uppgift.subTopic(),
-            uppgift.cloudeventAttributes());
+      return logicMapper.toUppgiftDto(uppgift);
    }
 
-   public void onTaskStatusUpdated(OperativtUppgiftslagerStatusUpdateRequest statusUpdateRequest)
+   public UppgiftDto endTask(UUID uppgiftId, String reason)
    {
-      log.info("StatusUpdating task {} with status {}", statusUpdateRequest.uppgiftId(), statusUpdateRequest.status());
-      var task = taskMap.get(statusUpdateRequest.uppgiftId());
-      var updatedTask = ImmutableUppgiftEntity.builder()
+      log.info("Ending task {} with reason: {}", uppgiftId, reason);
+      var task = taskMap.get(uppgiftId);
+      var endedTask = ImmutableUppgiftEntity.builder()
             .from(task)
-            .status(statusUpdateRequest.status())
+            .status(UppgiftStatus.AVSLUTAD)
+            .reason(reason)
             .build();
-      taskMap.put(task.uppgiftId(), updatedTask);
-
-      if (updatedTask.status() == UppgiftStatus.AVSLUTAD || updatedTask.status() == UppgiftStatus.AVBRUTEN)
-      {
-         taskMap.remove(updatedTask.uppgiftId());
-      }
-
-      notifyStatusUpdate(updatedTask);
-      log.info("Task StatusUpdate finished on {}", updatedTask.uppgiftId());
+      taskMap.remove(uppgiftId);
+      notifyStatusUpdate(endedTask);
+      log.info("Task {} ended", uppgiftId);
+      return logicMapper.toUppgiftDto(endedTask);
    }
 
    public Collection<UppgiftDto> getUppgifterHandlaggare(String idTyp, String handlaggarId)

@@ -50,7 +50,12 @@
     <dependency>
       <groupId>se.fk.rimfrost</groupId>
       <artifactId>rimfrost-service-oul-asyncapi</artifactId>
-      <version>1.0.3</version>
+      <version>1.0.5</version>
+    </dependency>
+    <dependency>
+      <groupId>se.fk.rimfrost</groupId>
+      <artifactId>rimfrost-service-oul-management-api-jaxrs-spec</artifactId>
+      <version>0.0.1</version>
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
