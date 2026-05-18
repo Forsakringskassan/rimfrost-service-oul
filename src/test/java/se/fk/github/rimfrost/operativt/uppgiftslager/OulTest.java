@@ -1,5 +1,6 @@
 package se.fk.github.rimfrost.operativt.uppgiftslager;
 
+import io.quarkus.test.junit.TestProfile;
 import io.restassured.http.ContentType;
 import io.smallrye.reactive.messaging.memory.InMemoryConnector;
 import io.quarkus.test.junit.QuarkusTest;
@@ -8,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.reactive.messaging.Message;
 import org.eclipse.microprofile.reactive.messaging.spi.Connector;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 @QuarkusTest
+@TestProfile(TestProfileMainMethod.class)
 public class OulTest
 {
    private static final String oulStatusNotificationChannel = "operativt-uppgiftslager-status-notification";
@@ -33,6 +37,9 @@ public class OulTest
    @Inject
    @Connector("smallrye-in-memory")
    InMemoryConnector inMemoryConnector;
+
+   @ConfigProperty(name = "rimfrost.oul.management.api.port")
+   int managementApiPort;
 
    private List<? extends Message<?>> waitForMessages(String channel)
    {
@@ -59,7 +66,7 @@ public class OulTest
       request.setCloudeventAttributes(Map.of("kogitoprocinstanceid", "test-proc-instance-id"));
 
       return given().contentType(ContentType.JSON).body(request)
-            .when().post("/uppgifter")
+            .when().port(managementApiPort).post("/uppgifter")
             .then().statusCode(200)
             .extract().as(UppgiftResponse.class);
    }
@@ -84,7 +91,7 @@ public class OulTest
       request.setReason(reason);
 
       return given().contentType(ContentType.JSON).body(request)
-            .when().post("/uppgifter/{uppgiftId}/end", uppgiftId)
+            .when().port(managementApiPort).post("/uppgifter/{uppgiftId}/end", uppgiftId)
             .then().statusCode(200)
             .extract().as(UppgiftResponse.class);
    }

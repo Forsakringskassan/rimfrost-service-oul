@@ -9,6 +9,7 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.OperativtUppgiftslagerService;
+import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.ManagementApi;
 import se.fk.github.rimfrost.operativt.uppgiftslager.util.EnumMapper;
 import se.fk.rimfrost.jaxrsspec.controllers.generatedsource.DefaultApi;
 import se.fk.rimfrost.jaxrsspec.controllers.generatedsource.model.CreateUppgiftRequest;
@@ -16,6 +17,7 @@ import se.fk.rimfrost.jaxrsspec.controllers.generatedsource.model.EndUppgiftRequ
 import se.fk.rimfrost.jaxrsspec.controllers.generatedsource.model.UppgiftResponse;
 
 @ApplicationScoped
+@ManagementApi
 @Path("/uppgifter")
 @Produces("application/json")
 @Consumes("application/json")
