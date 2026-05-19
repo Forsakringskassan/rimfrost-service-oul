@@ -15,13 +15,8 @@ import static se.fk.github.rimfrost.operativt.uppgiftslager.OulTestData.newEndUp
 @QuarkusTest
 public class OulManagementTest extends OulTestBase
 {
-   @ParameterizedTest
-   @CsvSource(
-   {
-         "AVSLUTAD",
-         "AVBRUTEN"
-   })
-   public void should_create_uppgift(String reason)
+   @Test
+   public void should_create_uppgift()
    {
       var handlaggningId = UUID.randomUUID();
       var createUppgiftRequest = newCreateUppgiftRequest(handlaggningId);
