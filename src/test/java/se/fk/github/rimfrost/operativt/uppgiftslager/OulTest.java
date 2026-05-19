@@ -195,7 +195,8 @@ public class OulTest
       assignedTasks = getAssignedTasks(handlaggarId);
 
       assertNotNull(assignedTasks);
-      assertNull(assignedTasks.getOperativaUppgifter());
+      assertNotNull(assignedTasks.getOperativaUppgifter());
+      assertEquals(0, assignedTasks.getOperativaUppgifter().size());
    }
 
    @ParameterizedTest
@@ -220,15 +221,8 @@ public class OulTest
 
       var assignedTasks = getAssignedTasks(handlaggarId);
       assertNotNull(assignedTasks);
-      if (expectedPresent)
-      {
-         assertNotNull(assignedTasks.getOperativaUppgifter());
-         assertEquals(1, assignedTasks.getOperativaUppgifter().size());
-      }
-      else
-      {
-         assertNull(assignedTasks.getOperativaUppgifter());
-      }
+      assertNotNull(assignedTasks.getOperativaUppgifter());
+      assertEquals(expectedPresent ? 1 : 0, assignedTasks.getOperativaUppgifter().size());
    }
 
 }

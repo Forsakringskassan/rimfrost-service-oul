@@ -14,10 +14,7 @@ public class PresentationRestMapper
    public GetUppgifterHandlaggareResponse toGetUppgifterHandlaggareResponse(Collection<UppgiftDto> uppgifter)
    {
       GetUppgifterHandlaggareResponse response = new GetUppgifterHandlaggareResponse();
-      for (var uppgiftDto : uppgifter)
-      {
-         response.addOperativaUppgifterItem(toUppgift(uppgiftDto));
-      }
+      response.setOperativaUppgifter(uppgifter.stream().map(this::toUppgift).toList());
       return response;
    }
 
