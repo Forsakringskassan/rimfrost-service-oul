@@ -5,15 +5,18 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
+
+import java.util.List;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.OperativtUppgiftslagerService;
 import se.fk.github.rimfrost.operativt.uppgiftslager.util.EnumMapper;
-import se.fk.rimfrost.jaxrsspec.controllers.generatedsource.DefaultApi;
-import se.fk.rimfrost.jaxrsspec.controllers.generatedsource.model.CreateUppgiftRequest;
-import se.fk.rimfrost.jaxrsspec.controllers.generatedsource.model.EndUppgiftRequest;
-import se.fk.rimfrost.jaxrsspec.controllers.generatedsource.model.UppgiftResponse;
+import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.DefaultApi;
+import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.CreateUppgiftRequest;
+import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.EndUppgiftRequest;
+import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.OperativUppgift;
+import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.UppgiftResponse;
 
 @ApplicationScoped
 @Path("/uppgifter")
@@ -58,5 +61,12 @@ public class ManagementController implements DefaultApi
       response.setStatus(enumMapper.mapUppgiftStatusToStatus(uppgift.status()));
       response.setCloudeventAttributes(uppgift.cloudeventAttributes());
       return response;
+   }
+
+   @Override
+   public List<OperativUppgift> getUppgifter()
+   {
+      var uppgifter = operativtUppgiftslagerService.getTasks();
+      return managementMapper.toOperativUppgiftList(uppgifter);
    }
 }

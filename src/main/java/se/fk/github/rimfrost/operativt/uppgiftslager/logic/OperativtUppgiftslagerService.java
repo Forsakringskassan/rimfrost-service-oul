@@ -65,6 +65,11 @@ public class OperativtUppgiftslagerService
       return logicMapper.toUppgiftDto(endedTask);
    }
 
+   public List<UppgiftDto> getTasks()
+   {
+      return taskMap.values().stream().map(logicMapper::toUppgiftDto).toList();
+   }
+
    public Collection<UppgiftDto> getUppgifterHandlaggare(String idTyp, String handlaggarId)
    {
       log.info("Getting all tasks for handlaggarId: {}", handlaggarId);

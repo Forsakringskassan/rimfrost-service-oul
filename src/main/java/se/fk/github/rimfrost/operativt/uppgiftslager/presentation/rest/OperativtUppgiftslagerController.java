@@ -12,8 +12,8 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.core.MediaType;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.OperativtUppgiftslagerService;
 import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.util.PresentationRestMapper;
-import se.fk.rimfrost.jaxrsspec.controllers.generatedsource.OperativtUppgiftslagerControllerApi;
-import se.fk.rimfrost.jaxrsspec.controllers.generatedsource.model.*;
+import se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.OperativtUppgiftslagerControllerApi;
+import se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.*;
 
 @SuppressWarnings("unused")
 @Produces("application/json")

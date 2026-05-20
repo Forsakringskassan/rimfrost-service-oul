@@ -1,16 +1,12 @@
 package se.fk.github.rimfrost.operativt.uppgiftslager;
 
-import io.restassured.http.ContentType;
-import se.fk.rimfrost.jaxrsspec.controllers.generatedsource.model.CreateUppgiftRequest;
-import se.fk.rimfrost.jaxrsspec.controllers.generatedsource.model.EndUppgiftRequest;
-import se.fk.rimfrost.jaxrsspec.controllers.generatedsource.model.Idtyp;
-import se.fk.rimfrost.jaxrsspec.controllers.generatedsource.model.UppgiftResponse;
+import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.CreateUppgiftRequest;
+import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.EndUppgiftRequest;
+import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.Idtyp;
 
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
-import static io.restassured.RestAssured.given;
 
 public class OulTestData
 {
