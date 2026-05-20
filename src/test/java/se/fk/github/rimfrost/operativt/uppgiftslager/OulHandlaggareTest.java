@@ -2,7 +2,7 @@ package se.fk.github.rimfrost.operativt.uppgiftslager;
 
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.Test;
-import se.fk.rimfrost.jaxrsspec.controllers.generatedsource.model.OperativUppgift;
+import se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.OperativUppgift;
 
 import java.util.UUID;
 
@@ -29,9 +29,10 @@ public class OulHandlaggareTest extends OulTestBase
       assertEquals(createResponse.getUppgiftId(), assignResponse.getOperativUppgift().getUppgiftId());
       assertEquals(createResponse.getHandlaggningId(), assignResponse.getOperativUppgift().getHandlaggningId());
       assertNotNull(assignResponse.getOperativUppgift().getSkapad());
-      assertEquals(createRestIdTyp(handlaggareId), assignResponse.getOperativUppgift().getHandlaggarId());
+      assertEquals(createHandlaggningIdtyp(handlaggareId), assignResponse.getOperativUppgift().getHandlaggarId());
       assertEquals(OperativUppgift.StatusEnum.TILLDELAD, assignResponse.getOperativUppgift().getStatus());
-      assertEquals(createUppgiftRequest.getIndivider(), assignResponse.getOperativUppgift().getIndivider());
+      assertEquals(createUppgiftRequest.getIndivider().stream().map(this::toHandlaggningIdtyp).toList(),
+            assignResponse.getOperativUppgift().getIndivider());
       assertEquals(createUppgiftRequest.getRegel(), assignResponse.getOperativUppgift().getRegel());
       assertEquals(createUppgiftRequest.getBeskrivning(), assignResponse.getOperativUppgift().getBeskrivning());
       assertEquals(createUppgiftRequest.getVerksamhetslogik(), assignResponse.getOperativUppgift().getVerksamhetslogik());
@@ -102,12 +103,22 @@ public class OulHandlaggareTest extends OulTestBase
       return idtyp;
    }
 
-   private se.fk.rimfrost.jaxrsspec.controllers.generatedsource.model.Idtyp createRestIdTyp(UUID handlaggareId)
+   private se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.Idtyp createHandlaggningIdtyp(
+         UUID handlaggareId)
    {
-      se.fk.rimfrost.jaxrsspec.controllers.generatedsource.model.Idtyp idtyp = new se.fk.rimfrost.jaxrsspec.controllers.generatedsource.model.Idtyp();
+      se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.Idtyp idtyp = new se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.Idtyp();
       idtyp.setTypId(oulHandlaggareTypId);
       idtyp.setVarde(handlaggareId.toString());
 
+      return idtyp;
+   }
+
+   private se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.Idtyp toHandlaggningIdtyp(
+         se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.Idtyp managementIdtyp)
+   {
+      se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.Idtyp idtyp = new se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.Idtyp();
+      idtyp.setTypId(managementIdtyp.getTypId());
+      idtyp.setVarde(managementIdtyp.getVarde());
       return idtyp;
    }
 }

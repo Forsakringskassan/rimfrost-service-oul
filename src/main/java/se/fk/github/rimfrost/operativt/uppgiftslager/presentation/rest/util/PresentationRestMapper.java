@@ -5,8 +5,8 @@ import java.util.Collection;
 import jakarta.enterprise.context.ApplicationScoped;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.UppgiftDto;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.enums.UppgiftStatus;
-import se.fk.rimfrost.jaxrsspec.controllers.generatedsource.model.*;
-import se.fk.rimfrost.jaxrsspec.controllers.generatedsource.model.OperativUppgift.StatusEnum;
+import se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.*;
+import se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.OperativUppgift.StatusEnum;
 
 @ApplicationScoped
 public class PresentationRestMapper
@@ -23,7 +23,6 @@ public class PresentationRestMapper
       OperativUppgift uppgift = new OperativUppgift();
       if (uppgiftDto != null)
       {
-         System.out.printf("toUppgift uppgiftDto is not null: %s%n", uppgiftDto);
          uppgift.setHandlaggningId(uppgiftDto.handlaggningId());
          uppgift.setUppgiftId(uppgiftDto.uppgiftId());
          uppgift.setHandlaggarId(toApiIdtyp(uppgiftDto.handlaggarId()));
