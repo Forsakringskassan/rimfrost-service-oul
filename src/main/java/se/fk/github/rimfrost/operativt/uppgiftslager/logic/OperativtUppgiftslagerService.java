@@ -45,6 +45,7 @@ public class OperativtUppgiftslagerService
             .url(addRequest.url())
             .subTopic(notificationTopic)
             .cloudeventAttributes(cloudeventAttributes)
+            .erbjudande(addRequest.erbjudande())
             .build();
 
       taskMap.put(uppgift.uppgiftId(), uppgift);

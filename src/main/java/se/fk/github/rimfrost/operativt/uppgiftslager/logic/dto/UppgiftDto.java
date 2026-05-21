@@ -41,4 +41,6 @@ public interface UppgiftDto
    String url();
 
    Map<String, String> cloudeventAttributes();
+
+   Erbjudande erbjudande();
 }

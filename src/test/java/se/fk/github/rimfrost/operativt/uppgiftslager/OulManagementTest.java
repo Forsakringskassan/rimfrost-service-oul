@@ -89,6 +89,7 @@ public class OulManagementTest extends OulTestBase
       assertEquals(createUppgiftRequest.getUrl(), uppgift.getUrl());
       assertNull(uppgift.getUtford());
       assertNull(uppgift.getPlaneradTill());
+      assertEquals(createUppgiftRequest.getErbjudande(), uppgift.getErbjudande());
 
       if (assignedTask)
       {

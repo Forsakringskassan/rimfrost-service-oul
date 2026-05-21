@@ -23,4 +23,5 @@ public interface OperativtUppgiftslagerAddRequest
 
    String url();
 
+   Erbjudande erbjudande();
 }
