@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.UUID;
 import org.immutables.value.Value;
 import jakarta.annotation.Nullable;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.Erbjudande;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.Idtyp;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.enums.UppgiftStatus;
 
@@ -43,6 +44,8 @@ public interface UppgiftEntity
    String subTopic();
 
    Map<String, String> cloudeventAttributes();
+
+   Erbjudande erbjudande();
 
    @Nullable
    String reason();

@@ -4,10 +4,13 @@ import jakarta.enterprise.context.ApplicationScoped;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import jakarta.inject.Inject;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.Erbjudande;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.Idtyp;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.ImmutableIdtyp;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.ImmutableErbjudande;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.ImmutableOperativtUppgiftslagerAddRequest;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.OperativtUppgiftslagerAddRequest;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.UppgiftDto;
@@ -32,6 +35,7 @@ public class ManagementMapper
             .verksamhetslogik(request.getVerksamhetslogik())
             .roll(request.getRoll())
             .url(request.getUrl())
+            .erbjudande(toErbjudande(request.getErbjudande()))
             .build();
    }
 
@@ -52,6 +56,7 @@ public class ManagementMapper
          uppgift.verksamhetslogik(u.verksamhetslogik());
          uppgift.roll(u.roll());
          uppgift.url(u.url());
+         uppgift.erbjudande(toErbjudande(u.erbjudande()));
          return uppgift;
       }).toList();
    }
@@ -78,5 +83,27 @@ public class ManagementMapper
       idtyp.setTypId(individ.typId());
       idtyp.setVarde(individ.varde());
       return idtyp;
+   }
+
+   private Erbjudande toErbjudande(
+         se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.Erbjudande erbjudande)
+   {
+      var e = Objects.requireNonNull(erbjudande);
+
+      return ImmutableErbjudande.builder()
+            .id(e.getId())
+            .namn(e.getNamn())
+            .build();
+   }
+
+   private se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.Erbjudande toErbjudande(
+         Erbjudande erbjudande)
+   {
+      var e = Objects.requireNonNull(erbjudande);
+
+      se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.Erbjudande modelErbjudande = new se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.Erbjudande();
+      modelErbjudande.setId(e.id());
+      modelErbjudande.setNamn(e.namn());
+      return modelErbjudande;
    }
 }

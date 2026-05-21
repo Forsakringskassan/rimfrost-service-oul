@@ -55,7 +55,7 @@
     <dependency>
       <groupId>se.fk.rimfrost.oul.management</groupId>
       <artifactId>rimfrost-service-oul-management-api-jaxrs-spec</artifactId>
-      <version>0.0.3</version>
+      <version>0.0.5</version>
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
