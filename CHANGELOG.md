@@ -2,6 +2,20 @@
 
 Changelog of rimfrost-service-oul.
 
+## 1.0.3 (2026-05-21)
+
+### Bug Fixes
+
+-  Add support for erbjudande information ([9776d](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/9776da08c3b7517) Lars Persson)  
+-  Add support for listing OUL uppgifter ([d1fb0](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/d1fb0f4df23362f) Lars Persson)  
+-  Cleanup unnecessary use of ParameterizedTest in OulManagementTest suite ([06b42](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/06b428ea190642f) Lars Persson)  
+-  Refactor OulTest.java to multiple suites ([ef540](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/ef540bf94c8d3d6) Lars Persson)  
+-  Consistently return a list on handlaggare GET operation ([0442a](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/0442a2d57d255e0) Lars Persson)  
+-  Do not send kafka status notification on uppgift end ([cb5c8](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/cb5c8afb241130a) Lars Persson)  
+-  Update rimfrost-service-oul-management-openapi to correct version ([9edd6](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/9edd6e904ca0ad3) Lars Persson)  
+-  kafka uppgift end/status-control replaced by rest api ([fb15d](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/fb15d10ae5af73c) Ulf Slunga)  
+-  kafka uppgift create/response replaced by rest api ([8b0c6](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/8b0c6902f65bb50) Ulf Slunga)  
+
 ## 1.0.2 (2026-05-08)
 
 ### Bug Fixes
