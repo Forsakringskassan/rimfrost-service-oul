@@ -1,6 +1,7 @@
 package se.fk.github.rimfrost.operativt.uppgiftslager;
 
 import io.quarkus.test.junit.QuarkusTest;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -17,6 +18,7 @@ import static se.fk.github.rimfrost.operativt.uppgiftslager.OulTestData.newEndUp
 public class OulManagementTest extends OulTestBase
 {
    @Test
+   @DisplayName("FR-01.1, FR-01.2, FR-01.3, FR-01.6, FR-01.7: Skapa uppgift — status NY, uppgift_id genereras, CloudEvent-attribut bevaras")
    public void should_create_uppgift()
    {
       var handlaggningId = UUID.randomUUID();
@@ -36,6 +38,7 @@ public class OulManagementTest extends OulTestBase
          "AVSLUTAD",
          "AVBRUTEN"
    })
+   @DisplayName("FR-02.1, FR-02.3, FR-01.6: Avsluta uppgift — AVSLUTAD och AVBRUTEN är giltiga skäl, status och CloudEvent-attribut returneras")
    public void should_end_uppgift(String reason)
    {
       var handlaggningId = UUID.randomUUID();
@@ -51,6 +54,7 @@ public class OulManagementTest extends OulTestBase
    }
 
    @Test
+   @DisplayName("FR-02.4: Avsluta uppgift — HTTP 404 returneras när uppgifts-ID inte finns")
    public void should_return_404_on_end_when_uppgift_not_found()
    {
       var uppgiftId = UUID.randomUUID();
@@ -62,6 +66,7 @@ public class OulManagementTest extends OulTestBase
    {
          "true", "false"
    })
+   @DisplayName("FR-03.1, FR-03.3, FR-01.4, FR-01.5: Lista alla uppgifter — NY och TILLDELAD returneras med fullständiga fält, handlaggarId endast för tilldelade")
    public void should_list_available_uppgifter(boolean assignedTask)
    {
       var handlaggningId = UUID.randomUUID();
