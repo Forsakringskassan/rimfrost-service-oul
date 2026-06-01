@@ -27,7 +27,12 @@ finns, vilken handläggare som är tilldelad uppgiften, och informerar intressen
 - **FR-01.1** Regler ska kunna skapa en ny operativ uppgift i OUL.
 - **FR-01.2** En ny uppgift ska tilldelas status `NY` vid skapandet.
 - **FR-01.3** Uppgiften ska knytas till ett handläggningsärende.
-- **FR-01.4** Uppgiften ska innehålla information om berörda individer, vilken regel som triggade uppgiften, roll som ska utföra uppgiften, beskrivning samt en URL till regelns tjänst som portalen använder.
+- **FR-01.4** Uppgiften ska innehålla:
+  - berörda individer
+  - vilken regel som triggade uppgiften
+  - roll som ska utföra uppgiften
+  - beskrivning
+  - URL till regelns tjänst som portalen använder
 - **FR-01.5** Uppgiften ska vara kopplad till ett erbjudande.
 - **FR-01.6** Uppgiften ska innehålla CloudEvent-attribut som OUL bevarar och returnerar oförändrade, för att möjliggöra korrelation mellan regeln och dess flödesprocess.
 - **FR-01.7** OUL ska returnera ett unikt uppgifts-ID vid skapandet.
@@ -35,7 +40,7 @@ finns, vilken handläggare som är tilldelad uppgiften, och informerar intressen
 ### FR-02 — Avsluta uppgift
 
 - **FR-02.1** Regler ska kunna avsluta en uppgift med angiven orsak.
-- **FR-02.2** _En avslutad uppgift ska tas bort permanent?_ ELLER _En avslutad uppgift ska markeras med status 'AVSLUTAD'?_
+- **FR-02.2** En avslutad uppgift ska tas bort permanent.
 - **FR-02.3** OUL ska returnera uppgiftens senaste status vid avslut.
 - **FR-02.4** Om specificerad uppgift inte finns ska ett tydligt felmeddelande returneras (HTTP 404).
 
@@ -61,7 +66,11 @@ finns, vilken handläggare som är tilldelad uppgiften, och informerar intressen
 ### FR-06 — Statusnotifiering via Kafka
 
 - **FR-06.1** När en uppgift tilldelas en handläggare ska OUL publicera ett meddelande på Kafka.
-- **FR-06.2** Meddelandet ska innehålla handläggningsärendets ID, uppgiftens ID, den tilldelade handläggarens ID samt uppgiftens status.
+- **FR-06.2** Meddelandet ska innehålla:
+  - handläggningsärendets ID
+  - uppgiftens ID
+  - den tilldelade handläggarens ID
+  - uppgiftens status
 - **FR-06.3** Meddelandet ska bära de CloudEvent-attribut som angavs vid skapandet av uppgiften.
 - **FR-06.4** Kafka-topic ska vara dynamiskt och styras av ett ämnesprefix som regler anger vid skapandet av uppgiften, så att flödesprocesser kan prenumerera selektivt på sina egna notifieringar.
 
