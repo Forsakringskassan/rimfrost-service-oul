@@ -50,6 +50,13 @@ public class OulManagementTest extends OulTestBase
       assertEquals(createUppgiftRequest.getCloudeventAttributes(), endResponse.getCloudeventAttributes());
    }
 
+   @Test
+   public void should_return_404_on_end_when_uppgift_not_found()
+   {
+      var uppgiftId = UUID.randomUUID();
+      sendEndUppgiftRequest(uppgiftId, newEndUppgiftRequest("AVSLUTAD"), 404);
+   }
+
    @ParameterizedTest
    @CsvSource(
    {

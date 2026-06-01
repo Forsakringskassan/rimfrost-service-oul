@@ -2,7 +2,6 @@ package se.fk.github.rimfrost.operativt.uppgiftslager.logic;
 
 import java.time.LocalDate;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -14,6 +13,7 @@ import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.UppgiftDto;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.ImmutableUppgiftEntity;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.UppgiftEntity;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.enums.UppgiftStatus;
+import se.fk.github.rimfrost.operativt.uppgiftslager.storage.OulDataStorage;
 
 @ApplicationScoped
 public class OperativtUppgiftslagerService
@@ -26,7 +26,8 @@ public class OperativtUppgiftslagerService
    @Inject
    OperativtUppgiftslagerProducer producer;
 
-   private final ConcurrentHashMap<UUID, UppgiftEntity> taskMap = new ConcurrentHashMap<>();
+   @Inject
+   OulDataStorage storage;
 
    public UppgiftDto addOperativeTask(OperativtUppgiftslagerAddRequest addRequest, String notificationTopic,
          Map<String, String> cloudeventAttributes)
@@ -48,74 +49,64 @@ public class OperativtUppgiftslagerService
             .erbjudande(addRequest.erbjudande())
             .build();
 
-      taskMap.put(uppgift.uppgiftId(), uppgift);
+      storage.createUppgift(uppgift);
       return logicMapper.toUppgiftDto(uppgift);
    }
 
    public UppgiftDto endTask(UUID uppgiftId, String reason)
    {
       log.info("Ending task {} with reason: {}", uppgiftId, reason);
-      var task = taskMap.get(uppgiftId);
+      var task = storage.findUppgiftById(uppgiftId);
+
+      if (task == null)
+      {
+         return null;
+      }
+
       var endedTask = ImmutableUppgiftEntity.builder()
             .from(task)
             .status(UppgiftStatus.AVSLUTAD)
             .reason(reason)
             .build();
-      taskMap.remove(uppgiftId);
+      storage.deleteUppgift(uppgiftId);
       log.info("Task {} ended", uppgiftId);
       return logicMapper.toUppgiftDto(endedTask);
    }
 
    public List<UppgiftDto> getTasks()
    {
-      return taskMap.values().stream().map(logicMapper::toUppgiftDto).toList();
+      return storage.findAllUppgifter().stream().map(logicMapper::toUppgiftDto).toList();
    }
 
    public Collection<UppgiftDto> getUppgifterHandlaggare(String idTyp, String handlaggarId)
    {
       log.info("Getting all tasks for handlaggarId: {}", handlaggarId);
-      var uppgifter = taskMap.values();
-      var handlaggarTasks = new ArrayList<UppgiftDto>();
       var handlaggare = ImmutableIdtyp.builder()
             .typId(idTyp)
             .varde(handlaggarId)
             .build();
-      for (UppgiftEntity uppgift : uppgifter)
-      {
-         if (Objects.equals(uppgift.handlaggarId(), handlaggare))
-         {
-            handlaggarTasks.add(logicMapper.toUppgiftDto(uppgift));
-         }
-      }
-      return handlaggarTasks;
+      var uppgifter = storage.findAllUppgifterByHandlaggarId(handlaggare);
+      return uppgifter.stream().map(logicMapper::toUppgiftDto).toList();
    }
 
    public UppgiftDto assignNewTask(String idTyp, String handlaggarId)
    {
       log.info("Assigning new task to handlaggarId: {} with type: {}", handlaggarId, idTyp);
-      var tasks = taskMap.values();
-      for (UppgiftEntity task : tasks)
-      {
-         if (task.handlaggarId() == null)
-         {
-            var handlaggare = ImmutableIdtyp.builder()
-                  .typId(idTyp)
-                  .varde(handlaggarId)
-                  .build();
+      var handlaggare = ImmutableIdtyp.builder()
+            .typId(idTyp)
+            .varde(handlaggarId)
+            .build();
+      var uppgift = storage.assignNewUppgift(handlaggare);
 
-            var updatedTask = ImmutableUppgiftEntity.builder()
-                  .from(task)
-                  .status(UppgiftStatus.TILLDELAD)
-                  .handlaggarId(handlaggare)
-                  .build();
-            taskMap.put(task.uppgiftId(), updatedTask);
-            notifyStatusUpdate(updatedTask);
-            log.info("Assigned task {} to handlaggarId: {}", updatedTask.uppgiftId(), handlaggarId);
-            return logicMapper.toUppgiftDto(updatedTask);
-         }
+      if (uppgift == null)
+      {
+         log.info("Failed to assign new task to handlaggarId: {}", handlaggarId);
+         return null;
       }
-      log.info("Failed to assign new task to handlaggarId: {}", handlaggarId);
-      return null;
+
+      notifyStatusUpdate(uppgift);
+      log.info("Assigned task {} to handlaggarId: {}", uppgift.uppgiftId(), handlaggarId);
+      return logicMapper.toUppgiftDto(uppgift);
    }
 
    private void notifyStatusUpdate(UppgiftEntity uppgift)
