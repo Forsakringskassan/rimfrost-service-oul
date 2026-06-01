@@ -1,6 +1,7 @@
 package se.fk.github.rimfrost.operativt.uppgiftslager;
 
 import io.quarkus.test.junit.QuarkusTest;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.OperativUppgift;
 
@@ -16,6 +17,7 @@ import static se.fk.github.rimfrost.operativt.uppgiftslager.OulTestData.oulHandl
 public class OulHandlaggareTest extends OulTestBase
 {
    @Test
+   @DisplayName("FR-04.1, FR-04.2, FR-04.3, FR-04.5, FR-06.1, FR-06.2, FR-06.3: Hämta ny uppgift — tilldelas handläggare med status TILLDELAD och Kafka-notis publiceras med korrekt innehåll")
    public void should_assign_task_to_handlaggare()
    {
       var handlaggareId = UUID.randomUUID();
@@ -50,6 +52,7 @@ public class OulHandlaggareTest extends OulTestBase
    }
 
    @Test
+   @DisplayName("FR-05.1, FR-05.2: Lista tilldelade uppgifter — filtreras på handläggarens identitet, endast egna uppgifter returneras")
    public void should_return_task_assigned_to_handlaggare()
    {
       var handlaggareId = UUID.randomUUID();
@@ -79,6 +82,7 @@ public class OulHandlaggareTest extends OulTestBase
    }
 
    @Test
+   @DisplayName("FR-02.2, FR-05.1: Avsluta uppgift — uppgiften tas bort ur aktivt lager och syns inte längre i handläggarens lista")
    public void should_return_empty_task_list_after_assigned_task_end()
    {
       var handlaggareId = UUID.randomUUID();

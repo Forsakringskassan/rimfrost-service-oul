@@ -3,6 +3,7 @@ package se.fk.github.rimfrost.operativt.uppgiftslager;
 import io.quarkus.test.junit.QuarkusTest;
 
 import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -14,6 +15,7 @@ import static se.fk.github.rimfrost.operativt.uppgiftslager.OulTestData.newEndUp
 public class OulSequenceTest extends OulTestBase
 {
    @Test
+   @DisplayName("FR-01.7, FR-04.2, FR-05.1, FR-06.1, FR-02.2: Komplett arbetsflöde — skapa, tilldela, Kafka-notis, lista, avsluta")
    public void smoke_test_oul_sequence()
    {
       //
