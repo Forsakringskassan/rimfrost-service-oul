@@ -27,24 +27,13 @@ public abstract class OulTestBase
    @Connector("smallrye-in-memory")
    InMemoryConnector inMemoryConnector;
 
+   @Inject
+   StorageTestCleaner storageTestCleaner;
+
    @BeforeEach
    public void resetOul()
    {
-      // This reset method attempts to clean up the OUL task queue by sending
-      // end requests to each task in the queue to remove them from the queue.
-      //
-      // This should be replaced with a better solution once permanent storage
-      // is added.
-
-      var uppgifter = getUppgifter();
-
-      if (uppgifter != null)
-      {
-         for (var uppgift : uppgifter)
-         {
-            sendEndUppgiftRequest(uppgift.getUppgiftId(), newEndUppgiftRequest("Cleanup"));
-         }
-      }
+      storageTestCleaner.clearAll();
 
       if (oulKafkaConnector == null)
       {
@@ -68,6 +57,12 @@ public abstract class OulTestBase
             .when().post("/uppgifter/" + uppgiftId + "/end")
             .then().statusCode(200)
             .extract().as(UppgiftResponse.class);
+   }
+
+   public static void sendEndUppgiftRequest(UUID uppgiftId, EndUppgiftRequest endUppgiftRequest, int expectedResponseStatusCode)
+   {
+      given().contentType(ContentType.JSON).body(endUppgiftRequest)
+            .when().post("/uppgifter/" + uppgiftId + "/end").then().statusCode(expectedResponseStatusCode);
    }
 
    public static List<OperativUppgift> getUppgifter()

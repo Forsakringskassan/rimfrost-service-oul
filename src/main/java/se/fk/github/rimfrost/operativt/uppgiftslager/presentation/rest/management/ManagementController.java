@@ -8,6 +8,9 @@ import jakarta.ws.rs.Produces;
 
 import java.util.List;
 import java.util.UUID;
+
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.OperativtUppgiftslagerService;
@@ -55,6 +58,12 @@ public class ManagementController implements DefaultApi
    {
       log.info("Ending uppgift: {}", uppgiftId);
       var uppgift = operativtUppgiftslagerService.endTask(uppgiftId, endUppgiftRequest.getReason());
+
+      if (uppgift == null)
+      {
+         throw new WebApplicationException(Response.Status.NOT_FOUND);
+      }
+
       var response = new UppgiftResponse();
       response.setUppgiftId(uppgift.uppgiftId());
       response.setHandlaggningId(uppgift.handlaggningId());
