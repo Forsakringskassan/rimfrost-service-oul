@@ -2,6 +2,12 @@
 
 Changelog of rimfrost-service-oul.
 
+## 1.1.0 (2026-06-01)
+
+### Features
+
+-  Add support for database-backed persistent storage ([98885](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/98885dc160bfdd6) Lars Persson)  
+
 ## 1.0.3 (2026-05-21)
 
 ### Bug Fixes
