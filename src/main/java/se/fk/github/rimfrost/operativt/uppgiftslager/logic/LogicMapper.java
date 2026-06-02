@@ -2,6 +2,10 @@ package se.fk.github.rimfrost.operativt.uppgiftslager.logic;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.Objects;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.ImmutableUppgiftDto;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.UppgiftDto;
@@ -23,12 +27,17 @@ public class LogicMapper
       utforarId.setTypId(handlaggareId.typId());
       utforarId.setVarde(handlaggareId.varde());
 
+      var planeradTill = uppgift.planeradTill();
+
       var data = new OperativtUppgiftslagerStatusMessage();
       data.setHandlaggningId(uppgift.handlaggningId().toString());
       data.setStatus(enumMapper.mapUppgiftStatusToStatus(uppgift.status()));
       data.setUppgiftId(uppgift.uppgiftId().toString());
       data.setUtforarId(utforarId);
       data.setCloudeventAttributes(uppgift.cloudeventAttributes());
+      data.setPlaneradTill(
+            planeradTill != null ? planeradTill.atStartOfDay().atZone(ZoneId.systemDefault()).toOffsetDateTime() : null);
+
       return data;
    }
 
