@@ -9,14 +9,18 @@ import java.util.Objects;
 import jakarta.inject.Inject;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.Erbjudande;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.Idtyp;
-import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.ImmutableIdtyp;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.ImmutableErbjudande;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.ImmutableIdtyp;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.ImmutableOperativtUppgiftslagerAddRequest;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.OperativtUppgiftslagerAddRequest;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.SortedUppgiftPage;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.UppgiftDto;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.SorteringsordningEntity;
 import se.fk.github.rimfrost.operativt.uppgiftslager.util.EnumMapper;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.CreateUppgiftRequest;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.OperativUppgift;
+import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.SorteringsordningResponse;
+import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.UppgiftPage;
 
 @ApplicationScoped
 public class ManagementMapper
@@ -37,6 +41,16 @@ public class ManagementMapper
             .url(request.getUrl())
             .erbjudande(toErbjudande(request.getErbjudande()))
             .build();
+   }
+
+   public UppgiftPage toUppgiftPage(SortedUppgiftPage page)
+   {
+      return new UppgiftPage(page.total(), toOperativUppgiftList(page.items()));
+   }
+
+   public SorteringsordningResponse toSorteringsordningResponse(SorteringsordningEntity entity)
+   {
+      return new SorteringsordningResponse(entity.id(), entity.skapad(), entity.entries());
    }
 
    public List<OperativUppgift> toOperativUppgiftList(List<UppgiftDto> uppgiftDtoList)

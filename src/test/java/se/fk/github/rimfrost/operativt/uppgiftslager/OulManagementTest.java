@@ -71,7 +71,7 @@ public class OulManagementTest extends OulTestBase
    {
          "true", "false"
    })
-   @DisplayName("FR-03.1, FR-03.3, FR-01.4, FR-01.5: Lista alla uppgifter — NY och TILLDELAD returneras med fullständiga fält, handlaggarId endast för tilldelade")
+   @DisplayName("FR-03.1, FR-03.3, FR-01.4, FR-01.5, FR-11.1, FR-11.2: Lista alla uppgifter — NY och TILLDELAD returneras med fullständiga fält (Tier 2)")
    public void should_list_available_uppgifter(boolean assignedTask)
    {
       var handlaggningId = UUID.randomUUID();
@@ -86,13 +86,14 @@ public class OulManagementTest extends OulTestBase
          assignTaskToHandlaggare(handlaggareId);
       }
 
-      var uppgifter = getUppgifter();
+      var page = getUppgifter(50);
       sendEndUppgiftRequest(createResponse.getUppgiftId(), newEndUppgiftRequest("reason"));
 
-      assertNotNull(uppgifter);
-      assertEquals(1, uppgifter.size());
+      assertNotNull(page);
+      assertEquals(1, page.getTotal());
+      assertEquals(1, page.getItems().size());
 
-      var uppgift = uppgifter.getFirst();
+      var uppgift = page.getItems().getFirst();
 
       assertEquals(createResponse.getUppgiftId(), uppgift.getUppgiftId());
       assertEquals(handlaggningId, uppgift.getHandlaggningId());

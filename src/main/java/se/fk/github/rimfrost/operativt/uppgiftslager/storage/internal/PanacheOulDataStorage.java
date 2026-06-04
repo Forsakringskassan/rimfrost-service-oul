@@ -12,12 +12,17 @@ import se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.repository
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.SorteringsordningEntity;
 
 @ApplicationScoped
 @Transactional
 public class PanacheOulDataStorage implements OulDataStorage
 {
+   private final AtomicReference<SorteringsordningEntity> activeSorteringsordning = new AtomicReference<>();
+
    @Inject
    UppgiftRepository uppgiftRepository;
 
@@ -129,5 +134,34 @@ public class PanacheOulDataStorage implements OulDataStorage
       uppgiftRepository.persist(uppgift);
 
       return oulDataStorageMapper.toUppgiftEntity(uppgift);
+   }
+
+   @Override
+   public void saveSorteringsordning(SorteringsordningEntity entity)
+   {
+      activeSorteringsordning.set(entity);
+   }
+
+   @Override
+   public Optional<SorteringsordningEntity> getDefaultSorteringsordning()
+   {
+      return Optional.ofNullable(activeSorteringsordning.get());
+   }
+
+   @Override
+   public Optional<SorteringsordningEntity> getSorteringsordningById(UUID id)
+   {
+      return getDefaultSorteringsordning().filter(s -> s.id().equals(id));
+   }
+
+   @Override
+   public List<SorteringsordningEntity> getAllSorteringsordningar()
+   {
+      return getDefaultSorteringsordning().map(List::of).orElse(List.of());
+   }
+
+   public void clearSorteringsordning()
+   {
+      activeSorteringsordning.set(null);
    }
 }
