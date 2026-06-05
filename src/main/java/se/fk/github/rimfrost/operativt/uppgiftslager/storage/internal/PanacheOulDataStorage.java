@@ -4,8 +4,6 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.LockModeType;
 import jakarta.transaction.Transactional;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.Idtyp;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.UppgiftEntity;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.enums.UppgiftStatus;
@@ -81,6 +79,53 @@ public class PanacheOulDataStorage implements OulDataStorage
       uppgift.setStatus(UppgiftStatus.TILLDELAD);
       uppgift.setHandlaggarIdTypId(handlaggarId.typId());
       uppgift.setHandlaggarIdVarde(handlaggarId.varde());
+      uppgiftRepository.persist(uppgift);
+
+      return oulDataStorageMapper.toUppgiftEntity(uppgift);
+   }
+
+   @Override
+   public UppgiftEntity unassignUppgift(UUID id)
+   {
+      var uppgift = uppgiftRepository.findById(id);
+
+      if (uppgift == null)
+      {
+         return null;
+      }
+
+      var status = uppgift.getStatus();
+
+      if (status == UppgiftStatus.TILLDELAD)
+      {
+         status = UppgiftStatus.NY;
+      }
+
+      uppgift.setHandlaggarIdTypId(null);
+      uppgift.setHandlaggarIdVarde(null);
+      uppgift.setStatus(status);
+      uppgiftRepository.persist(uppgift);
+
+      return oulDataStorageMapper.toUppgiftEntity(uppgift);
+   }
+
+   @Override
+   public UppgiftEntity updateUppgift(UUID id, Idtyp handlaggarId)
+   {
+      var uppgift = uppgiftRepository.findById(id);
+
+      if (uppgift == null)
+      {
+         return null;
+      }
+
+      if (handlaggarId != null)
+      {
+         uppgift.setStatus(UppgiftStatus.TILLDELAD);
+         uppgift.setHandlaggarIdTypId(handlaggarId.typId());
+         uppgift.setHandlaggarIdVarde(handlaggarId.varde());
+      }
+
       uppgiftRepository.persist(uppgift);
 
       return oulDataStorageMapper.toUppgiftEntity(uppgift);

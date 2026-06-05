@@ -19,4 +19,8 @@ public interface OulDataStorage
    void deleteUppgift(UUID id);
 
    UppgiftEntity assignNewUppgift(Idtyp handlaggarId);
+
+   UppgiftEntity unassignUppgift(UUID id);
+
+   UppgiftEntity updateUppgift(UUID id, Idtyp handlaggarId);
 }

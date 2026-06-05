@@ -2,6 +2,8 @@ package se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.manageme
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
@@ -14,11 +16,13 @@ import jakarta.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.OperativtUppgiftslagerService;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.Idtyp;
 import se.fk.github.rimfrost.operativt.uppgiftslager.util.EnumMapper;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.DefaultApi;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.CreateUppgiftRequest;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.EndUppgiftRequest;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.OperativUppgift;
+import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.UpdateUppgiftRequest;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.UppgiftResponse;
 
 @ApplicationScoped
@@ -77,5 +81,38 @@ public class ManagementController implements DefaultApi
    {
       var uppgifter = operativtUppgiftslagerService.getTasks();
       return managementMapper.toOperativUppgiftList(uppgifter);
+   }
+
+   @Override
+   public OperativUppgift unassignUppgift(UUID uppgiftId)
+   {
+      var uppgift = operativtUppgiftslagerService.unassignTask(uppgiftId);
+
+      if (uppgift == null)
+      {
+         throw new WebApplicationException(Response.Status.NOT_FOUND);
+      }
+
+      return managementMapper.toOperativUppgift(uppgift);
+   }
+
+   @Override
+   public OperativUppgift updateUppgift(UUID uppgiftId, @Valid @NotNull UpdateUppgiftRequest updateUppgiftRequest)
+   {
+      Idtyp handlaggarId = null;
+
+      if (updateUppgiftRequest.getHandlaggarId() != null)
+      {
+         handlaggarId = managementMapper.toIdTyp(updateUppgiftRequest.getHandlaggarId());
+      }
+
+      var uppgift = operativtUppgiftslagerService.updateTask(uppgiftId, handlaggarId);
+
+      if (uppgift == null)
+      {
+         throw new WebApplicationException(Response.Status.NOT_FOUND);
+      }
+
+      return managementMapper.toOperativUppgift(uppgift);
    }
 }

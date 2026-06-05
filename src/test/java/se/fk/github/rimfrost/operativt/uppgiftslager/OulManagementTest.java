@@ -5,14 +5,19 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.Idtyp;
+import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.UpdateUppgiftRequest;
 
 import java.util.UUID;
 
 import static io.smallrye.common.constraint.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static se.fk.github.rimfrost.operativt.uppgiftslager.OulTestData.newCreateUppgiftRequest;
 import static se.fk.github.rimfrost.operativt.uppgiftslager.OulTestData.newEndUppgiftRequest;
+import static se.fk.github.rimfrost.operativt.uppgiftslager.OulTestData.oulHandlaggareTypId;
 
 @QuarkusTest
 public class OulManagementTest extends OulTestBase
@@ -111,5 +116,91 @@ public class OulManagementTest extends OulTestBase
       {
          assertNull(uppgift.getHandlaggarId());
       }
+   }
+
+   @Test
+   public void should_unassign_task_from_handlaggare()
+   {
+      var handlaggningId = UUID.randomUUID();
+
+      var createUppgiftRequest = newCreateUppgiftRequest(handlaggningId);
+      sendCreateUppgiftRequest(createUppgiftRequest);
+
+      var handlaggareId = UUID.randomUUID();
+      var assignResponse = assignTaskToHandlaggare(handlaggareId);
+
+      assertNotNull(assignResponse);
+      assertNotNull(assignResponse.getOperativUppgift());
+
+      var unassignResponse = unassignTask(assignResponse.getOperativUppgift().getUppgiftId());
+      assertNotNull(unassignResponse);
+      assertNull(unassignResponse.getHandlaggarId());
+      assertNotEquals("TILLDELAD", unassignResponse.getStatus());
+
+      var assignedTasks = getAssignedTasks(handlaggareId);
+      var assignedTask = assignedTasks.getOperativaUppgifter().stream()
+            .filter(u -> u.getUppgiftId().equals(assignResponse.getOperativUppgift().getUppgiftId())).findFirst();
+      assertTrue(assignedTask.isEmpty());
+   }
+
+   @Test
+   public void should_update_task_assignment()
+   {
+      var handlaggningId = UUID.randomUUID();
+
+      var createUppgiftRequest = newCreateUppgiftRequest(handlaggningId);
+      sendCreateUppgiftRequest(createUppgiftRequest);
+
+      var handlaggareId = UUID.randomUUID();
+      var assignResponse = assignTaskToHandlaggare(handlaggareId);
+
+      assertNotNull(assignResponse);
+      assertNotNull(assignResponse.getOperativUppgift());
+
+      Idtyp newHandlaggare = new Idtyp();
+      newHandlaggare.setTypId(oulHandlaggareTypId);
+      newHandlaggare.setVarde(UUID.randomUUID().toString());
+
+      UpdateUppgiftRequest updateUppgiftRequest = new UpdateUppgiftRequest();
+      updateUppgiftRequest.setHandlaggarId(newHandlaggare);
+
+      var updateResponse = updateTask(assignResponse.getOperativUppgift().getUppgiftId(), updateUppgiftRequest);
+
+      assertNotNull(updateResponse);
+      assertEquals(newHandlaggare, updateResponse.getHandlaggarId());
+
+      var assignedTasks = getAssignedTasks(UUID.fromString(newHandlaggare.getVarde()));
+      var assignedTask = assignedTasks.getOperativaUppgifter().stream()
+            .filter(u -> u.getUppgiftId().equals(assignResponse.getOperativUppgift().getUppgiftId())).findFirst();
+      assertTrue(assignedTask.isPresent());
+
+      assignedTasks = getAssignedTasks(handlaggareId);
+      assignedTask = assignedTasks.getOperativaUppgifter().stream()
+            .filter(u -> u.getUppgiftId().equals(assignResponse.getOperativUppgift().getUppgiftId())).findFirst();
+      assertTrue(assignedTask.isEmpty());
+   }
+
+   @Test
+   public void should_return_unchanged_task_on_update_request_with_no_parameters_set()
+   {
+      var handlaggningId = UUID.randomUUID();
+
+      var createUppgiftRequest = newCreateUppgiftRequest(handlaggningId);
+      sendCreateUppgiftRequest(createUppgiftRequest);
+
+      var handlaggareId = UUID.randomUUID();
+      var assignResponse = assignTaskToHandlaggare(handlaggareId);
+
+      assertNotNull(assignResponse);
+      assertNotNull(assignResponse.getOperativUppgift());
+
+      var assignedUppgift = getUppgifter().stream()
+            .filter(u -> u.getUppgiftId().equals(assignResponse.getOperativUppgift().getUppgiftId())).findFirst().orElseThrow();
+
+      UpdateUppgiftRequest updateUppgiftRequest = new UpdateUppgiftRequest();
+      var updateResponse = updateTask(assignResponse.getOperativUppgift().getUppgiftId(), updateUppgiftRequest);
+
+      assertNotNull(updateResponse);
+      assertEquals(assignedUppgift, updateResponse);
    }
 }

@@ -9,6 +9,7 @@ import se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.mod
 import se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.PostUppgifterHandlaggareResponse;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.CreateUppgiftRequest;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.EndUppgiftRequest;
+import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.UpdateUppgiftRequest;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.UppgiftResponse;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.OperativUppgift;
 
@@ -76,6 +77,18 @@ public abstract class OulTestBase
       return given().contentType(ContentType.JSON).when()
             .post("/uppgifter/handlaggare/" + oulHandlaggareTypId + "/{handlaggarId}", handlaggarId).then()
             .statusCode(200).extract().as(PostUppgifterHandlaggareResponse.class);
+   }
+
+   public static OperativUppgift unassignTask(UUID uppgiftId)
+   {
+      return given().contentType(ContentType.JSON).when().post("/uppgifter/" + uppgiftId + "/unassign").then().statusCode(200)
+            .extract().as(OperativUppgift.class);
+   }
+
+   public static OperativUppgift updateTask(UUID uppgiftId, UpdateUppgiftRequest updateUppgiftRequest)
+   {
+      return given().contentType(ContentType.JSON).body(updateUppgiftRequest)
+            .when().patch("/uppgifter/{uppgiftId}", uppgiftId).then().statusCode(200).extract().as(OperativUppgift.class);
    }
 
    public static GetUppgifterHandlaggareResponse getAssignedTasks(UUID handlaggarId)
