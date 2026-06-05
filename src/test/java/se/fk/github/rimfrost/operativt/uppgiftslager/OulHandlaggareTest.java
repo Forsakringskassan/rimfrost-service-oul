@@ -1,6 +1,7 @@
 package se.fk.github.rimfrost.operativt.uppgiftslager;
 
 import io.quarkus.test.junit.QuarkusTest;
+import io.smallrye.reactive.messaging.kafka.api.OutgoingKafkaRecordMetadata;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.OperativUppgift;
@@ -9,6 +10,8 @@ import java.util.UUID;
 
 import static io.smallrye.common.constraint.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static se.fk.github.rimfrost.operativt.uppgiftslager.OulTestData.newCreateUppgiftRequest;
 import static se.fk.github.rimfrost.operativt.uppgiftslager.OulTestData.newEndUppgiftRequest;
 import static se.fk.github.rimfrost.operativt.uppgiftslager.OulTestData.oulHandlaggareTypId;
@@ -17,7 +20,7 @@ import static se.fk.github.rimfrost.operativt.uppgiftslager.OulTestData.oulHandl
 public class OulHandlaggareTest extends OulTestBase
 {
    @Test
-   @DisplayName("FR-04.1, FR-04.2, FR-04.3, FR-04.5, FR-06.1, FR-06.2, FR-06.3: Hämta ny uppgift — tilldelas handläggare med status TILLDELAD och Kafka-notis publiceras med korrekt innehåll")
+   @DisplayName("OUL-FR-04.1, OUL-FR-04.2, OUL-FR-04.3, OUL-FR-04.5, OUL-FR-06.1, OUL-FR-06.2, OUL-FR-06.3: Hämta ny uppgift — tilldelas handläggare med status TILLDELAD och Kafka-notis publiceras med korrekt innehåll")
    public void should_assign_task_to_handlaggare()
    {
       var handlaggareId = UUID.randomUUID();
@@ -54,7 +57,33 @@ public class OulHandlaggareTest extends OulTestBase
    }
 
    @Test
-   @DisplayName("FR-05.1, FR-05.2: Lista tilldelade uppgifter — filtreras på handläggarens identitet, endast egna uppgifter returneras")
+   @DisplayName("OUL-FR-06.4: Kafka-topic styrs dynamiskt av subTopic som angavs vid skapandet av uppgiften")
+   public void should_publish_to_topic_derived_from_sub_topic()
+   {
+      var createRequest = newCreateUppgiftRequest(UUID.randomUUID());
+      createRequest.setSubTopic("my-flow");
+      sendCreateUppgiftRequest(createRequest);
+      assignTaskToHandlaggare(UUID.randomUUID());
+
+      var message = oulKafkaConnector.waitForOulStatusRawMessage();
+      var kafkaMetadata = message.getMetadata(OutgoingKafkaRecordMetadata.class);
+
+      assertTrue(kafkaMetadata.isPresent());
+      assertEquals("operativt-uppgiftslager-status-notification.my-flow", kafkaMetadata.get().getTopic());
+   }
+
+   @Test
+   @DisplayName("OUL-FR-04.4: Hämta ny uppgift — tomt svar utan felkod returneras när inga otilldelade uppgifter finns")
+   public void should_return_empty_response_when_no_unassigned_tasks()
+   {
+      var assignResponse = assignTaskToHandlaggare(UUID.randomUUID());
+
+      assertNotNull(assignResponse);
+      assertNull(assignResponse.getOperativUppgift());
+   }
+
+   @Test
+   @DisplayName("OUL-FR-05.1, OUL-FR-05.2: Lista tilldelade uppgifter — filtreras på handläggarens identitet, endast egna uppgifter returneras")
    public void should_return_task_assigned_to_handlaggare()
    {
       var handlaggareId = UUID.randomUUID();
@@ -84,7 +113,7 @@ public class OulHandlaggareTest extends OulTestBase
    }
 
    @Test
-   @DisplayName("FR-02.2, FR-05.1: Avsluta uppgift — uppgiften tas bort ur aktivt lager och syns inte längre i handläggarens lista")
+   @DisplayName("OUL-FR-02.2, OUL-FR-05.1: Avsluta uppgift — uppgiften tas bort ur aktivt lager och syns inte längre i handläggarens lista")
    public void should_return_empty_task_list_after_assigned_task_end()
    {
       var handlaggareId = UUID.randomUUID();

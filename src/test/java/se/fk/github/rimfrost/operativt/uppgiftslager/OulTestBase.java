@@ -113,10 +113,22 @@ public abstract class OulTestBase
             .extract().as(OperativUppgift.class);
    }
 
+   public static void unassignTask(UUID uppgiftId, int expectedStatus)
+   {
+      given().contentType(ContentType.JSON).when().post("/uppgifter/" + uppgiftId + "/unassign").then()
+            .statusCode(expectedStatus);
+   }
+
    public static OperativUppgift updateTask(UUID uppgiftId, UpdateUppgiftRequest updateUppgiftRequest)
    {
       return given().contentType(ContentType.JSON).body(updateUppgiftRequest)
             .when().patch("/uppgifter/{uppgiftId}", uppgiftId).then().statusCode(200).extract().as(OperativUppgift.class);
+   }
+
+   public static void updateTask(UUID uppgiftId, UpdateUppgiftRequest updateUppgiftRequest, int expectedStatus)
+   {
+      given().contentType(ContentType.JSON).body(updateUppgiftRequest)
+            .when().patch("/uppgifter/{uppgiftId}", uppgiftId).then().statusCode(expectedStatus);
    }
 
    public static GetUppgifterHandlaggareResponse getAssignedTasks(UUID handlaggarId)

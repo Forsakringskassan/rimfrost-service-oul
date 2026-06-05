@@ -11,7 +11,7 @@ import static org.hamcrest.Matchers.is;
 public class OulHealthTest
 {
    @Test
-   @DisplayName("NFR-01.1: Tillgänglighet — /q/health/live returnerar 200 med status UP")
+   @DisplayName("OUL-NFR-01.1: Tillgänglighet — /q/health/live returnerar 200 med status UP")
    public void testHealthEndpoint()
    {
       when()
