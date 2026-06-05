@@ -9,6 +9,7 @@ import se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.mod
 import se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.PostUppgifterHandlaggareResponse;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.CreateUppgiftRequest;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.EndUppgiftRequest;
+import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.OperativUppgift;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.UpdateUppgiftRequest;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.SorteringsordningResponse;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.SorteringsordningSpec;
@@ -66,6 +67,11 @@ public abstract class OulTestBase
    {
       given().contentType(ContentType.JSON).body(endUppgiftRequest)
             .when().post("/uppgifter/" + uppgiftId + "/end").then().statusCode(expectedResponseStatusCode);
+   }
+
+   public static List<OperativUppgift> getUppgifter()
+   {
+      return getUppgifter(1000).getItems();
    }
 
    public static UppgiftPage getUppgifter(int limit)

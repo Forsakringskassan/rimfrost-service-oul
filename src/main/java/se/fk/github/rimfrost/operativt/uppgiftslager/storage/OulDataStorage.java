@@ -26,11 +26,11 @@ public interface OulDataStorage
 
    UppgiftEntity updateUppgift(UUID id, Idtyp handlaggarId);
 
-    void saveSorteringsordning(SorteringsordningEntity entity);
+   void saveSorteringsordning(SorteringsordningEntity entity);
 
-    Optional<SorteringsordningEntity> getDefaultSorteringsordning();
+   Optional<SorteringsordningEntity> getDefaultSorteringsordning();
 
-    Optional<SorteringsordningEntity> getSorteringsordningById(UUID id);
+   Optional<SorteringsordningEntity> getSorteringsordningById(UUID id);
 
-    List<SorteringsordningEntity> getAllSorteringsordningar();
+   List<SorteringsordningEntity> getAllSorteringsordningar();
 }

@@ -3,6 +3,7 @@ package se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.manageme
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.PATCH;
@@ -14,8 +15,6 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
 import org.jboss.resteasy.reactive.ResponseStatus;
 import org.slf4j.Logger;
@@ -100,23 +99,6 @@ public class UppgifterController implements UppgifterApi
          throw new WebApplicationException(Response.Status.NOT_FOUND);
       }
       return managementMapper.toUppgiftPage(page);
-   }
-
-   @Override
-   @PATCH
-   @Path("/{uppgiftId}")
-   public OperativUppgift updateUppgift(@PathParam("uppgiftId") UUID uppgiftId,
-         @NotNull UpdateUppgiftRequest updateUppgiftRequest)
-   {
-      throw new WebApplicationException(Response.Status.NOT_IMPLEMENTED);
-   }
-
-   @Override
-   @POST
-   @Path("/{uppgiftId}/unassign")
-   public OperativUppgift unassignUppgift(@PathParam("uppgiftId") UUID uppgiftId)
-   {
-      throw new WebApplicationException(Response.Status.NOT_IMPLEMENTED);
    }
 
    @Override
