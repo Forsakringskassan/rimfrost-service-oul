@@ -4,7 +4,6 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 import java.time.ZoneId;
-import java.util.Objects;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.ImmutableUppgiftDto;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.UppgiftDto;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.UppgiftEntity;
@@ -19,22 +18,24 @@ public class LogicMapper
 
    public OperativtUppgiftslagerStatusMessage toStatusMessage(UppgiftEntity uppgift)
    {
-      var handlaggareId = Objects.requireNonNull(uppgift.handlaggarId());
-
-      var utforarId = new Idtyp();
-      utforarId.setTypId(handlaggareId.typId());
-      utforarId.setVarde(handlaggareId.varde());
-
       var planeradTill = uppgift.planeradTill();
 
       var data = new OperativtUppgiftslagerStatusMessage();
       data.setHandlaggningId(uppgift.handlaggningId().toString());
       data.setStatus(enumMapper.mapUppgiftStatusToStatus(uppgift.status()));
       data.setUppgiftId(uppgift.uppgiftId().toString());
-      data.setUtforarId(utforarId);
       data.setCloudeventAttributes(uppgift.cloudeventAttributes());
       data.setPlaneradTill(
             planeradTill != null ? planeradTill.atStartOfDay().atZone(ZoneId.systemDefault()).toOffsetDateTime() : null);
+
+      var handlaggarId = uppgift.handlaggarId();
+      if (handlaggarId != null)
+      {
+         var utforarId = new Idtyp();
+         utforarId.setTypId(handlaggarId.typId());
+         utforarId.setVarde(handlaggarId.varde());
+         data.setUtforarId(utforarId);
+      }
 
       return data;
    }

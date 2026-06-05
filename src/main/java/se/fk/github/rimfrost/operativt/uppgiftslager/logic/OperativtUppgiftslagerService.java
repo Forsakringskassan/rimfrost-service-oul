@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import se.fk.github.rimfrost.operativt.uppgiftslager.integration.kafka.OperativtUppgiftslagerProducer;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.Idtyp;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.ImmutableIdtyp;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.OperativtUppgiftslagerAddRequest;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.UppgiftDto;
@@ -66,6 +67,7 @@ public class OperativtUppgiftslagerService
       var endedTask = ImmutableUppgiftEntity.builder()
             .from(task)
             .status(UppgiftStatus.AVSLUTAD)
+            .utford(LocalDate.now())
             .reason(reason)
             .build();
       storage.deleteUppgift(uppgiftId);
@@ -106,6 +108,32 @@ public class OperativtUppgiftslagerService
 
       notifyStatusUpdate(uppgift);
       log.info("Assigned task {} to handlaggarId: {}", uppgift.uppgiftId(), handlaggarId);
+      return logicMapper.toUppgiftDto(uppgift);
+   }
+
+   public UppgiftDto unassignTask(UUID uppgiftId)
+   {
+      var uppgift = storage.unassignUppgift(uppgiftId);
+
+      if (uppgift == null)
+      {
+         return null;
+      }
+
+      notifyStatusUpdate(uppgift);
+      return logicMapper.toUppgiftDto(uppgift);
+   }
+
+   public UppgiftDto updateTask(UUID uppgiftId, Idtyp handlaggarId)
+   {
+      var uppgift = storage.updateUppgift(uppgiftId, handlaggarId);
+
+      if (uppgift == null)
+      {
+         return null;
+      }
+
+      notifyStatusUpdate(uppgift);
       return logicMapper.toUppgiftDto(uppgift);
    }
 

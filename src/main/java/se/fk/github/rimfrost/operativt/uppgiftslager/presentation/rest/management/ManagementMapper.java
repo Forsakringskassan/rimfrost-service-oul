@@ -41,24 +41,27 @@ public class ManagementMapper
 
    public List<OperativUppgift> toOperativUppgiftList(List<UppgiftDto> uppgiftDtoList)
    {
-      return uppgiftDtoList.stream().map(u -> {
-         OperativUppgift uppgift = new OperativUppgift();
-         uppgift.setUppgiftId(u.uppgiftId());
-         uppgift.setHandlaggningId(u.handlaggningId());
-         uppgift.setSkapad(u.skapad());
-         uppgift.handlaggarId(toIdtyp(u.handlaggarId()));
-         uppgift.planeradTill(u.planeradTill());
-         uppgift.utford(u.utford());
-         uppgift.status(enumMapper.mapUppgiftStatusToStatus(u.status()));
-         uppgift.individer(Arrays.stream(u.individer()).map(this::toIdtyp).toList());
-         uppgift.setRegel(u.regel());
-         uppgift.beskrivning(u.beskrivning());
-         uppgift.verksamhetslogik(u.verksamhetslogik());
-         uppgift.roll(u.roll());
-         uppgift.url(u.url());
-         uppgift.erbjudande(toErbjudande(u.erbjudande()));
-         return uppgift;
-      }).toList();
+      return uppgiftDtoList.stream().map(this::toOperativUppgift).toList();
+   }
+
+   public OperativUppgift toOperativUppgift(UppgiftDto uppgiftDto)
+   {
+      OperativUppgift uppgift = new OperativUppgift();
+      uppgift.setUppgiftId(uppgiftDto.uppgiftId());
+      uppgift.setHandlaggningId(uppgiftDto.handlaggningId());
+      uppgift.setSkapad(uppgiftDto.skapad());
+      uppgift.handlaggarId(toIdtyp(uppgiftDto.handlaggarId()));
+      uppgift.planeradTill(uppgiftDto.planeradTill());
+      uppgift.utford(uppgiftDto.utford());
+      uppgift.status(enumMapper.mapUppgiftStatusToStatus(uppgiftDto.status()));
+      uppgift.individer(Arrays.stream(uppgiftDto.individer()).map(this::toIdtyp).toList());
+      uppgift.setRegel(uppgiftDto.regel());
+      uppgift.beskrivning(uppgiftDto.beskrivning());
+      uppgift.verksamhetslogik(uppgiftDto.verksamhetslogik());
+      uppgift.roll(uppgiftDto.roll());
+      uppgift.url(uppgiftDto.url());
+      uppgift.erbjudande(toErbjudande(uppgiftDto.erbjudande()));
+      return uppgift;
    }
 
    private Idtyp[] toIdtyper(List<se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.Idtyp> individer)
@@ -70,6 +73,14 @@ public class ManagementMapper
       return individer.stream()
             .map(i -> ImmutableIdtyp.builder().typId(i.getTypId()).varde(i.getVarde()).build())
             .toArray(Idtyp[]::new);
+   }
+
+   public Idtyp toIdTyp(se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.Idtyp idtyp)
+   {
+      return ImmutableIdtyp.builder()
+            .typId(idtyp.getTypId())
+            .varde(idtyp.getVarde())
+            .build();
    }
 
    private se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.Idtyp toIdtyp(Idtyp individ)
