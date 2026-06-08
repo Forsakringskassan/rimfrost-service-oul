@@ -87,4 +87,34 @@ public class OulUppgifterSortTest extends OulTestBase
       assertEquals(2, page.getTotal());
       assertEquals(2, page.getItems().size());
    }
+
+   @Test
+   @DisplayName("OUL-FR-03.6: Default sorteringsordning tillämpas automatiskt vid listning utan sorteringsordningId")
+   public void should_apply_default_sorteringsordning_automatically()
+   {
+      sendCreateSorteringsordningRequest(newSorteringsordningSpec());
+      sendCreateUppgiftRequest(newCreateUppgiftRequest(UUID.randomUUID()));
+      sendCreateUppgiftRequest(newCreateUppgiftRequest(UUID.randomUUID()));
+
+      var page = getUppgifter(50, 0, null);
+
+      assertEquals(2, page.getTotal());
+      assertEquals(2, page.getItems().size());
+   }
+
+   @Test
+   @DisplayName("OUL-FR-03.6, OUL-FR-14: Ny default tillämpas automatiskt vid listning efter byte")
+   public void should_apply_new_default_after_set_default()
+   {
+      sendCreateSorteringsordningRequest(newSorteringsordningSpec());
+      var second = sendCreateSorteringsordningRequest(newSorteringsordningSpec());
+      setDefaultSorteringsordning(second.getId());
+      sendCreateUppgiftRequest(newCreateUppgiftRequest(UUID.randomUUID()));
+      sendCreateUppgiftRequest(newCreateUppgiftRequest(UUID.randomUUID()));
+
+      var page = getUppgifter(50, 0, null);
+
+      assertEquals(2, page.getTotal());
+      assertEquals(2, page.getItems().size());
+   }
 }

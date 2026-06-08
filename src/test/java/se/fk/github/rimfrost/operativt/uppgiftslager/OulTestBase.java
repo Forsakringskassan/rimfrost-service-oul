@@ -191,6 +191,34 @@ public abstract class OulTestBase
             .then().statusCode(expectedStatus);
    }
 
+   public static void deleteSorteringsordning(UUID id)
+   {
+      given().contentType(ContentType.JSON)
+            .when().delete("/sorteringsordning/{id}", id)
+            .then().statusCode(204);
+   }
+
+   public static void deleteSorteringsordning(UUID id, int expectedStatus)
+   {
+      given().contentType(ContentType.JSON)
+            .when().delete("/sorteringsordning/{id}", id)
+            .then().statusCode(expectedStatus);
+   }
+
+   public static void setDefaultSorteringsordning(UUID id)
+   {
+      given().contentType(ContentType.JSON)
+            .when().put("/sorteringsordning/{id}/default", id)
+            .then().statusCode(204);
+   }
+
+   public static void setDefaultSorteringsordning(UUID id, int expectedStatus)
+   {
+      given().contentType(ContentType.JSON)
+            .when().put("/sorteringsordning/{id}/default", id)
+            .then().statusCode(expectedStatus);
+   }
+
    public static UppgiftPage sendPreviewRequest(SorteringsordningSpec spec, int limit, Integer offset)
    {
       var req = given().contentType(ContentType.JSON).body(spec)

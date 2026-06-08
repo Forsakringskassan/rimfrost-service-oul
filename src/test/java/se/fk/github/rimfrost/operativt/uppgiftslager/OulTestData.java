@@ -5,9 +5,13 @@ import se.fk.rimfrost.oul.management.regler.jaxrsspec.controllers.generatedsourc
 import se.fk.rimfrost.oul.management.regler.jaxrsspec.controllers.generatedsource.model.Erbjudande;
 import se.fk.rimfrost.oul.management.regler.jaxrsspec.controllers.generatedsource.model.ProcessInfo;
 import se.fk.rimfrost.oul.management.regler.jaxrsspec.controllers.generatedsource.model.Idtyp;
+import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.Constraint;
+import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.ConstraintEq;
+import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.SortBy;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.SorteringsordningEntry;
+import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.SorteringsordningField;
+import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.SorteringsordningFieldEq;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.SorteringsordningSpec;
-
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -54,6 +58,27 @@ public class OulTestData
    public static SorteringsordningSpec newSorteringsordningSpec()
    {
       var entry = new SorteringsordningEntry();
+      var spec = new SorteringsordningSpec();
+      spec.setEntries(List.of(entry));
+      return spec;
+   }
+
+   @SuppressWarnings("unchecked")
+   public static SorteringsordningSpec newSorteringsordningSpecWithConstraints()
+   {
+      var constraint = new ConstraintEq();
+      constraint.setField(SorteringsordningFieldEq.STATUS);
+      constraint.setOperator(ConstraintEq.OperatorEnum.EQ);
+      constraint.setValue("NY");
+
+      var sortBy = new SortBy();
+      sortBy.setField(SorteringsordningField.SKAPAD);
+      sortBy.setDirection(SortBy.DirectionEnum.ASC);
+
+      var entry = new SorteringsordningEntry();
+      entry.setConstraints((List<Constraint>) (List<?>) List.of(constraint));
+      entry.setSortBy(sortBy);
+
       var spec = new SorteringsordningSpec();
       spec.setEntries(List.of(entry));
       return spec;

@@ -5,29 +5,43 @@ import jakarta.inject.Inject;
 import jakarta.persistence.LockModeType;
 import jakarta.transaction.Transactional;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.Idtyp;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.SorteringsordningEntity;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.UppgiftEntity;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.enums.UppgiftStatus;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.OulDataStorage;
+import se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.entity.DefaultSorteringsordningEntity;
+import se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.entity.SorteringsordningPersistenceEntity;
+import se.fk.github.rimfrost.operativt.uppgiftslager.storage.SorteringsordningIsDefaultException;
+import se.fk.github.rimfrost.operativt.uppgiftslager.storage.SorteringsordningNotFoundException;
+import se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.repository.DefaultSorteringsordningRepository;
+import se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.repository.SorteringsordningRepository;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.repository.UppgiftRepository;
-
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicReference;
-import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.SorteringsordningEntity;
 
+/**
+ * JPA/Panache implementation of {@link OulDataStorage}.
+ * All public methods participate in the caller's transaction via the class-level
+ * {@link Transactional} annotation.
+ */
 @ApplicationScoped
 @Transactional
 public class PanacheOulDataStorage implements OulDataStorage
 {
-   private final AtomicReference<SorteringsordningEntity> activeSorteringsordning = new AtomicReference<>();
-
    @Inject
    UppgiftRepository uppgiftRepository;
 
    @Inject
    OulDataStorageMapper oulDataStorageMapper;
+
+   @Inject
+   SorteringsordningRepository sorteringsordningRepository;
+
+   @Inject
+   DefaultSorteringsordningRepository defaultSorteringsordningRepository;
 
    @Override
    public void createUppgift(UppgiftEntity uppgift)
@@ -139,29 +153,103 @@ public class PanacheOulDataStorage implements OulDataStorage
    @Override
    public void saveSorteringsordning(SorteringsordningEntity entity)
    {
-      activeSorteringsordning.set(entity);
+      var jpaEntity = new SorteringsordningPersistenceEntity();
+      jpaEntity.setId(entity.id());
+      jpaEntity.setCreatedAt(entity.skapad().toInstant());
+      jpaEntity.setEntries(entity.entries());
+      sorteringsordningRepository.persist(jpaEntity);
+
+      defaultSorteringsordningRepository.insertIfAbsent(entity.id());
    }
 
    @Override
    public Optional<SorteringsordningEntity> getDefaultSorteringsordning()
    {
-      return Optional.ofNullable(activeSorteringsordning.get());
+      return defaultSorteringsordningRepository.findByIdOptional(true)
+            .flatMap(d -> sorteringsordningRepository.findByIdOptional(d.getSorteringsordningId()))
+            .map(this::toSorteringsordningEntity);
    }
 
    @Override
    public Optional<SorteringsordningEntity> getSorteringsordningById(UUID id)
    {
-      return getDefaultSorteringsordning().filter(s -> s.id().equals(id));
+      return sorteringsordningRepository.findByIdOptional(id)
+            .map(this::toSorteringsordningEntity);
    }
 
    @Override
    public List<SorteringsordningEntity> getAllSorteringsordningar()
    {
-      return getDefaultSorteringsordning().map(List::of).orElse(List.of());
+      return sorteringsordningRepository.findAll().stream()
+            .map(this::toSorteringsordningEntity)
+            .toList();
    }
 
+   /**
+    * {@inheritDoc}
+    *
+    */
+   @Override
+   public void deleteSorteringsordning(UUID id)
+   {
+      if (sorteringsordningRepository.findByIdOptional(id).isEmpty())
+      {
+         throw new SorteringsordningNotFoundException(id);
+      }
+      defaultSorteringsordningRepository.findByIdOptional(true).ifPresent(d -> {
+         if (id.equals(d.getSorteringsordningId()))
+         {
+            throw new SorteringsordningIsDefaultException(id);
+         }
+      });
+      sorteringsordningRepository.deleteById(id);
+   }
+
+   /**
+    * {@inheritDoc}
+    * <p>
+    * If a default row already exists it is updated via Hibernate dirty checking (no explicit
+    * {@code persist} needed within the active transaction). Otherwise a new row is inserted.
+    *
+    */
+   @Override
+   public void setDefaultSorteringsordning(UUID id)
+   {
+      if (sorteringsordningRepository.findByIdOptional(id).isEmpty())
+      {
+         throw new SorteringsordningNotFoundException(id);
+      }
+      var existing = defaultSorteringsordningRepository.findByIdOptional(true);
+      if (existing.isPresent())
+      {
+         existing.get().setSorteringsordningId(id);
+      }
+      else
+      {
+         var defaultEntity = new DefaultSorteringsordningEntity();
+         defaultEntity.setSorteringsordningId(id);
+         defaultSorteringsordningRepository.persist(defaultEntity);
+      }
+   }
+
+   /**
+    * Removes all sorteringsordningar and the default pointer.
+    * Intended for use in tests only.
+    */
    public void clearSorteringsordning()
    {
-      activeSorteringsordning.set(null);
+      defaultSorteringsordningRepository.deleteAll();
+      sorteringsordningRepository.deleteAll();
+   }
+
+   /**
+    * Converts a JPA persistence entity to the domain entity used by the logic layer.
+    *
+    * @param e the JPA entity to convert
+    * @return the corresponding domain {@link SorteringsordningEntity}
+    */
+   private SorteringsordningEntity toSorteringsordningEntity(SorteringsordningPersistenceEntity e)
+   {
+      return new SorteringsordningEntity(e.getId(), e.getCreatedAt().atOffset(ZoneOffset.UTC), e.getEntries());
    }
 }

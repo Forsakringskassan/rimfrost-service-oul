@@ -32,6 +32,11 @@ import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.UppgiftPage;
 import se.fk.rimfrost.oul.management.regler.jaxrsspec.controllers.generatedsource.model.UppgiftResponse;
 
+/**
+ * REST controller for the {@code /uppgifter} resource.
+ * Implements the generated {@link UppgifterApi} and {@link ReglerApi} interfaces
+ * from the OpenAPI spec.
+ */
 @SuppressWarnings("unused")
 @ApplicationScoped
 @Path("/uppgifter")
