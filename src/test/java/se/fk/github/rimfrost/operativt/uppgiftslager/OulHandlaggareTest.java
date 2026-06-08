@@ -118,7 +118,7 @@ public class OulHandlaggareTest extends OulTestBase
    }
 
    private se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.Idtyp toHandlaggningIdtyp(
-         se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.Idtyp managementIdtyp)
+         se.fk.rimfrost.oul.management.regler.jaxrsspec.controllers.generatedsource.model.Idtyp managementIdtyp)
    {
       se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.Idtyp idtyp = new se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.Idtyp();
       idtyp.setTypId(managementIdtyp.getTypId());

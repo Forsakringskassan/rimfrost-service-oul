@@ -17,7 +17,7 @@ import se.fk.github.rimfrost.operativt.uppgiftslager.logic.SortedUppgiftPage;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.UppgiftDto;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.SorteringsordningEntity;
 import se.fk.github.rimfrost.operativt.uppgiftslager.util.EnumMapper;
-import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.CreateUppgiftRequest;
+import se.fk.rimfrost.oul.management.regler.jaxrsspec.controllers.generatedsource.model.CreateUppgiftRequest;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.OperativUppgift;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.SorteringsordningResponse;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.UppgiftPage;
@@ -78,7 +78,8 @@ public class ManagementMapper
       return uppgift;
    }
 
-   private Idtyp[] toIdtyper(List<se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.Idtyp> individer)
+   private Idtyp[] toIdtyper(
+         List<se.fk.rimfrost.oul.management.regler.jaxrsspec.controllers.generatedsource.model.Idtyp> individer)
    {
       if (individer == null)
       {
@@ -111,7 +112,7 @@ public class ManagementMapper
    }
 
    private Erbjudande toErbjudande(
-         se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.Erbjudande erbjudande)
+         se.fk.rimfrost.oul.management.regler.jaxrsspec.controllers.generatedsource.model.Erbjudande erbjudande)
    {
       var e = Objects.requireNonNull(erbjudande);
 
