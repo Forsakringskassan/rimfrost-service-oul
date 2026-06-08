@@ -69,11 +69,6 @@ public abstract class OulTestBase
             .when().post("/uppgifter/" + uppgiftId + "/end").then().statusCode(expectedResponseStatusCode);
    }
 
-   public static List<OperativUppgift> getUppgifter()
-   {
-      return getUppgifter(1000).getItems();
-   }
-
    public static UppgiftPage getUppgifter(int limit)
    {
       return given().contentType(ContentType.JSON)

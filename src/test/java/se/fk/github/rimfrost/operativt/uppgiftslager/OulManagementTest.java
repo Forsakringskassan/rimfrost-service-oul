@@ -195,7 +195,7 @@ public class OulManagementTest extends OulTestBase
       assertNotNull(assignResponse);
       assertNotNull(assignResponse.getOperativUppgift());
 
-      var assignedUppgift = getUppgifter().stream()
+      var assignedUppgift = getUppgifter(1000).getItems().stream()
             .filter(u -> u.getUppgiftId().equals(assignResponse.getOperativUppgift().getUppgiftId())).findFirst().orElseThrow();
 
       UpdateUppgiftRequest updateUppgiftRequest = new UpdateUppgiftRequest();
