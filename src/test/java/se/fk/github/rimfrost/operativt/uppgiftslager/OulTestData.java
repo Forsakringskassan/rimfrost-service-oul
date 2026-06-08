@@ -4,6 +4,8 @@ import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.EndUppgiftRequest;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.Erbjudande;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.Idtyp;
+import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.SorteringsordningEntry;
+import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.SorteringsordningSpec;
 
 import java.util.List;
 import java.util.Map;
@@ -44,5 +46,13 @@ public class OulTestData
       var endUppgiftRequest = new EndUppgiftRequest();
       endUppgiftRequest.setReason(reason);
       return endUppgiftRequest;
+   }
+
+   public static SorteringsordningSpec newSorteringsordningSpec()
+   {
+      var entry = new SorteringsordningEntry();
+      var spec = new SorteringsordningSpec();
+      spec.setEntries(List.of(entry));
+      return spec;
    }
 }

@@ -3,35 +3,41 @@ package se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.manageme
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.PATCH;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
-
-import java.util.List;
-import java.util.UUID;
-
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
+import java.util.UUID;
+import org.jboss.resteasy.reactive.ResponseStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.OperativtUppgiftslagerService;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.Idtyp;
 import se.fk.github.rimfrost.operativt.uppgiftslager.util.EnumMapper;
-import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.DefaultApi;
+import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.UppgifterApi;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.CreateUppgiftRequest;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.EndUppgiftRequest;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.OperativUppgift;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.UpdateUppgiftRequest;
+import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.UppgiftPage;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.UppgiftResponse;
 
+@SuppressWarnings("unused")
 @ApplicationScoped
 @Path("/uppgifter")
 @Produces("application/json")
 @Consumes("application/json")
-public class ManagementController implements DefaultApi
+public class UppgifterController implements UppgifterApi
 {
-   private static final Logger log = LoggerFactory.getLogger(ManagementController.class);
+   private static final Logger log = LoggerFactory.getLogger(UppgifterController.class);
 
    @Inject
    OperativtUppgiftslagerService operativtUppgiftslagerService;
@@ -42,7 +48,9 @@ public class ManagementController implements DefaultApi
    EnumMapper enumMapper;
 
    @Override
-   public UppgiftResponse createUppgift(CreateUppgiftRequest createUppgiftRequest)
+   @POST
+   @ResponseStatus(201)
+   public UppgiftResponse createUppgift(@NotNull CreateUppgiftRequest createUppgiftRequest)
    {
       log.info("Creating uppgift for handlaggningId: {}", createUppgiftRequest.getHandlaggningId());
       var addRequest = managementMapper.toAddRequest(createUppgiftRequest);
@@ -58,7 +66,10 @@ public class ManagementController implements DefaultApi
    }
 
    @Override
-   public UppgiftResponse endUppgift(UUID uppgiftId, EndUppgiftRequest endUppgiftRequest)
+   @POST
+   @Path("/{uppgiftId}/end")
+   public UppgiftResponse endUppgift(@PathParam("uppgiftId") UUID uppgiftId,
+         @NotNull EndUppgiftRequest endUppgiftRequest)
    {
       log.info("Ending uppgift: {}", uppgiftId);
       var uppgift = operativtUppgiftslagerService.endTask(uppgiftId, endUppgiftRequest.getReason());
@@ -77,10 +88,17 @@ public class ManagementController implements DefaultApi
    }
 
    @Override
-   public List<OperativUppgift> getUppgifter()
+   @GET
+   public UppgiftPage getUppgifter(@QueryParam("limit") @NotNull @Min(1) Integer limit,
+         @QueryParam("sorteringsordningId") UUID sorteringsordningId,
+         @QueryParam("offset") @Min(0) Integer offset)
    {
-      var uppgifter = operativtUppgiftslagerService.getTasks();
-      return managementMapper.toOperativUppgiftList(uppgifter);
+      var page = operativtUppgiftslagerService.getUppgifterPage(limit, offset != null ? offset : 0, sorteringsordningId);
+      if (page == null)
+      {
+         throw new WebApplicationException(Response.Status.NOT_FOUND);
+      }
+      return managementMapper.toUppgiftPage(page);
    }
 
    @Override

@@ -1,11 +1,16 @@
 package se.fk.github.rimfrost.operativt.uppgiftslager.logic;
 
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.*;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.SortOrderApplier;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.SortedUppgiftPage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.SorteringsordningEntity;
+import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.SorteringsordningSpec;
 import se.fk.github.rimfrost.operativt.uppgiftslager.integration.kafka.OperativtUppgiftslagerProducer;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.Idtyp;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.ImmutableIdtyp;
@@ -26,6 +31,9 @@ public class OperativtUppgiftslagerService
 
    @Inject
    OperativtUppgiftslagerProducer producer;
+
+   @Inject
+   SortOrderApplier sortOrderApplier;
 
    @Inject
    OulDataStorage storage;
@@ -78,6 +86,28 @@ public class OperativtUppgiftslagerService
    public List<UppgiftDto> getTasks()
    {
       return storage.findAllUppgifter().stream().map(logicMapper::toUppgiftDto).toList();
+   }
+
+   public SortedUppgiftPage getUppgifterPage(int limit, int offset, UUID sorteringsordningId)
+   {
+      var uppgifter = getTasks();
+
+      SorteringsordningEntity sorteringsordning;
+      if (sorteringsordningId != null)
+      {
+         sorteringsordning = storage.getSorteringsordningById(sorteringsordningId).orElse(null);
+         if (sorteringsordning == null)
+         {
+            return null;
+         }
+      }
+      else
+      {
+         sorteringsordning = storage.getDefaultSorteringsordning()
+               .orElse(new SorteringsordningEntity(null, null, List.of()));
+      }
+
+      return sortOrderApplier.apply(uppgifter, sorteringsordning, limit, offset);
    }
 
    public Collection<UppgiftDto> getUppgifterHandlaggare(String idTyp, String handlaggarId)
@@ -135,6 +165,34 @@ public class OperativtUppgiftslagerService
 
       notifyStatusUpdate(uppgift);
       return logicMapper.toUppgiftDto(uppgift);
+   }
+
+   public SortedUppgiftPage previewSorteringsordning(SorteringsordningSpec spec, int limit, int offset)
+   {
+      var entity = new SorteringsordningEntity(null, null, spec.getEntries());
+      return sortOrderApplier.apply(getTasks(), entity, limit, offset);
+   }
+
+   public SorteringsordningEntity createSorteringsordning(SorteringsordningSpec spec)
+   {
+      var entity = new SorteringsordningEntity(UUID.randomUUID(), OffsetDateTime.now(), spec.getEntries());
+      storage.saveSorteringsordning(entity);
+      return entity;
+   }
+
+   public Optional<SorteringsordningEntity> getDefaultSorteringsordning()
+   {
+      return storage.getDefaultSorteringsordning();
+   }
+
+   public Optional<SorteringsordningEntity> getSorteringsordningById(UUID id)
+   {
+      return storage.getSorteringsordningById(id);
+   }
+
+   public List<SorteringsordningEntity> getAllSorteringsordningar()
+   {
+      return storage.getAllSorteringsordningar();
    }
 
    private void notifyStatusUpdate(UppgiftEntity uppgift)

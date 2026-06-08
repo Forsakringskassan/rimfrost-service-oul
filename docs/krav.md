@@ -46,6 +46,8 @@ finns, vilken handläggare som är tilldelad uppgiften, och informerar intressen
 
 ### FR-03 — Lista alla uppgifter (management)
 
+> Utökad av **FR-11** i [krav-sortorder-inmemory.md](krav-sortorder-inmemory.md) — den uppdaterade signaturen med paginering och sorteringsordning gäller.
+
 - **FR-03.1** Det ska finnas ett gränssnitt för att lista samtliga uppgifter i lagret, oavsett status.
 - **FR-03.2** Gränssnittet är avsett för Administratörer och driftövervakning.
 - **FR-03.3** En Administratör ska kunna se samtliga uppgifter oavsett tilldelningsstatus, inklusive handläggaridentitet för tilldelade uppgifter.
@@ -73,6 +75,21 @@ finns, vilken handläggare som är tilldelad uppgiften, och informerar intressen
   - uppgiftens status
 - **FR-06.3** Meddelandet ska bära de CloudEvent-attribut som angavs vid skapandet av uppgiften.
 - **FR-06.4** Kafka-topic ska vara dynamiskt och styras av ett ämnesprefix som regler anger vid skapandet av uppgiften, så att flödesprocesser kan prenumerera selektivt på sina egna notifieringar.
+
+### FR-07 — Uppdatera uppgift (management)
+
+- **FR-07.1** En Administratör ska kunna uppdatera en befintlig uppgift via `PATCH /uppgifter/{id}`.
+- **FR-07.2** Om specificerad uppgift inte finns ska HTTP 404 returneras.
+
+> Ej implementerat — returnerar 501 tills vidare.
+
+### FR-08 — Avdela uppgift (management)
+
+- **FR-08.1** En Administratör ska kunna ta bort tilldelningen för en uppgift via `POST /uppgifter/{id}/unassign`.
+- **FR-08.2** En avdelad uppgift ska återgå till status `NY` och vara tillgänglig för ny tilldelning.
+- **FR-08.3** Om specificerad uppgift inte finns ska HTTP 404 returneras.
+
+> Ej implementerat — returnerar 501 tills vidare.
 
 ---
 
