@@ -78,7 +78,7 @@ public abstract class OulTestBase
             .extract().as(UppgiftPage.class);
    }
 
-   public static UppgiftPage getUppgifter(int limit, int offset, java.util.UUID sorteringsordningId)
+   public static UppgiftPage getUppgifter(int limit, int offset, UUID sorteringsordningId)
    {
       var req = given().contentType(ContentType.JSON)
             .queryParam("limit", limit)
@@ -92,7 +92,7 @@ public abstract class OulTestBase
             .extract().as(UppgiftPage.class);
    }
 
-   public static void getUppgifter(int limit, java.util.UUID sorteringsordningId, int expectedStatus)
+   public static void getUppgifter(int limit, UUID sorteringsordningId, int expectedStatus)
    {
       given().contentType(ContentType.JSON)
             .queryParam("limit", limit)
@@ -165,7 +165,7 @@ public abstract class OulTestBase
             .extract().jsonPath().getList(".", SorteringsordningResponse.class);
    }
 
-   public static SorteringsordningResponse getSorteringsordning(java.util.UUID id)
+   public static SorteringsordningResponse getSorteringsordning(UUID id)
    {
       return given().contentType(ContentType.JSON)
             .when().get("/sorteringsordning/{id}", id)
@@ -173,7 +173,7 @@ public abstract class OulTestBase
             .extract().as(SorteringsordningResponse.class);
    }
 
-   public static void getSorteringsordning(java.util.UUID id, int expectedStatus)
+   public static void getSorteringsordning(UUID id, int expectedStatus)
    {
       given().contentType(ContentType.JSON)
             .when().get("/sorteringsordning/{id}", id)
