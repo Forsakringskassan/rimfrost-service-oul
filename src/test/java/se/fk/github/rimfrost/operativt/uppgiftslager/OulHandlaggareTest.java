@@ -48,7 +48,9 @@ public class OulHandlaggareTest extends OulTestBase
       assertEquals(createUppgiftRequest.getHandlaggningId().toString(), statusMessage.getHandlaggningId());
       assertEquals("TILLDELAD", statusMessage.getStatus());
       assertEquals(createKafkaIdTyp(handlaggareId), statusMessage.getUtforarId());
-      assertEquals(createUppgiftRequest.getProcessInfo().getCloudeventAttributes(), statusMessage.getCloudeventAttributes());
+      assertEquals(createUppgiftRequest.getProcessInfo().getCloudeventAttributes(),
+            statusMessage.getProcessInfo().getCloudeventAttributes());
+      assertEquals(createUppgiftRequest.getProcessInfo().getReplyTopic(), statusMessage.getProcessInfo().getReplyTopic());
    }
 
    @Test
