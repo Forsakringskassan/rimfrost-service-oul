@@ -34,7 +34,9 @@ public class OulManagementTest extends OulTestBase
       assertEquals(handlaggningId, createResponse.getHandlaggningId());
       assertNotNull(createResponse.getUppgiftId());
       assertEquals("NY", createResponse.getStatus());
-      assertEquals(createUppgiftRequest.getCloudeventAttributes(), createResponse.getCloudeventAttributes());
+      assertEquals(createUppgiftRequest.getProcessInfo().getCloudeventAttributes(),
+            createResponse.getProcessInfo().getCloudeventAttributes());
+      assertEquals(createUppgiftRequest.getProcessInfo().getReplyTopic(), createResponse.getProcessInfo().getReplyTopic());
    }
 
    @ParameterizedTest
@@ -55,7 +57,9 @@ public class OulManagementTest extends OulTestBase
       assertEquals(createResponse.getUppgiftId(), endResponse.getUppgiftId());
       assertEquals(handlaggningId, endResponse.getHandlaggningId());
       assertEquals("AVSLUTAD", endResponse.getStatus());
-      assertEquals(createUppgiftRequest.getCloudeventAttributes(), endResponse.getCloudeventAttributes());
+      assertEquals(createUppgiftRequest.getProcessInfo().getCloudeventAttributes(),
+            endResponse.getProcessInfo().getCloudeventAttributes());
+      assertEquals(createUppgiftRequest.getProcessInfo().getReplyTopic(), endResponse.getProcessInfo().getReplyTopic());
    }
 
    @Test

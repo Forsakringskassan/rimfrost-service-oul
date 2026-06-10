@@ -56,6 +56,7 @@ public class LogicMapper
             .verksamhetslogik(uppgift.verksamhetslogik())
             .roll(uppgift.roll())
             .url(uppgift.url())
+            .subTopic(uppgift.subTopic())
             .cloudeventAttributes(uppgift.cloudeventAttributes())
             .erbjudande(uppgift.erbjudande())
             .build();

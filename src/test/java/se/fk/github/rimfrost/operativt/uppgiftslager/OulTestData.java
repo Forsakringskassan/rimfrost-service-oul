@@ -3,6 +3,7 @@ package se.fk.github.rimfrost.operativt.uppgiftslager;
 import se.fk.rimfrost.oul.management.regler.jaxrsspec.controllers.generatedsource.model.CreateUppgiftRequest;
 import se.fk.rimfrost.oul.management.regler.jaxrsspec.controllers.generatedsource.model.EndUppgiftRequest;
 import se.fk.rimfrost.oul.management.regler.jaxrsspec.controllers.generatedsource.model.Erbjudande;
+import se.fk.rimfrost.oul.management.regler.jaxrsspec.controllers.generatedsource.model.ProcessInfo;
 import se.fk.rimfrost.oul.management.regler.jaxrsspec.controllers.generatedsource.model.Idtyp;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.SorteringsordningEntry;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.SorteringsordningSpec;
@@ -34,8 +35,10 @@ public class OulTestData
       request.setBeskrivning("Test Beskrivning");
       request.setVerksamhetslogik("Test Verksamhetslogik");
       request.setUrl("/test/url/");
-      request.setSubTopic("test");
-      request.setCloudeventAttributes(Map.of("kogitoprocinstanceid", "test-proc-instance-id"));
+      var processInfo = new ProcessInfo();
+      processInfo.setReplyTopic("test");
+      processInfo.setCloudeventAttributes(Map.of("kogitoprocinstanceid", "test-proc-instance-id"));
+      request.setProcessInfo(processInfo);
       request.setErbjudande(erbjudande);
 
       return request;
