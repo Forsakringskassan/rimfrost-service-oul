@@ -1,24 +1,36 @@
 package se.fk.github.rimfrost.operativt.uppgiftslager;
 
 import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.Constraint;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.ConstraintEq;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.SorteringsordningEntry;
+import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.SorteringsordningField;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.SorteringsordningFieldEq;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.SorteringsordningSpec;
-
+import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.SortBy;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.OperativtUppgiftslagerService;
+import se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.PanacheOulDataStorage;
 import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static se.fk.github.rimfrost.operativt.uppgiftslager.OulTestData.newCreateUppgiftRequest;
+import static se.fk.github.rimfrost.operativt.uppgiftslager.OulTestData.newSorteringsordningSpecWithEqConstraint;
+import static se.fk.github.rimfrost.operativt.uppgiftslager.OulTestData.newSorteringsordningSpecWithSortBy;
 import static se.fk.github.rimfrost.operativt.uppgiftslager.OulTestData.newSorteringsordningSpec;
 
 @QuarkusTest
 public class OulUppgifterSortTest extends OulTestBase
 {
+   @Inject
+   OperativtUppgiftslagerService service;
+
+   @Inject
+   PanacheOulDataStorage panacheOulDataStorage;
+
    @Test
    @DisplayName("GET /uppgifter utan sorteringsordning — returnerar alla uppgifter")
    public void should_return_all_tasks_without_sorteringsordning()
@@ -161,5 +173,106 @@ public class OulUppgifterSortTest extends OulTestBase
       var spec = new SorteringsordningSpec();
       spec.setEntries(List.of(entry));
       return spec;
+   }
+
+   @Test
+   @DisplayName("Count-cache: två konsekutiva anrop utan mutation returnerar samma total (cache hit)")
+   public void should_return_consistent_total_on_consecutive_calls_cache_hit()
+   {
+      sendCreateUppgiftRequest(newCreateUppgiftRequest(UUID.randomUUID()));
+      sendCreateUppgiftRequest(newCreateUppgiftRequest(UUID.randomUUID()));
+
+      var first = getUppgifter(50, 0, null);
+      var second = getUppgifter(50, 0, null);
+
+      assertEquals(2, first.getTotal());
+      assertEquals(2, second.getTotal());
+   }
+
+   @Test
+   @DisplayName("Count-cache: invalidering tvingar nytt DB-anrop och returnerar korrekt total")
+   public void should_return_fresh_total_after_cache_invalidation()
+   {
+      sendCreateUppgiftRequest(newCreateUppgiftRequest(UUID.randomUUID()));
+      sendCreateUppgiftRequest(newCreateUppgiftRequest(UUID.randomUUID()));
+
+      // Populate the cache
+      var before = getUppgifter(50, 0, null);
+      assertEquals(2, before.getTotal());
+
+      // Invalidate cache to simulate TTL expiry
+      panacheOulDataStorage.invalidateCountCache();
+
+      // Should issue a fresh COUNT(*) and still return the correct total
+      var after = getUppgifter(50, 0, null);
+      assertEquals(2, after.getTotal());
+   }
+
+   @Test
+   @DisplayName("DB-sortering: eq-constraint placerar matchande uppgift före icke-matchande")
+   public void should_sort_matching_eq_constraint_before_non_matching()
+   {
+      var normalRequest = newCreateUppgiftRequest(UUID.randomUUID());
+      normalRequest.setRegel("Normal Regel");
+      sendCreateUppgiftRequest(normalRequest);
+
+      var priorityRequest = newCreateUppgiftRequest(UUID.randomUUID());
+      priorityRequest.setRegel("Prioriterad Regel");
+      sendCreateUppgiftRequest(priorityRequest);
+
+      // The HTTP API has a known Jackson polymorphism limitation with ConstraintEq over the wire.
+      // Calling the service directly bypasses that and tests the DB sort path end-to-end.
+      var sortering = service.createSorteringsordning(
+            newSorteringsordningSpecWithEqConstraint(SorteringsordningFieldEq.REGEL, "Prioriterad Regel"));
+
+      var page = getUppgifter(50, 0, sortering.id());
+
+      assertEquals(2, page.getTotal());
+      assertEquals("Prioriterad Regel", page.getItems().get(0).getRegel());
+      assertEquals("Normal Regel", page.getItems().get(1).getRegel());
+   }
+
+   @Test
+   @DisplayName("DB-sortering: sort_by ASC sorterar uppgifter i stigande ordning inom gruppen")
+   public void should_sort_by_field_ascending_within_group()
+   {
+      var requestZ = newCreateUppgiftRequest(UUID.randomUUID());
+      requestZ.setRoll("Z Roll");
+      sendCreateUppgiftRequest(requestZ);
+
+      var requestA = newCreateUppgiftRequest(UUID.randomUUID());
+      requestA.setRoll("A Roll");
+      sendCreateUppgiftRequest(requestA);
+
+      var sortering = sendCreateSorteringsordningRequest(
+            newSorteringsordningSpecWithSortBy(SorteringsordningField.ROLL, SortBy.DirectionEnum.ASC));
+
+      var page = getUppgifter(50, 0, sortering.getId());
+
+      assertEquals(2, page.getTotal());
+      assertEquals("A Roll", page.getItems().get(0).getRoll());
+      assertEquals("Z Roll", page.getItems().get(1).getRoll());
+   }
+
+   @Test
+   @DisplayName("DB-sortering: sort_by DESC sorterar uppgifter i fallande ordning inom gruppen")
+   public void should_sort_by_field_descending_within_group()
+   {
+      var requestA = newCreateUppgiftRequest(UUID.randomUUID());
+      requestA.setRoll("A Roll");
+      sendCreateUppgiftRequest(requestA);
+
+      var requestZ = newCreateUppgiftRequest(UUID.randomUUID());
+      requestZ.setRoll("Z Roll");
+      sendCreateUppgiftRequest(requestZ);
+
+      var sortering = sendCreateSorteringsordningRequest(
+            newSorteringsordningSpecWithSortBy(SorteringsordningField.ROLL, SortBy.DirectionEnum.DESC));
+
+      var page = getUppgifter(50, 0, sortering.getId());
+
+      assertEquals(2, page.getTotal());
+      assertEquals("Z Roll", page.getItems().get(0).getRoll());
+      assertEquals("A Roll", page.getItems().get(1).getRoll());
    }
 }

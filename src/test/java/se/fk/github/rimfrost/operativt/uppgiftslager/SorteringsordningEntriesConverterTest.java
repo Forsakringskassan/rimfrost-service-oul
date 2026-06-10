@@ -134,6 +134,32 @@ public class SorteringsordningEntriesConverterTest
    }
 
    @Test
+   @DisplayName("convertToEntityAttribute: ogiltigt JSON kastar IllegalArgumentException")
+   public void should_throw_illegal_argument_on_malformed_json()
+   {
+      assertThrows(IllegalArgumentException.class,
+            () -> converter.convertToEntityAttribute("not-json{{{"));
+   }
+
+   @Test
+   @DisplayName("convertToEntityAttribute: okänd constraint-operator kastar IllegalArgumentException")
+   public void should_throw_illegal_argument_on_unknown_operator()
+   {
+      var json = "[{\"constraints\":[{\"operator\":\"unknown_op\",\"field\":\"status\"}]}]";
+
+      assertThrows(IllegalArgumentException.class,
+            () -> converter.convertToEntityAttribute(json));
+   }
+
+   @Test
+   @DisplayName("convertToEntityAttribute: null JSON kastar IllegalArgumentException")
+   public void should_throw_illegal_argument_on_null_json()
+   {
+      assertThrows(IllegalArgumentException.class,
+            () -> converter.convertToEntityAttribute(null));
+   }
+
+   @Test
    @DisplayName("OUL-FR-09.5: Blandade constraint-subtyper och sort_by i samma entry bevaras vid DB-serialisering")
    @SuppressWarnings("unchecked")
    public void should_preserve_mixed_constraints_and_sort_by_in_same_entry()

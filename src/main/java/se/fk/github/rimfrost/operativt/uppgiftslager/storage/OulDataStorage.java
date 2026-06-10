@@ -1,5 +1,6 @@
 package se.fk.github.rimfrost.operativt.uppgiftslager.storage;
 
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.UppgiftEntityPage;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.Idtyp;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.SorteringsordningEntity;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.UppgiftEntity;
@@ -26,6 +27,17 @@ public interface OulDataStorage
     * @return unordered list of all uppgifter
     */
    List<UppgiftEntity> findAllUppgifter();
+
+   /**
+    * Returns one page of uppgifter sorted according to the given sorteringsordning.
+    * The total count reflects all rows, not just the page slice.
+    *
+    * @param sorteringsordning the sort specification; entries define priority groups
+    * @param limit  maximum number of items to return
+    * @param offset zero-based start index within the full sorted result
+    * @return the page slice and total count
+    */
+   UppgiftEntityPage findUppgifterPage(SorteringsordningEntity sorteringsordning, int limit, int offset);
 
    /**
     * Returns the uppgift with the given id, or {@code null} if not found.
@@ -111,6 +123,8 @@ public interface OulDataStorage
     * Deletes the sorteringsordning with the given id.
     *
     * @param id the sorteringsordning UUID to delete
+    * @throws SorteringsordningNotFoundException if no sorteringsordning with the given id exists
+    * @throws SorteringsordningIsDefaultException if the sorteringsordning is currently the default
     */
    void deleteSorteringsordning(UUID id);
 
@@ -118,6 +132,7 @@ public interface OulDataStorage
     * Sets the sorteringsordning with the given id as the system default.
     *
     * @param id the sorteringsordning UUID to promote to default
+    * @throws SorteringsordningNotFoundException if no sorteringsordning with the given id exists
     */
    void setDefaultSorteringsordning(UUID id);
 }

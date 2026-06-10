@@ -4,7 +4,6 @@ import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import se.fk.github.rimfrost.operativt.uppgiftslager.logic.SortOrderApplier;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.SortedUppgiftPage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,9 +36,6 @@ public class OperativtUppgiftslagerService
 
    @Inject
    OperativtUppgiftslagerProducer producer;
-
-   @Inject
-   SortOrderApplier sortOrderApplier;
 
    @Inject
    OulDataStorage storage;
@@ -95,10 +91,18 @@ public class OperativtUppgiftslagerService
       return storage.findAllUppgifter().stream().map(logicMapper::toUppgiftDto).toList();
    }
 
+   /**
+    * Returns a paginated and sorted page of uppgifter.
+    * Sorting and pagination are pushed down to the database via a single SQL query.
+    * Returns {@code null} if a specific sorteringsordningId is given but not found.
+    *
+    * @param limit              maximum items per page
+    * @param offset             zero-based start index
+    * @param sorteringsordningId specific sorteringsordning to use, or {@code null} for the default
+    * @return the sorted page, or {@code null} if the requested sorteringsordning does not exist
+    */
    public SortedUppgiftPage getUppgifterPage(int limit, int offset, UUID sorteringsordningId)
    {
-      var uppgifter = getTasks();
-
       SorteringsordningEntity sorteringsordning;
       if (sorteringsordningId != null)
       {
@@ -114,7 +118,9 @@ public class OperativtUppgiftslagerService
                .orElse(new SorteringsordningEntity(null, null, List.of()));
       }
 
-      return sortOrderApplier.apply(uppgifter, sorteringsordning, limit, offset);
+      var page = storage.findUppgifterPage(sorteringsordning, limit, offset);
+      var items = page.items().stream().map(logicMapper::toUppgiftDto).toList();
+      return new SortedUppgiftPage(page.total(), items);
    }
 
    public Collection<UppgiftDto> getUppgifterHandlaggare(String idTyp, String handlaggarId)
@@ -174,10 +180,21 @@ public class OperativtUppgiftslagerService
       return logicMapper.toUppgiftDto(uppgift);
    }
 
+   /**
+    * Previews how the given sorteringsordning spec would sort the current uppgifter.
+    * Uses the same DB sort engine as {@link #getUppgifterPage} — no separate in-memory path.
+    *
+    * @param spec   the sorteringsordning spec to preview
+    * @param limit  maximum items per page
+    * @param offset zero-based start index
+    * @return the sorted page as it would appear if the spec were saved and applied
+    */
    public SortedUppgiftPage previewSorteringsordning(SorteringsordningSpec spec, int limit, int offset)
    {
       var entity = new SorteringsordningEntity(null, null, spec.getEntries());
-      return sortOrderApplier.apply(getTasks(), entity, limit, offset);
+      var page = storage.findUppgifterPage(entity, limit, offset);
+      var items = page.items().stream().map(logicMapper::toUppgiftDto).toList();
+      return new SortedUppgiftPage(page.total(), items);
    }
 
    public SorteringsordningEntity createSorteringsordning(SorteringsordningSpec spec)

@@ -2,7 +2,9 @@ package se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.repositor
 
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.persistence.LockModeType;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.entity.DefaultSorteringsordningEntity;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -14,6 +16,20 @@ import java.util.UUID;
 public class DefaultSorteringsordningRepository
       implements PanacheRepositoryBase<DefaultSorteringsordningEntity, Boolean>
 {
+   /**
+    * Returns the current default row with a pessimistic write lock, blocking any concurrent
+    * transaction that tries to update or insert the same row until this transaction completes.
+    * Use this before checking and deleting a sorteringsordning to prevent a TOCTOU race where
+    * a concurrent {@code setDefaultSorteringsordning} promotes the target between the check and
+    * the delete.
+    *
+    * @return the locked default row, or empty if no default has been set
+    */
+   public Optional<DefaultSorteringsordningEntity> findForUpdate()
+   {
+      return findAll().withLock(LockModeType.PESSIMISTIC_WRITE).firstResultOptional();
+   }
+
    /**
     * Atomically sets the default sorteringsordning to {@code sorteringsordningId} if no default
     * exists yet. Concurrent calls are safe: the PRIMARY KEY on {@code lock = TRUE} ensures only
