@@ -66,7 +66,7 @@ public class UppgifterController implements UppgifterApi, ReglerApi
       {
          throw new WebApplicationException(Response.Status.BAD_REQUEST);
       }
-      var uppgift = operativtUppgiftslagerService.addOperativeTask(addRequest, processInfo.getReplyTopic(),
+      var uppgift = operativtUppgiftslagerService.addOperativeTask(addRequest, createUppgiftRequest.getSubTopic(),
             processInfo.getCloudeventAttributes());
 
       var responseProcessInfo = new ProcessInfo();

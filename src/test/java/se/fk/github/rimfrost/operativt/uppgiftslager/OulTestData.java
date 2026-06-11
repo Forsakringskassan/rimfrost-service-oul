@@ -39,6 +39,7 @@ public class OulTestData
       request.setBeskrivning("Test Beskrivning");
       request.setVerksamhetslogik("Test Verksamhetslogik");
       request.setUrl("/test/url/");
+      request.setSubTopic("test");
       var processInfo = new ProcessInfo();
       processInfo.setReplyTopic("test");
       processInfo.setCloudeventAttributes(Map.of("kogitoprocinstanceid", "test-proc-instance-id"));
