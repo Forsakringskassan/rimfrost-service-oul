@@ -2,6 +2,7 @@ package se.fk.github.rimfrost.operativt.uppgiftslager.logic;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.SortOrderApplier;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.SortedUppgiftPage;
@@ -21,6 +22,11 @@ import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.UppgiftEntity;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.enums.UppgiftStatus;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.OulDataStorage;
 
+/**
+ * Application service that orchestrates uppgift lifecycle and sorteringsordning management.
+ * Delegates all persistence to {@link OulDataStorage} and all event publishing to
+ * {@link OperativtUppgiftslagerProducer}.
+ */
 @ApplicationScoped
 public class OperativtUppgiftslagerService
 {
@@ -39,7 +45,7 @@ public class OperativtUppgiftslagerService
    OulDataStorage storage;
 
    public UppgiftDto addOperativeTask(OperativtUppgiftslagerAddRequest addRequest, String notificationTopic,
-         Map<String, String> cloudeventAttributes)
+         String replyTopic, Map<String, String> cloudeventAttributes)
    {
       log.info("Adding new task");
       var uppgift = ImmutableUppgiftEntity.builder()
@@ -54,6 +60,7 @@ public class OperativtUppgiftslagerService
             .roll(addRequest.roll())
             .url(addRequest.url())
             .subTopic(notificationTopic)
+            .replyTopic(replyTopic)
             .cloudeventAttributes(cloudeventAttributes)
             .erbjudande(addRequest.erbjudande())
             .build();
@@ -175,7 +182,8 @@ public class OperativtUppgiftslagerService
 
    public SorteringsordningEntity createSorteringsordning(SorteringsordningSpec spec)
    {
-      var entity = new SorteringsordningEntity(UUID.randomUUID(), OffsetDateTime.now(), spec.getEntries());
+      var entity = new SorteringsordningEntity(UUID.randomUUID(), OffsetDateTime.now().truncatedTo(ChronoUnit.MICROS),
+            spec.getEntries());
       storage.saveSorteringsordning(entity);
       return entity;
    }
@@ -193,6 +201,26 @@ public class OperativtUppgiftslagerService
    public List<SorteringsordningEntity> getAllSorteringsordningar()
    {
       return storage.getAllSorteringsordningar();
+   }
+
+   /**
+    * Deletes the sorteringsordning with the given id.
+    *
+    * @param id the UUID of the sorteringsordning to delete
+    */
+   public void deleteSorteringsordning(UUID id)
+   {
+      storage.deleteSorteringsordning(id);
+   }
+
+   /**
+    * Promotes the sorteringsordning with the given id to the system default.
+    *
+    * @param id the UUID of the sorteringsordning to set as default
+    */
+   public void setDefaultSorteringsordning(UUID id)
+   {
+      storage.setDefaultSorteringsordning(id);
    }
 
    private void notifyStatusUpdate(UppgiftEntity uppgift)

@@ -43,6 +43,18 @@ public interface UppgiftEntity
 
    String subTopic();
 
+   /**
+    * The reply topic supplied by the caller at creation time.
+    * <p>
+    * This value is opaque to the OUL service — it is stored as-is and echoed
+    * back in REST responses and Kafka status-update message payloads so that
+    * the caller knows which topic to listen on for replies.
+    * <p>
+    * Distinct from {@link #subTopic()}, which controls Kafka routing within
+    * the OUL service (i.e. which topic status events are published to).
+    */
+   String replyTopic();
+
    Map<String, String> cloudeventAttributes();
 
    Erbjudande erbjudande();

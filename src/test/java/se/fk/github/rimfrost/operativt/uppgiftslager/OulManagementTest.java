@@ -12,7 +12,6 @@ import java.util.UUID;
 
 import static io.smallrye.common.constraint.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static se.fk.github.rimfrost.operativt.uppgiftslager.OulTestData.newCreateUppgiftRequest;
@@ -23,7 +22,7 @@ import static se.fk.github.rimfrost.operativt.uppgiftslager.OulTestData.oulHandl
 public class OulManagementTest extends OulTestBase
 {
    @Test
-   @DisplayName("FR-01.1, FR-01.2, FR-01.3, FR-01.6, FR-01.7: Skapa uppgift — status NY, uppgift_id genereras, CloudEvent-attribut bevaras")
+   @DisplayName("OUL-FR-01.1, OUL-FR-01.2, OUL-FR-01.3, OUL-FR-01.6, OUL-FR-01.7: Skapa uppgift — status NY, uppgift_id genereras, CloudEvent-attribut bevaras")
    public void should_create_uppgift()
    {
       var handlaggningId = UUID.randomUUID();
@@ -45,7 +44,7 @@ public class OulManagementTest extends OulTestBase
          "AVSLUTAD",
          "AVBRUTEN"
    })
-   @DisplayName("FR-02.1, FR-02.3, FR-01.6: Avsluta uppgift — AVSLUTAD och AVBRUTEN är giltiga skäl, status och CloudEvent-attribut returneras")
+   @DisplayName("OUL-FR-02.1, OUL-FR-02.3, OUL-FR-01.6: Avsluta uppgift — AVSLUTAD och AVBRUTEN är giltiga skäl, status och CloudEvent-attribut returneras")
    public void should_end_uppgift(String reason)
    {
       var handlaggningId = UUID.randomUUID();
@@ -63,11 +62,18 @@ public class OulManagementTest extends OulTestBase
    }
 
    @Test
-   @DisplayName("FR-02.4: Avsluta uppgift — HTTP 404 returneras när uppgifts-ID inte finns")
+   @DisplayName("OUL-FR-02.4: Avsluta uppgift — HTTP 404 returneras när uppgifts-ID inte finns")
    public void should_return_404_on_end_when_uppgift_not_found()
    {
       var uppgiftId = UUID.randomUUID();
       sendEndUppgiftRequest(uppgiftId, newEndUppgiftRequest("AVSLUTAD"), 404);
+   }
+
+   @Test
+   @DisplayName("OUL-FR-07.2: Uppdatera uppgift — HTTP 404 returneras när uppgifts-ID inte finns")
+   public void should_return_404_on_update_when_uppgift_not_found()
+   {
+      updateTask(UUID.randomUUID(), new UpdateUppgiftRequest(), 404);
    }
 
    @ParameterizedTest
@@ -75,7 +81,7 @@ public class OulManagementTest extends OulTestBase
    {
          "true", "false"
    })
-   @DisplayName("FR-03.1, FR-03.3, FR-01.4, FR-01.5, FR-11.1, FR-11.2: Lista alla uppgifter — NY och TILLDELAD returneras med fullständiga fält (Tier 2)")
+   @DisplayName("OUL-FR-03.1, OUL-FR-03.3, OUL-FR-01.4, OUL-FR-01.5, OUL-FR-03.4, OUL-FR-03.5: Lista alla uppgifter — NY och TILLDELAD returneras med fullständiga fält (Tier 2)")
    public void should_list_available_uppgifter(boolean assignedTask)
    {
       var handlaggningId = UUID.randomUUID();
@@ -124,6 +130,7 @@ public class OulManagementTest extends OulTestBase
    }
 
    @Test
+   @DisplayName("OUL-FR-08.1, OUL-FR-08.2: Avdela uppgift — tilldelning tas bort och uppgiften återgår till status NY")
    public void should_unassign_task_from_handlaggare()
    {
       var handlaggningId = UUID.randomUUID();
@@ -140,12 +147,19 @@ public class OulManagementTest extends OulTestBase
       var unassignResponse = unassignTask(assignResponse.getOperativUppgift().getUppgiftId());
       assertNotNull(unassignResponse);
       assertNull(unassignResponse.getHandlaggarId());
-      assertNotEquals("TILLDELAD", unassignResponse.getStatus());
+      assertEquals("NY", unassignResponse.getStatus());
 
       var assignedTasks = getAssignedTasks(handlaggareId);
       var assignedTask = assignedTasks.getOperativaUppgifter().stream()
             .filter(u -> u.getUppgiftId().equals(assignResponse.getOperativUppgift().getUppgiftId())).findFirst();
       assertTrue(assignedTask.isEmpty());
+   }
+
+   @Test
+   @DisplayName("OUL-FR-08.3: Avdela uppgift — HTTP 404 returneras när uppgifts-ID inte finns")
+   public void should_return_404_on_unassign_when_uppgift_not_found()
+   {
+      unassignTask(UUID.randomUUID(), 404);
    }
 
    @Test

@@ -1,5 +1,9 @@
 package se.fk.github.rimfrost.operativt.uppgiftslager;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.restassured.RestAssured;
+import io.restassured.config.ObjectMapperConfig;
+import io.restassured.config.RestAssuredConfig;
 import io.restassured.http.ContentType;
 import io.smallrye.reactive.messaging.memory.InMemoryConnector;
 import jakarta.inject.Inject;
@@ -31,11 +35,16 @@ public abstract class OulTestBase
    InMemoryConnector inMemoryConnector;
 
    @Inject
+   ObjectMapper objectMapper;
+
+   @Inject
    StorageTestCleaner storageTestCleaner;
 
    @BeforeEach
    public void resetOul()
    {
+      RestAssured.config = RestAssuredConfig.config().objectMapperConfig(
+            ObjectMapperConfig.objectMapperConfig().jackson2ObjectMapperFactory((cls, charset) -> objectMapper));
       storageTestCleaner.clearAll();
 
       if (oulKafkaConnector == null)
@@ -113,10 +122,22 @@ public abstract class OulTestBase
             .extract().as(OperativUppgift.class);
    }
 
+   public static void unassignTask(UUID uppgiftId, int expectedStatus)
+   {
+      given().contentType(ContentType.JSON).when().post("/uppgifter/" + uppgiftId + "/unassign").then()
+            .statusCode(expectedStatus);
+   }
+
    public static OperativUppgift updateTask(UUID uppgiftId, UpdateUppgiftRequest updateUppgiftRequest)
    {
       return given().contentType(ContentType.JSON).body(updateUppgiftRequest)
             .when().patch("/uppgifter/{uppgiftId}", uppgiftId).then().statusCode(200).extract().as(OperativUppgift.class);
+   }
+
+   public static void updateTask(UUID uppgiftId, UpdateUppgiftRequest updateUppgiftRequest, int expectedStatus)
+   {
+      given().contentType(ContentType.JSON).body(updateUppgiftRequest)
+            .when().patch("/uppgifter/{uppgiftId}", uppgiftId).then().statusCode(expectedStatus);
    }
 
    public static GetUppgifterHandlaggareResponse getAssignedTasks(UUID handlaggarId)
@@ -176,6 +197,34 @@ public abstract class OulTestBase
    {
       given().contentType(ContentType.JSON)
             .when().get("/sorteringsordning/{id}", id)
+            .then().statusCode(expectedStatus);
+   }
+
+   public static void deleteSorteringsordning(UUID id)
+   {
+      given().contentType(ContentType.JSON)
+            .when().delete("/sorteringsordning/{id}", id)
+            .then().statusCode(204);
+   }
+
+   public static void deleteSorteringsordning(UUID id, int expectedStatus)
+   {
+      given().contentType(ContentType.JSON)
+            .when().delete("/sorteringsordning/{id}", id)
+            .then().statusCode(expectedStatus);
+   }
+
+   public static void setDefaultSorteringsordning(UUID id)
+   {
+      given().contentType(ContentType.JSON)
+            .when().put("/sorteringsordning/{id}/default", id)
+            .then().statusCode(204);
+   }
+
+   public static void setDefaultSorteringsordning(UUID id, int expectedStatus)
+   {
+      given().contentType(ContentType.JSON)
+            .when().put("/sorteringsordning/{id}/default", id)
             .then().statusCode(expectedStatus);
    }
 

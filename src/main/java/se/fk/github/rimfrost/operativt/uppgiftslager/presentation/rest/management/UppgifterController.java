@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.PATCH;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
@@ -31,6 +32,11 @@ import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.UppgiftPage;
 import se.fk.rimfrost.oul.management.regler.jaxrsspec.controllers.generatedsource.model.UppgiftResponse;
 
+/**
+ * REST controller for the {@code /uppgifter} resource.
+ * Implements the generated {@link UppgifterApi} and {@link ReglerApi} interfaces
+ * from the OpenAPI spec.
+ */
 @SuppressWarnings("unused")
 @ApplicationScoped
 @Path("/uppgifter")
@@ -60,12 +66,12 @@ public class UppgifterController implements UppgifterApi, ReglerApi
       {
          throw new WebApplicationException(Response.Status.BAD_REQUEST);
       }
-      var uppgift = operativtUppgiftslagerService.addOperativeTask(addRequest, processInfo.getReplyTopic(),
-            processInfo.getCloudeventAttributes());
+      var uppgift = operativtUppgiftslagerService.addOperativeTask(addRequest, createUppgiftRequest.getSubTopic(),
+            processInfo.getReplyTopic(), processInfo.getCloudeventAttributes());
 
       var responseProcessInfo = new ProcessInfo();
       responseProcessInfo.setCloudeventAttributes(uppgift.cloudeventAttributes());
-      responseProcessInfo.setReplyTopic(uppgift.subTopic());
+      responseProcessInfo.setReplyTopic(uppgift.replyTopic());
 
       var response = new UppgiftResponse();
       response.setUppgiftId(uppgift.uppgiftId());
@@ -91,7 +97,7 @@ public class UppgifterController implements UppgifterApi, ReglerApi
 
       var endResponseProcessInfo = new ProcessInfo();
       endResponseProcessInfo.setCloudeventAttributes(uppgift.cloudeventAttributes());
-      endResponseProcessInfo.setReplyTopic(uppgift.subTopic());
+      endResponseProcessInfo.setReplyTopic(uppgift.replyTopic());
 
       var response = new UppgiftResponse();
       response.setUppgiftId(uppgift.uppgiftId());

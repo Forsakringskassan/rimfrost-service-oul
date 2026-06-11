@@ -13,7 +13,7 @@ class EnumMapperTest
 
    @ParameterizedTest
    @EnumSource(UppgiftStatus.class)
-   @DisplayName("FR-01.2, FR-02.3, FR-06.2: Statusvärden serialiseras korrekt till sträng och tillbaka utan förlust")
+   @DisplayName("OUL-FR-01.2, OUL-FR-02.3, OUL-FR-06.2: Statusvärden serialiseras korrekt till sträng och tillbaka utan förlust")
    void mapsUppgiftStatusToStatusAndBack(UppgiftStatus status)
    {
       String mapped = mapper.mapUppgiftStatusToStatus(status);

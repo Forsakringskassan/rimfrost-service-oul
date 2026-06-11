@@ -15,7 +15,7 @@ import static se.fk.github.rimfrost.operativt.uppgiftslager.OulTestData.newEndUp
 public class OulSequenceTest extends OulTestBase
 {
    @Test
-   @DisplayName("FR-01.7, FR-04.2, FR-05.1, FR-06.1, FR-02.2: Komplett arbetsflöde — skapa, tilldela, Kafka-notis, lista, avsluta")
+   @DisplayName("OUL-FR-01.7, OUL-FR-04.2, OUL-FR-05.1, OUL-FR-06.1, OUL-FR-02.2: Komplett arbetsflöde — skapa, tilldela, Kafka-notis, lista, avsluta")
    public void smoke_test_oul_sequence()
    {
       //

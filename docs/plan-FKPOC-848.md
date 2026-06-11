@@ -1,122 +1,41 @@
-# Plan: DB persistence for SorteringsordningEntity
+# Plan: FKPOC-848 — DB persistence for SorteringsordningEntity
 
-Follow-up to FKPOC-795 (Fas 1). Replaces the `AtomicReference` in-memory storage with
-PostgreSQL persistence so the active sorteringsordning survives restarts.
+Follow-up to FKPOC-795. Replaces the `AtomicReference` in-memory storage with
+PostgreSQL persistence so sorteringsordningar survive restarts.
 
----
-
-## Pattern in this service
-
-Existing `UppgiftEntity` establishes the pattern to follow:
-
-- Plain JPA `@Entity` (not Panache) with `@Id`, `@Version`, `@PrePersist`/`@PreUpdate`
-- Repository: `@ApplicationScoped class Foo implements PanacheRepositoryBase<FooEntity, UUID>`
-- Storage interface stays unchanged; only `PanacheOulDataStorage` changes
-- Complex list fields normalised into join tables (`@OneToMany`) — see `UppgiftIndividEntity`
-
-`List<SorteringsordningEntry>` is **not** a candidate for normalisation: the entries contain
-a polymorphic `Constraint` union (`@JsonSubTypes`) and a nested `SortBy`. The correct approach
-is an `AttributeConverter` storing the list as a PostgreSQL `TEXT` column serialised by Jackson.
-This is a deviation from the join-table pattern but justified because the entries are an opaque,
-generated API structure not queried column-by-column.
+Uppgifter are **already persisted** via `UppgiftRepository` (Panache). The only remaining
+in-memory piece was `activeSorteringsordning` in `PanacheOulDataStorage`.
 
 ---
 
-## Files to create
+## Status: ✅ COMPLETE
 
-### `storage/internal/entity/SorteringsordningPersistenceEntity.java`
-
-```java
-@Entity
-@Table(name = "sorteringsordning")
-public class SorteringsordningPersistenceEntity
-{
-   @Id
-   @Column(nullable = false)
-   private UUID id;
-
-   @Version
-   private long version;
-
-   @Column(nullable = false, updatable = false)
-   private Instant createdAt;
-
-   @Column(nullable = false)
-   private Instant updatedAt;
-
-   @Column(nullable = false, columnDefinition = "text")
-   @Convert(converter = SorteringsordningEntriesConverter.class)
-   private List<SorteringsordningEntry> entries;
-
-   @PrePersist void onCreate() { createdAt = updatedAt = Instant.now(); }
-   @PreUpdate  void onUpdate() { updatedAt = Instant.now(); }
-
-   // getters/setters
-}
-```
-
-### `storage/internal/repository/SorteringsordningRepository.java`
-
-```java
-@ApplicationScoped
-public class SorteringsordningRepository
-      implements PanacheRepositoryBase<SorteringsordningPersistenceEntity, UUID>
-{
-}
-```
-
-### `storage/internal/converter/SorteringsordningEntriesConverter.java`
-
-```java
-@Converter
-public class SorteringsordningEntriesConverter
-      implements AttributeConverter<List<SorteringsordningEntry>, String>
-{
-   private static final ObjectMapper MAPPER = JsonMapper.builder()
-         .addModule(new JavaTimeModule())
-         .build();
-   private static final TypeReference<List<SorteringsordningEntry>> TYPE =
-         new TypeReference<>() {};
-
-   @Override
-   public String convertToDatabaseColumn(List<SorteringsordningEntry> entries) { ... }
-
-   @Override
-   public List<SorteringsordningEntry> convertToEntityAttribute(String json) { ... }
-}
-```
-
-`@JsonSubTypes` on `Constraint` is intrinsic to Jackson and requires no extra registration —
-`ConstraintEq` / `ConstraintBetween` etc. deserialise correctly from the stored JSON.
+All four steps delivered. See commit history on `fix/FKPOC-848-sortorder-db`.
 
 ---
 
-## Files to modify
+## Requirements addressed
 
-### `storage/internal/PanacheOulDataStorage.java`
-
-Replace `AtomicReference<SorteringsordningEntity>` with injected `SorteringsordningRepository`.
-
-| Method | Change |
-|--------|--------|
-| `saveSorteringsordning` | `deleteAll()` then `persist(toEntity(entity))` |
-| `getDefaultSorteringsordning` | `findAll().firstResult().map(fromEntity)` |
-| `getSorteringsordningById` | `findByIdOptional(id).map(fromEntity)` |
-| `getAllSorteringsordningar` | `findAll().stream().map(fromEntity).toList()` |
-| `clearSorteringsordning` | `deleteAll()` |
-
-Also add `toEntity` / `fromEntity` private helpers (UUID, OffsetDateTime, entries).
-
-### `test/.../StorageTestCleaner.java`
-
-`clearSorteringsordning()` currently calls `panacheOulDataStorage.clearSorteringsordning()`.
-This continues to work — the implementation just changes internally to `deleteAll()`.
+| Krav | Fas 1 | FKPOC-848 |
+|------|-------|-----------|
+| OUL-FR-09.2 — default vid skapelse | Ej implementerat | Automatisk default om ingen finns sedan tidigare |
+| OUL-FR-13 — Ta bort sorteringsordning | Ej implementerat (stub: 405) | DELETE med 409-skydd på default |
+| OUL-FR-14 — Ange default sorteringsordning | Ej implementerat (stub: no-op) | PUT anger ny default |
+| OUL-NFR-04.1 — persistens | In-memory, överlever inte omstart | Persistent i PostgreSQL |
+| OUL-NFR-05.1 — flera sorteringsordningar | En åt gången (in-memory) | Flera sparas; exakt en är default åt gången |
+| OUL-NFR-05.2 — hämtning via ID | Ej tillämpbart | `findByIdOptional(id)` direkt mot posten |
+| OUL-NFR-05.3 — byte av default | Ej tillämpbart | Single-row UPDATE på `default_sorteringsordning`; berör inga andra poster |
 
 ---
 
-## Migration
+## Schema design
 
-### `src/main/resources/db/migration/V002__add_sorteringsordning_table.sql`
+Two tables: `sorteringsordning` holds all stored orders; `default_sorteringsordning`
+holds exactly one row — the ID of the current default.
+
+The `lock = TRUE` primary key on `default_sorteringsordning` ensures only one row can ever
+be inserted. The FK to `sorteringsordning` acts as a second line of defence: the DB rejects
+deleting the current default even if the application-level 409 check is bypassed.
 
 ```sql
 CREATE TABLE sorteringsordning (
@@ -126,35 +45,94 @@ CREATE TABLE sorteringsordning (
     updated_at  TIMESTAMPTZ NOT NULL,
     entries     TEXT        NOT NULL
 );
+
+CREATE TABLE default_sorteringsordning (
+    lock                 BOOLEAN NOT NULL DEFAULT TRUE PRIMARY KEY,
+    sorteringsordning_id UUID    NOT NULL REFERENCES sorteringsordning(id),
+    CONSTRAINT one_row CHECK (lock = TRUE)
+);
 ```
 
-Single table, single `entries` text column. No join tables needed.
+---
+
+## Step 1 — Fix and add tests ✅ DONE
+
+Fixed `should_replace_sorteringsordning_on_second_post` (asserted old wrong behaviour).
+Added `OUL-FR-09.2` and `OUL-FR-11.2` tests.
 
 ---
 
-## Effort summary
+## Step 2 — Infrastructure ✅ DONE
 
-| Item | New LOC | Changed LOC |
-|------|---------|-------------|
-| `SorteringsordningPersistenceEntity` | ~50 | — |
-| `SorteringsordningRepository` | ~8 | — |
-| `SorteringsordningEntriesConverter` | ~30 | — |
-| `PanacheOulDataStorage` | — | ~25 |
-| `V002__add_sorteringsordning_table.sql` | ~10 | — |
-| **Total** | **~98** | **~25** |
+Files created:
 
-**Complexity: low.** No new dependencies. All existing tests pass without change because
-`StorageTestCleaner` still calls `clearSorteringsordning()`. The only new test worth adding
-is a restart-survival integration test (verifies data persists across a CDI context reset),
-but that requires a dedicated `@QuarkusIntegrationTest` setup and can be deferred.
+- `storage/internal/entity/SorteringsordningPersistenceEntity.java`
+- `storage/internal/entity/DefaultSorteringsordningEntity.java`
+- `storage/internal/repository/SorteringsordningRepository.java`
+- `storage/internal/repository/DefaultSorteringsordningRepository.java`
+- `storage/internal/converter/SorteringsordningEntriesConverter.java`
+- `storage/internal/converter/SorteringsordningEntryDeserializer.java` ← **unplanned, see deviation below**
+- `src/main/resources/db/migration/V002__add_sorteringsordning_table.sql`
+
+**Deviation from plan:** The plan assumed `@JsonSubTypes` on `Constraint` would handle
+polymorphic deserialisation automatically. This was wrong: the generated OpenAPI model
+does not establish Java inheritance between `Constraint` and its subtypes (`ConstraintEq`,
+`ConstraintBetween`, `ConstraintContains`, `ConstraintOffsetToNow`), so Jackson's standard
+type dispatch cannot be used.
+
+A custom `SorteringsordningEntryDeserializer` was introduced to dispatch on the `operator`
+field manually. The resulting constraint list is built as a raw `ArrayList` and cast via
+`(List<Constraint>)(List<?>)` to avoid a JVM `checkcast` that would fail at runtime.
+
+Also added `SorteringsordningEntriesConverterTest` with round-trip tests for all four
+constraint subtypes.
 
 ---
 
-## Notes
+## Step 3 — Replace `AtomicReference` with DB ✅ DONE
 
-- `SorteringsordningEntity` stays as a domain record — no JPA annotations leak into the logic layer.
-- The business invariant "only one active sorteringsordning at a time" is enforced in
-  `saveSorteringsordning` by `deleteAll()` before `persist()`, wrapped in the existing
-  `@Transactional` on `PanacheOulDataStorage`.
-- The `TEXT` column type avoids a `jsonb` Hibernate dialect dependency while still being
-  stored compactly. Upgrade to `jsonb` later if PostgreSQL JSON querying is ever needed.
+Wired `PanacheOulDataStorage` to use the new repositories. Removed `AtomicReference`.
+
+**Race condition fix (unplanned):** The original plan used a check-then-insert for the
+default row. Two concurrent `POST /sorteringsordning` requests could both observe an empty
+table and both attempt an insert, with the second failing on the PK constraint.
+
+Fixed with `DefaultSorteringsordningRepository.insertIfAbsent(UUID)`:
+
+```sql
+INSERT INTO {h-schema}default_sorteringsordning (lock, sorteringsordning_id)
+VALUES (TRUE, :id) ON CONFLICT DO NOTHING
+```
+
+The `{h-schema}` Hibernate placeholder is required for native queries — unlike JPQL,
+native SQL does not automatically apply `quarkus.hibernate-orm.database.default-schema`.
+
+`setCreatedAt` was added to `SorteringsordningPersistenceEntity` and `@PrePersist`
+was updated to only set `createdAt` if null, so the service layer can supply the original
+creation timestamp from the domain object.
+
+**Requirements delivered:** OUL-FR-09.2, OUL-NFR-04.1, OUL-NFR-05.1, OUL-NFR-05.2
+
+---
+
+## Step 4 — Delete and set-default ✅ DONE
+
+**Requirements delivered:** OUL-FR-13, OUL-FR-14, OUL-NFR-05.3
+
+Files changed:
+
+| File | Change |
+|------|--------|
+| `storage/OulDataStorage.java` | Added `deleteSorteringsordning` and `setDefaultSorteringsordning` |
+| `storage/internal/PanacheOulDataStorage.java` | Implemented both methods |
+| `logic/OperativtUppgiftslagerService.java` | Delegation methods added |
+| `presentation/rest/management/SorteringController.java` | Stubs replaced with real implementations |
+
+Tests added: OUL-FR-13.1, FR-13.2, FR-13.3, FR-14.1, FR-14.2 in `OulSorteringTest`;
+FR-03.6 + FR-14 interaction test in `OulUppgifterSortTest`.
+
+---
+
+## Post-implementation additions
+
+- **Javadoc** added to all Java classes and methods introduced in the branch, using American English spelling throughout.
