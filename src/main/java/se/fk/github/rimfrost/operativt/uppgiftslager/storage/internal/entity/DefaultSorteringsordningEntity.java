@@ -33,14 +33,6 @@ public class DefaultSorteringsordningEntity
    }
 
    /**
-    * @param lock must always be {@code true}
-    */
-   public void setLock(boolean lock)
-   {
-      this.lock = lock;
-   }
-
-   /**
     * @return the UUID of the currently active default sorteringsordning
     */
    public UUID getSorteringsordningId()

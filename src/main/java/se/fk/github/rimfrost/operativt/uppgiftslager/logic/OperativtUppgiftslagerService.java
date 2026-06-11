@@ -45,7 +45,7 @@ public class OperativtUppgiftslagerService
    OulDataStorage storage;
 
    public UppgiftDto addOperativeTask(OperativtUppgiftslagerAddRequest addRequest, String notificationTopic,
-         Map<String, String> cloudeventAttributes)
+         String replyTopic, Map<String, String> cloudeventAttributes)
    {
       log.info("Adding new task");
       var uppgift = ImmutableUppgiftEntity.builder()
@@ -60,6 +60,7 @@ public class OperativtUppgiftslagerService
             .roll(addRequest.roll())
             .url(addRequest.url())
             .subTopic(notificationTopic)
+            .replyTopic(replyTopic)
             .cloudeventAttributes(cloudeventAttributes)
             .erbjudande(addRequest.erbjudande())
             .build();

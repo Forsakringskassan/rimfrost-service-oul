@@ -1,0 +1,1 @@
+ALTER TABLE uppgift ADD COLUMN reply_topic VARCHAR(255) NOT NULL DEFAULT '';

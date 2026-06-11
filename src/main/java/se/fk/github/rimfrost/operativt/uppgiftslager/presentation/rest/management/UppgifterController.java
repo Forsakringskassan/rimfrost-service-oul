@@ -67,11 +67,11 @@ public class UppgifterController implements UppgifterApi, ReglerApi
          throw new WebApplicationException(Response.Status.BAD_REQUEST);
       }
       var uppgift = operativtUppgiftslagerService.addOperativeTask(addRequest, createUppgiftRequest.getSubTopic(),
-            processInfo.getCloudeventAttributes());
+            processInfo.getReplyTopic(), processInfo.getCloudeventAttributes());
 
       var responseProcessInfo = new ProcessInfo();
       responseProcessInfo.setCloudeventAttributes(uppgift.cloudeventAttributes());
-      responseProcessInfo.setReplyTopic(uppgift.subTopic());
+      responseProcessInfo.setReplyTopic(uppgift.replyTopic());
 
       var response = new UppgiftResponse();
       response.setUppgiftId(uppgift.uppgiftId());
@@ -97,7 +97,7 @@ public class UppgifterController implements UppgifterApi, ReglerApi
 
       var endResponseProcessInfo = new ProcessInfo();
       endResponseProcessInfo.setCloudeventAttributes(uppgift.cloudeventAttributes());
-      endResponseProcessInfo.setReplyTopic(uppgift.subTopic());
+      endResponseProcessInfo.setReplyTopic(uppgift.replyTopic());
 
       var response = new UppgiftResponse();
       response.setUppgiftId(uppgift.uppgiftId());

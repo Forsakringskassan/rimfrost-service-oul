@@ -196,7 +196,8 @@ public class ConstraintMatcherTest
             .verksamhetslogik("testverksamhetslogik")
             .roll("testroll")
             .url("http://localhost")
-            .subTopic("test")
+            .subTopic("test-sub-topic")
+            .replyTopic("test-reply-topic")
             .cloudeventAttributes(Map.of())
             .erbjudande(ImmutableErbjudande.builder().id("e1").namn("test").build())
             .individer(new se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.Idtyp[0]);

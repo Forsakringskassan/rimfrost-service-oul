@@ -35,6 +35,7 @@ public class OulDataStorageMapper
       entity.setRoll(uppgift.roll());
       entity.setUrl(uppgift.url());
       entity.setSubTopic(uppgift.subTopic());
+      entity.setReplyTopic(uppgift.replyTopic());
       entity.setErbjudandeId(uppgift.erbjudande().id());
       entity.setErbjudandeNamn(uppgift.erbjudande().namn());
       entity.setReason(uppgift.reason());
@@ -88,6 +89,7 @@ public class OulDataStorageMapper
             .roll(entity.getRoll())
             .url(entity.getUrl())
             .subTopic(entity.getSubTopic())
+            .replyTopic(entity.getReplyTopic())
             .erbjudande(erbjudande)
             .reason(entity.getReason())
             .individer(entity.getIndivider().stream().map(this::toIdtyp).toArray(Idtyp[]::new))
