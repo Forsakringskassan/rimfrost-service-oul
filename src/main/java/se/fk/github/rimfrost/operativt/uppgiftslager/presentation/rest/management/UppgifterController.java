@@ -25,6 +25,7 @@ import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.Uppgi
 import se.fk.rimfrost.oul.management.regler.jaxrsspec.controllers.generatedsource.ReglerApi;
 import se.fk.rimfrost.oul.management.regler.jaxrsspec.controllers.generatedsource.model.CreateUppgiftRequest;
 import se.fk.rimfrost.oul.management.regler.jaxrsspec.controllers.generatedsource.model.EndUppgiftRequest;
+import se.fk.rimfrost.oul.management.regler.jaxrsspec.controllers.generatedsource.model.ProcessInfo;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.OperativUppgift;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.UpdateUppgiftRequest;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.UppgiftPage;
@@ -54,14 +55,23 @@ public class UppgifterController implements UppgifterApi, ReglerApi
    {
       log.info("Creating uppgift for handlaggningId: {}", createUppgiftRequest.getHandlaggningId());
       var addRequest = managementMapper.toAddRequest(createUppgiftRequest);
-      var uppgift = operativtUppgiftslagerService.addOperativeTask(addRequest, createUppgiftRequest.getSubTopic(),
-            createUppgiftRequest.getCloudeventAttributes());
+      var processInfo = createUppgiftRequest.getProcessInfo();
+      if (processInfo == null)
+      {
+         throw new WebApplicationException(Response.Status.BAD_REQUEST);
+      }
+      var uppgift = operativtUppgiftslagerService.addOperativeTask(addRequest, processInfo.getReplyTopic(),
+            processInfo.getCloudeventAttributes());
+
+      var responseProcessInfo = new ProcessInfo();
+      responseProcessInfo.setCloudeventAttributes(uppgift.cloudeventAttributes());
+      responseProcessInfo.setReplyTopic(uppgift.subTopic());
 
       var response = new UppgiftResponse();
       response.setUppgiftId(uppgift.uppgiftId());
       response.setHandlaggningId(uppgift.handlaggningId());
       response.setStatus(enumMapper.mapUppgiftStatusToStatus(uppgift.status()));
-      response.setCloudeventAttributes(uppgift.cloudeventAttributes());
+      response.setProcessInfo(responseProcessInfo);
       return response;
    }
 
@@ -79,11 +89,15 @@ public class UppgifterController implements UppgifterApi, ReglerApi
          throw new WebApplicationException(Response.Status.NOT_FOUND);
       }
 
+      var endResponseProcessInfo = new ProcessInfo();
+      endResponseProcessInfo.setCloudeventAttributes(uppgift.cloudeventAttributes());
+      endResponseProcessInfo.setReplyTopic(uppgift.subTopic());
+
       var response = new UppgiftResponse();
       response.setUppgiftId(uppgift.uppgiftId());
       response.setHandlaggningId(uppgift.handlaggningId());
       response.setStatus(enumMapper.mapUppgiftStatusToStatus(uppgift.status()));
-      response.setCloudeventAttributes(uppgift.cloudeventAttributes());
+      response.setProcessInfo(endResponseProcessInfo);
       return response;
    }
 

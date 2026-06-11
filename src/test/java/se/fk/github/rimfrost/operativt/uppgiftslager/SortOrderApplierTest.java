@@ -177,6 +177,7 @@ public class SortOrderApplierTest
             .verksamhetslogik("testverksamhetslogik")
             .roll("testroll")
             .url("http://localhost")
+            .subTopic("test")
             .cloudeventAttributes(Map.of())
             .erbjudande(ImmutableErbjudande.builder().id("e1").namn("test").build())
             .individer(new se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.Idtyp[0]);

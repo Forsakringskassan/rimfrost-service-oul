@@ -24,7 +24,10 @@ public class LogicMapper
       data.setHandlaggningId(uppgift.handlaggningId().toString());
       data.setStatus(enumMapper.mapUppgiftStatusToStatus(uppgift.status()));
       data.setUppgiftId(uppgift.uppgiftId().toString());
-      data.setCloudeventAttributes(uppgift.cloudeventAttributes());
+      var processInfo = new ProcessInfo();
+      processInfo.setCloudeventAttributes(uppgift.cloudeventAttributes());
+      processInfo.setReplyTopic(uppgift.subTopic());
+      data.setProcessInfo(processInfo);
       data.setPlaneradTill(
             planeradTill != null ? planeradTill.atStartOfDay().atZone(ZoneId.systemDefault()).toOffsetDateTime() : null);
 
@@ -56,6 +59,7 @@ public class LogicMapper
             .verksamhetslogik(uppgift.verksamhetslogik())
             .roll(uppgift.roll())
             .url(uppgift.url())
+            .subTopic(uppgift.subTopic())
             .cloudeventAttributes(uppgift.cloudeventAttributes())
             .erbjudande(uppgift.erbjudande())
             .build();
