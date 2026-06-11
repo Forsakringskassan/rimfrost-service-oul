@@ -1,5 +1,9 @@
 package se.fk.github.rimfrost.operativt.uppgiftslager;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.restassured.RestAssured;
+import io.restassured.config.ObjectMapperConfig;
+import io.restassured.config.RestAssuredConfig;
 import io.restassured.http.ContentType;
 import io.smallrye.reactive.messaging.memory.InMemoryConnector;
 import jakarta.inject.Inject;
@@ -31,11 +35,16 @@ public abstract class OulTestBase
    InMemoryConnector inMemoryConnector;
 
    @Inject
+   ObjectMapper objectMapper;
+
+   @Inject
    StorageTestCleaner storageTestCleaner;
 
    @BeforeEach
    public void resetOul()
    {
+      RestAssured.config = RestAssuredConfig.config().objectMapperConfig(
+            ObjectMapperConfig.objectMapperConfig().jackson2ObjectMapperFactory((cls, charset) -> objectMapper));
       storageTestCleaner.clearAll();
 
       if (oulKafkaConnector == null)

@@ -1,4 +1,4 @@
-package se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.converter;
+package se.fk.github.rimfrost.operativt.uppgiftslager.integration.jackson;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -22,20 +22,25 @@ import java.util.List;
  * The generated OpenAPI model does not establish Java inheritance between
  * {@link Constraint} and its concrete subtypes ({@link ConstraintEq}, {@link ConstraintBetween},
  * {@link ConstraintContains}, {@link ConstraintOffsetToNow}), so Jackson's standard polymorphic
- * dispatch cannot be used. This deserializer reads the {@code operator} field and routes each
- * constraint object to its concrete type manually.
+ * dispatch cannot be used. Jackson's {@code TypeDeserializer} (driven by {@code @JsonTypeInfo} on
+ * {@code Constraint}) intercepts element-level deserialization and tries to return the concrete
+ * type as {@code Constraint}, which throws {@code ClassCastException} at runtime.
  * <p>
- * The resulting list is built as a raw {@link java.util.ArrayList} and cast via
- * {@code (List<Constraint>)(List<?>)} to avoid a JVM {@code checkcast} on individual elements,
- * which would fail at runtime since the elements do not extend {@link Constraint}.
+ * This deserializer bypasses that by owning the full {@link SorteringsordningEntry} parse: it
+ * reads each constraint node, dispatches to the concrete type manually, and accumulates results in
+ * a raw {@link ArrayList}. The list is then cast via {@code (List<Constraint>)(List<?>)} to avoid
+ * a JVM {@code checkcast} on individual elements.
+ * <p>
+ * Used by both the REST layer ({@link JacksonConfiguration}) and the JPA converter
+ * ({@code SorteringsordningEntriesConverter}).
  */
 @SuppressWarnings("unchecked")
-class SorteringsordningEntryDeserializer extends StdDeserializer<SorteringsordningEntry>
+public class SorteringsordningEntryDeserializer extends StdDeserializer<SorteringsordningEntry>
 {
    /**
     * Registers this deserializer for {@link SorteringsordningEntry}.
     */
-   SorteringsordningEntryDeserializer()
+   public SorteringsordningEntryDeserializer()
    {
       super(SorteringsordningEntry.class);
    }
