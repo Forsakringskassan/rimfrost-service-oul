@@ -20,6 +20,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class SorteringsordningEntriesConverterTest
 {
@@ -169,5 +170,16 @@ public class SorteringsordningEntriesConverterTest
       assertEquals(LocalDate.of(2024, 1, 1), ((ConstraintBetween) rawConstraints.get(1)).getFrom());
       assertNotNull(resultEntry.getSortBy());
       assertEquals(SortBy.DirectionEnum.DESC, resultEntry.getSortBy().getDirection());
+   }
+
+   @Test
+   @DisplayName("Okänd operator i JSON ger IllegalArgumentException vid DB-deserialisering")
+   public void should_throw_on_unknown_constraint_operator()
+   {
+      var json = """
+            [{"constraints":[{"operator":"UNKNOWN_OP","field":"STATUS"}],"sortBy":null}]
+            """;
+
+      assertThrows(IllegalArgumentException.class, () -> converter.convertToEntityAttribute(json));
    }
 }
