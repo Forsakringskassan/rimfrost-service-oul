@@ -5,11 +5,13 @@ import jakarta.enterprise.context.ApplicationScoped;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.ImmutableErbjudande;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.ImmutableIdtyp;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.ImmutableUppgiftEntity;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.SorteringsordningEntity;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.UppgiftEntity;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.Idtyp;
+import se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.entity.SorteringsordningPersistenceEntity;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.entity.UppgiftCloudEventAttributeEntity;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.entity.UppgiftIndividEntity;
-
+import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -132,5 +134,16 @@ public class OulDataStorageMapper
       }
 
       return cloudEventAttributes;
+   }
+
+   /**
+    * Converts a JPA persistence entity to the domain entity used by the logic layer.
+    *
+    * @param entity the JPA entity to convert
+    * @return the corresponding domain {@link SorteringsordningEntity}
+    */
+   public SorteringsordningEntity toSorteringsordningEntity(SorteringsordningPersistenceEntity entity)
+   {
+      return new SorteringsordningEntity(entity.getId(), entity.getCreatedAt().atOffset(ZoneOffset.UTC), entity.getEntries());
    }
 }

@@ -16,7 +16,6 @@ import se.fk.github.rimfrost.operativt.uppgiftslager.storage.SorteringsordningNo
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.repository.DefaultSorteringsordningRepository;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.repository.SorteringsordningRepository;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.repository.UppgiftRepository;
-import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -167,21 +166,21 @@ public class PanacheOulDataStorage implements OulDataStorage
    {
       return defaultSorteringsordningRepository.findByIdOptional(true)
             .flatMap(d -> sorteringsordningRepository.findByIdOptional(d.getSorteringsordningId()))
-            .map(this::toSorteringsordningEntity);
+            .map(oulDataStorageMapper::toSorteringsordningEntity);
    }
 
    @Override
    public Optional<SorteringsordningEntity> getSorteringsordningById(UUID id)
    {
       return sorteringsordningRepository.findByIdOptional(id)
-            .map(this::toSorteringsordningEntity);
+            .map(oulDataStorageMapper::toSorteringsordningEntity);
    }
 
    @Override
    public List<SorteringsordningEntity> getAllSorteringsordningar()
    {
       return sorteringsordningRepository.findAll().stream()
-            .map(this::toSorteringsordningEntity)
+            .map(oulDataStorageMapper::toSorteringsordningEntity)
             .toList();
    }
 
@@ -242,14 +241,4 @@ public class PanacheOulDataStorage implements OulDataStorage
       sorteringsordningRepository.deleteAll();
    }
 
-   /**
-    * Converts a JPA persistence entity to the domain entity used by the logic layer.
-    *
-    * @param e the JPA entity to convert
-    * @return the corresponding domain {@link SorteringsordningEntity}
-    */
-   private SorteringsordningEntity toSorteringsordningEntity(SorteringsordningPersistenceEntity e)
-   {
-      return new SorteringsordningEntity(e.getId(), e.getCreatedAt().atOffset(ZoneOffset.UTC), e.getEntries());
-   }
 }
