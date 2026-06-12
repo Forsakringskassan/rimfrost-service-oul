@@ -20,18 +20,18 @@ public class OulPreviewTest extends OulTestBase
       sendCreateUppgiftRequest(newCreateUppgiftRequest(UUID.randomUUID()));
       sendCreateUppgiftRequest(newCreateUppgiftRequest(UUID.randomUUID()));
 
-      var page = sendPreviewRequest(newSorteringsordningSpec(), 50, null);
+      var page = sendPreviewRequest(newSorteringsordningSpec(), 10, null);
 
       assertEquals(2, page.getTotal());
       assertEquals(2, page.getItems().size());
-      assertEquals(0, getSorteringsordningar(100).getTotal());
+      assertEquals(0, getSorteringsordningar(10).getTotal());
    }
 
    @Test
    @DisplayName("POST /sorteringsordning/preview — inga uppgifter ger tom sida")
    public void should_return_empty_page_when_no_tasks()
    {
-      var page = sendPreviewRequest(newSorteringsordningSpec(), 50, null);
+      var page = sendPreviewRequest(newSorteringsordningSpec(), 10, null);
 
       assertEquals(0, page.getTotal());
       assertEquals(0, page.getItems().size());
@@ -59,7 +59,7 @@ public class OulPreviewTest extends OulTestBase
       sendCreateUppgiftRequest(newCreateUppgiftRequest(UUID.randomUUID()));
       sendCreateUppgiftRequest(newCreateUppgiftRequest(UUID.randomUUID()));
 
-      var page = sendPreviewRequest(newSorteringsordningSpec(), 50, 1);
+      var page = sendPreviewRequest(newSorteringsordningSpec(), 10, 1);
 
       assertEquals(3, page.getTotal());
       assertEquals(2, page.getItems().size());
