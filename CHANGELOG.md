@@ -2,6 +2,61 @@
 
 Changelog of rimfrost-service-oul.
 
+## 1.2.0 (2026-06-12)
+
+### Features
+
+-  Wire sorteringsordning storage to DB via JPA repositories ([c8fb0](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/c8fb0685eda5f67) Ulf Slunga)  
+-  Reduce to 2 items instead of 1000 in test of assigned uppgifter ([b76b3](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/b76b3747a81aaf8) Ulf Slunga)  
+-  Replace fully qualified java.util.UUID with imported UUID in OulTestBase ([bf771](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/bf77189a00934da) Ulf Slunga)  
+-  Remove getUppgifter() shim, use getUppgifter(int) directly ([1c022](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/1c022d9afce1a57) Ulf Slunga)  
+-  Fix indentation in OulDataStorage ([57437](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/57437ecf97f6d24) Ulf Slunga)  
+-  Defensive copy in SortedUppgiftPage to avoid mutable list exposure ([9357e](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/9357e0031e35a05) Ulf Slunga)  
+-  Defensive copy in SorteringsordningEntity to avoid mutable list exposure ([4fa2d](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/4fa2d628b515d25) Ulf Slunga)  
+-  Add docs — krav, plans and README for FKPOC-795 ([3fac3](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/3fac39a915b2224) Ulf Slunga)  
+-  Add support for unassigning and reassigning tasks ([c08eb](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/c08ebe62f7393be) Lars Persson)  
+
+### Bug Fixes
+
+-  Use minimal page limits in OulSorteringTest ([b09c7](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/b09c752807098f3) Ulf Slunga)  
+-  Use minimal page limits in OulPreviewTest ([5d80e](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/5d80edc9236d65e) Ulf Slunga)  
+-  Add pagination to GET /sorteringsordning ([78218](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/78218e25805f8ac) Ulf Slunga)  
+-  Make invalidateCountCache package-private, move StorageTestCleaner to storage.internal ([e37f1](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/e37f1c4317427fa) Ulf Slunga)  
+-  Replace two-phase assign with CTE and parameterise ORDER BY alias ([09af9](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/09af950bd7605e0) Ulf Slunga)  
+-  Apply default sorteringsordning to handläggare assign and list endpoints ([f3a28](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/f3a282450c794f7) Ulf Slunga)  
+-  Document OUL-FR-04.2 and OUL-FR-05.3 requirements for sorteringsordning-aware handläggare endpoints ([3bcfd](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/3bcfd7964f662f6) Ulf Slunga)  
+-  Remove dead getTasks/findAllUppgifter replaced by paginated getUppgifterPage ([aa739](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/aa7391bdbdf6c60) Ulf Slunga)  
+-  Push sorting and pagination to DB, add count cache, remove in-memory sort ([6de0a](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/6de0a962547ba4b) Ulf Slunga)  
+-  Fix constraint REST deserialization and default-sorting tests ([e39c6](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/e39c630642f2e48) Ulf Slunga)  
+-  Test unknown constraint operator throws IllegalArgumentException ([33d7e](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/33d7e7016ce7caa) Ulf Slunga)  
+-  Add Javadoc to UppgiftEntity.replyTopic explaining distinction from subTopic ([690c8](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/690c89bfcc93f32) Ulf Slunga)  
+-  Move toSorteringsordningEntity to OulDataStorageMapper ([7bb84](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/7bb84342af23819) Ulf Slunga)  
+-  Add replyTopic field to uppgift — store and propagate from processInfo ([cefe6](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/cefe6f0c4496ecb) Ulf Slunga)  
+-  Read sub_topic from CreateUppgiftRequest instead of processInfo.replyTopic ([34640](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/34640f18b8db889) Ulf Slunga)  
+-  fix test gaps, refine requirements and rebasing before start impl of sortorder in db ([982c2](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/982c2b1a4071093) Ulf Slunga)  
+-  Bump asyncapi to 1.1.1 and adapt to ProcessInfo wrapper ([5b623](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/5b623fca69319c3) Ulf Slunga)  
+-  Adapt to ProcessInfo wrapper in regler API 0.0.3 ([d8c98](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/d8c987813a721ca) Ulf Slunga)  
+-  Use rimfrost-service-oul-management-regler-openapi ([cd6ce](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/cd6cee43b1af3e3) Lars Persson)  
+
+## rimfrost-1.1 (2026-06-02)
+
+### Bug Fixes
+
+-  Bump rimfrost-service-oul-asyncapi version ([831a0](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/831a03dd4ac278c) Lars Persson)  
+-  Untrack test-gaps.md ([59612](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/596120753dac575) Ulf Slunga)  
+-  Remove FR-02.4 from test gaps — now covered by should_return_404 test ([b9d35](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/b9d357b38025a28) Ulf Slunga)  
+-  Add @DisplayName requirement traceability to tests and refine krav.md ([22466](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/224662ae5290e38) Ulf Slunga)  
+-  krav-förbättring ([8ae97](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/8ae97a91ce488c3) Ulf Slunga)  
+-  Add reverse-engineered requirements baseline ([b4df4](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/b4df4a57e6c7296) Ulf Slunga)  
+
+### Other changes
+
+**Remove unused imports**
+
+
+[6d83f](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/6d83f1e942e46c2) Lars Persson *2026-06-02 12:25:33*
+
+
 ## 1.1.0 (2026-06-01)
 
 ### Features
