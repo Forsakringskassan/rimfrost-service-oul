@@ -1,5 +1,6 @@
 package se.fk.github.rimfrost.operativt.uppgiftslager.storage;
 
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.SorteringsordningEntityPage;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.UppgiftEntityPage;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.Idtyp;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.SorteringsordningEntity;
@@ -109,11 +110,14 @@ public interface OulDataStorage
    Optional<SorteringsordningEntity> getSorteringsordningById(UUID id);
 
    /**
-    * Returns all persisted sorteringsordningar.
+    * Returns one page of sorteringsordningar ordered by creation time descending.
+    * The total count reflects all rows, not just the page slice.
     *
-    * @return list of all sorteringsordningar
+    * @param limit  maximum number of items to return
+    * @param offset zero-based start index
+    * @return the page slice and total count
     */
-   List<SorteringsordningEntity> getAllSorteringsordningar();
+   SorteringsordningEntityPage findSorteringsordningarPage(int limit, int offset);
 
    /**
     * Deletes the sorteringsordning with the given id.

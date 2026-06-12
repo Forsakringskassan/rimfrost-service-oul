@@ -9,6 +9,7 @@ import java.util.UUID;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.SortBy;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.SorteringsordningEntry;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.SorteringsordningField;
+import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.SorteringsordningPage;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.SorteringsordningSpec;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.UppgiftPage;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -57,16 +58,17 @@ public class OulSorteringTest extends OulTestBase
    }
 
    @Test
-   @DisplayName("OUL-FR-11.2: Lista sorteringsordningar — två poster efter två skapelser")
+   @DisplayName("OUL-FR-11.1, OUL-FR-11.3: Lista sorteringsordningar — två poster efter två skapelser")
    public void should_list_two_sorteringsordningar_after_two_creates()
    {
       var first = sendCreateSorteringsordningRequest(newSorteringsordningSpec());
       var second = sendCreateSorteringsordningRequest(newSorteringsordningSpec());
 
-      var list = getSorteringsordningar();
+      var page = getSorteringsordningar(100);
 
-      assertEquals(2, list.size());
-      var ids = list.stream().map(s -> s.getId()).toList();
+      assertEquals(2, page.getTotal());
+      assertEquals(2, page.getItems().size());
+      var ids = page.getItems().stream().map(s -> s.getId()).toList();
       assertTrue(ids.contains(first.getId()));
       assertTrue(ids.contains(second.getId()));
    }
@@ -89,24 +91,25 @@ public class OulSorteringTest extends OulTestBase
    }
 
    @Test
-   @DisplayName("OUL-FR-11.1, OUL-FR-11.2: Lista sorteringsordningar — tom lista när ingen finns")
+   @DisplayName("OUL-FR-11.1, OUL-FR-11.3: Lista sorteringsordningar — tom lista när ingen finns")
    public void should_list_sorteringsordningar_empty()
    {
-      var list = getSorteringsordningar();
+      var page = getSorteringsordningar(100);
 
-      assertNotNull(list);
-      assertEquals(0, list.size());
+      assertNotNull(page);
+      assertEquals(0, page.getTotal());
+      assertTrue(page.getItems().isEmpty());
    }
 
    @Test
-   @DisplayName("OUL-FR-11.2, OUL-FR-09.3: Lista sorteringsordningar — en post efter skapelse")
+   @DisplayName("OUL-FR-11.1, OUL-FR-11.3: Lista sorteringsordningar — en post efter skapelse")
    public void should_list_one_sorteringsordning_after_create()
    {
       var created = sendCreateSorteringsordningRequest(newSorteringsordningSpec());
-      var list = getSorteringsordningar();
+      var page = getSorteringsordningar(100);
 
-      assertEquals(1, list.size());
-      assertEquals(created.getId(), list.getFirst().getId());
+      assertEquals(1, page.getTotal());
+      assertEquals(created.getId(), page.getItems().getFirst().getId());
    }
 
    @Test
@@ -183,11 +186,11 @@ public class OulSorteringTest extends OulTestBase
       sendCreateUppgiftRequest(newCreateUppgiftRequest(UUID.randomUUID()));
       sendCreateUppgiftRequest(newCreateUppgiftRequest(UUID.randomUUID()));
 
-      UppgiftPage page = sendPreviewRequest(newSorteringsordningSpec(), 50, null);
+      UppgiftPage page = sendPreviewRequest(newSorteringsordningSpec(), 10, null);
 
       assertEquals(2, page.getTotal());
       assertEquals(2, page.getItems().size());
-      assertEquals(0, getSorteringsordningar().size());
+      assertEquals(0, getSorteringsordningar(10).getTotal());
    }
 
    @Test
@@ -212,10 +215,52 @@ public class OulSorteringTest extends OulTestBase
       sendCreateUppgiftRequest(newCreateUppgiftRequest(UUID.randomUUID()));
       sendCreateUppgiftRequest(newCreateUppgiftRequest(UUID.randomUUID()));
 
-      UppgiftPage page = sendPreviewRequest(newSorteringsordningSpec(), 50, 1);
+      UppgiftPage page = sendPreviewRequest(newSorteringsordningSpec(), 10, 1);
 
       assertEquals(3, page.getTotal());
       assertEquals(2, page.getItems().size());
+   }
+
+   @Test
+   @DisplayName("OUL-FR-11.2: Lista sorteringsordningar — limit begränsar returnerade items men total är oförändrad")
+   public void should_list_sorteringsordningar_with_limit()
+   {
+      sendCreateSorteringsordningRequest(newSorteringsordningSpec());
+      sendCreateSorteringsordningRequest(newSorteringsordningSpec());
+      sendCreateSorteringsordningRequest(newSorteringsordningSpec());
+
+      SorteringsordningPage page = getSorteringsordningar(2);
+
+      assertEquals(3, page.getTotal());
+      assertEquals(2, page.getItems().size());
+   }
+
+   @Test
+   @DisplayName("OUL-FR-11.2: Lista sorteringsordningar — offset hoppar över poster men total är oförändrad")
+   public void should_list_sorteringsordningar_with_offset()
+   {
+      sendCreateSorteringsordningRequest(newSorteringsordningSpec());
+      sendCreateSorteringsordningRequest(newSorteringsordningSpec());
+      sendCreateSorteringsordningRequest(newSorteringsordningSpec());
+
+      SorteringsordningPage page = getSorteringsordningar(100, 1);
+
+      assertEquals(3, page.getTotal());
+      assertEquals(2, page.getItems().size());
+   }
+
+   @Test
+   @DisplayName("OUL-FR-11.2: Lista sorteringsordningar — saknat limit-param ger HTTP 400")
+   public void should_return_400_when_limit_is_missing()
+   {
+      getSorteringsordningar(null, 400);
+   }
+
+   @Test
+   @DisplayName("OUL-FR-11.2: Lista sorteringsordningar — limit=0 ger HTTP 400")
+   public void should_return_400_when_limit_is_zero()
+   {
+      getSorteringsordningar(0, 400);
    }
 
    @Test

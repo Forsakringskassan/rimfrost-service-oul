@@ -1,8 +1,10 @@
 package se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal;
 
+import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.SorteringsordningEntityPage;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.UppgiftEntityPage;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.Idtyp;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.SorteringsordningEntity;
@@ -239,12 +241,21 @@ public class PanacheOulDataStorage implements OulDataStorage
             .map(oulDataStorageMapper::toSorteringsordningEntity);
    }
 
+   /**
+    * {@inheritDoc}
+    * <p>
+    * Executes one {@code COUNT} query and one range query ordered by {@code createdAt} descending.
+    */
    @Override
-   public List<SorteringsordningEntity> getAllSorteringsordningar()
+   public SorteringsordningEntityPage findSorteringsordningarPage(int limit, int offset)
    {
-      return sorteringsordningRepository.findAll().stream()
+      var query = sorteringsordningRepository.findAll(Sort.by("createdAt", Sort.Direction.Descending));
+      int total = (int) query.count();
+      var items = query.range(offset, offset + limit - 1)
+            .stream()
             .map(oulDataStorageMapper::toSorteringsordningEntity)
             .toList();
+      return new SorteringsordningEntityPage(total, items);
    }
 
    @Override

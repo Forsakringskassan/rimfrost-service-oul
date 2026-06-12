@@ -15,13 +15,13 @@ import se.fk.rimfrost.oul.management.regler.jaxrsspec.controllers.generatedsourc
 import se.fk.rimfrost.oul.management.regler.jaxrsspec.controllers.generatedsource.model.EndUppgiftRequest;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.OperativUppgift;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.UpdateUppgiftRequest;
+import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.SorteringsordningPage;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.SorteringsordningResponse;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.SorteringsordningSpec;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.UppgiftPage;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.StorageTestCleaner;
 import se.fk.rimfrost.oul.management.regler.jaxrsspec.controllers.generatedsource.model.UppgiftResponse;
 
-import java.util.List;
 import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
@@ -178,12 +178,33 @@ public abstract class OulTestBase
             .then().statusCode(expectedStatus);
    }
 
-   public static List<SorteringsordningResponse> getSorteringsordningar()
+   public static SorteringsordningPage getSorteringsordningar(int limit)
    {
       return given().contentType(ContentType.JSON)
+            .queryParam("limit", limit)
             .when().get("/sorteringsordning")
             .then().statusCode(200)
-            .extract().jsonPath().getList(".", SorteringsordningResponse.class);
+            .extract().as(SorteringsordningPage.class);
+   }
+
+   public static SorteringsordningPage getSorteringsordningar(int limit, int offset)
+   {
+      return given().contentType(ContentType.JSON)
+            .queryParam("limit", limit)
+            .queryParam("offset", offset)
+            .when().get("/sorteringsordning")
+            .then().statusCode(200)
+            .extract().as(SorteringsordningPage.class);
+   }
+
+   public static void getSorteringsordningar(Integer limit, int expectedStatus)
+   {
+      var req = given().contentType(ContentType.JSON);
+      if (limit != null)
+      {
+         req = req.queryParam("limit", limit);
+      }
+      req.when().get("/sorteringsordning").then().statusCode(expectedStatus);
    }
 
    public static SorteringsordningResponse getSorteringsordning(UUID id)

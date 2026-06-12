@@ -115,7 +115,8 @@ via villkor och styra sorteringsriktning inom sin grupp.
 ### OUL-FR-11 — Lista sorteringsordningar
 
 - **OUL-FR-11.1** En Administratör ska kunna lista samtliga sorteringsordningar via `GET /sorteringsordning`.
-- **OUL-FR-11.2** Svaret ska innehålla samtliga lagrade sorteringsordningar.
+- **OUL-FR-11.2** `GET /sorteringsordning` ska acceptera parametrarna `limit` (obligatorisk, minst 1) och `offset` (valfri, standard 0).
+- **OUL-FR-11.3** Svaret ska vara av typen `SorteringsordningPage` med fälten `total` (antal sorteringsordningar före paginering) och `items` (paginerad lista av sorteringsordningar).
 
 ### OUL-FR-12 — Förhandsgranska sorteringsordning
 

@@ -17,11 +17,11 @@ import se.fk.github.rimfrost.operativt.uppgiftslager.storage.SorteringsordningIs
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.SorteringsordningNotFoundException;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
-import java.util.List;
 import java.util.UUID;
 import org.jboss.resteasy.reactive.ResponseStatus;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.OperativtUppgiftslagerService;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.SorteringsordningApi;
+import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.SorteringsordningPage;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.SorteringsordningResponse;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.SorteringsordningSpec;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.UppgiftPage;
@@ -54,11 +54,15 @@ public class SorteringController implements SorteringsordningApi
 
    @Override
    @GET
-   public List<SorteringsordningResponse> getSorteringsordningar()
+   public SorteringsordningPage getSorteringsordningar(@QueryParam("limit") @NotNull @Min(1) Integer limit,
+         @QueryParam("offset") @Min(0) Integer offset)
    {
-      return operativtUppgiftslagerService.getAllSorteringsordningar().stream()
-            .map(managementMapper::toSorteringsordningResponse)
-            .toList();
+      if (limit == null)
+      {
+         throw new WebApplicationException(Response.Status.BAD_REQUEST);
+      }
+      var page = operativtUppgiftslagerService.getSorteringsordningarPage(limit, offset != null ? offset : 0);
+      return managementMapper.toSorteringsordningPage(page);
    }
 
    @Override

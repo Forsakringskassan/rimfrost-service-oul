@@ -14,11 +14,13 @@ import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.ImmutableIdtyp;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.ImmutableOperativtUppgiftslagerAddRequest;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.OperativtUppgiftslagerAddRequest;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.SortedUppgiftPage;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.SorteringsordningEntityPage;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.UppgiftDto;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.SorteringsordningEntity;
 import se.fk.github.rimfrost.operativt.uppgiftslager.util.EnumMapper;
 import se.fk.rimfrost.oul.management.regler.jaxrsspec.controllers.generatedsource.model.CreateUppgiftRequest;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.OperativUppgift;
+import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.SorteringsordningPage;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.SorteringsordningResponse;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.UppgiftPage;
 
@@ -46,6 +48,19 @@ public class ManagementMapper
    public UppgiftPage toUppgiftPage(SortedUppgiftPage page)
    {
       return new UppgiftPage(page.total(), toOperativUppgiftList(page.items()));
+   }
+
+   /**
+    * Maps a {@link SorteringsordningEntityPage} to the API {@link SorteringsordningPage}.
+    *
+    * @param page the domain page slice
+    * @return the presentation-layer page
+    */
+   public SorteringsordningPage toSorteringsordningPage(SorteringsordningEntityPage page)
+   {
+      return new SorteringsordningPage(
+            page.total(),
+            page.items().stream().map(this::toSorteringsordningResponse).toList());
    }
 
    public SorteringsordningResponse toSorteringsordningResponse(SorteringsordningEntity entity)
