@@ -502,45 +502,36 @@ public class SorteringsordningQueryBuilderTest
    }
 
    /**
-    * {@code buildAssignQuery} must include {@code FOR UPDATE SKIP LOCKED} to prevent two concurrent
-    * callers from claiming the same task.
+    * The fallback assign query (no entries) must include {@code FOR UPDATE SKIP LOCKED} directly
+    * after the ORDER BY — no CTE needed when there is no sort group expression to compute.
     */
    @Test
-   @DisplayName("buildAssignQuery: innehåller FOR UPDATE SKIP LOCKED")
-   public void assign_query_contains_for_update_skip_locked()
-   {
-      var built = builder.buildAssignQuery(entity(List.of(catchAll())));
-
-      assertTrue(built.pageSql().contains("FOR UPDATE SKIP LOCKED"));
-   }
-
-   /**
-    * Without sorteringsordning entries the fallback assign query uses {@code ORDER BY created_at ASC}.
-    */
-   @Test
-   @DisplayName("buildAssignQuery: tom entry-lista ger fallback LIMIT 1 ORDER BY created_at ASC")
+   @DisplayName("buildAssignQuery: tom entry-lista ger fallback LIMIT 1 FOR UPDATE SKIP LOCKED")
    public void assign_query_empty_entries_falls_back_to_created_at()
    {
       var built = builder.buildAssignQuery(entity(List.of()));
 
       assertTrue(built.pageSql().contains("ORDER BY created_at ASC"));
       assertTrue(built.pageSql().contains("LIMIT 1"));
+      assertTrue(built.pageSql().contains("FOR UPDATE SKIP LOCKED"));
    }
 
    /**
-    * With a sorteringsordning the assign query must order by sort_group so that the highest-priority
-    * unassigned task is selected first.
+    * With a sorteringsordning the assign query must use a CTE ({@code WITH candidate AS}) so that
+    * locking and priority ordering are atomic. {@code FOR UPDATE SKIP LOCKED} must appear inside the
+    * CTE body, not as a trailing clause on the outer SELECT, so that PostgreSQL skips already-locked
+    * rows and continues to the next eligible candidate rather than returning empty.
     */
    @Test
-   @DisplayName("buildAssignQuery: entry med constraints ger ORDER BY ranked.sort_group i inner subquery")
-   public void assign_query_with_entries_orders_by_sort_group()
+   @DisplayName("buildAssignQuery: entry med constraints ger CTE med FOR UPDATE SKIP LOCKED inuti")
+   public void assign_query_with_entries_uses_cte_with_locking_inside()
    {
       var entry = entryWithConstraints(eqConstraint(SorteringsordningFieldEq.ROLL, "PRIO"));
       var built = builder.buildAssignQuery(entity(List.of(entry)));
 
+      assertTrue(built.pageSql().startsWith("WITH candidate AS ("));
       assertTrue(built.pageSql().contains("ranked.sort_group"));
-      assertTrue(built.pageSql().contains("LIMIT 1"));
-      assertTrue(built.pageSql().contains("FOR UPDATE SKIP LOCKED"));
+      assertTrue(built.pageSql().contains("LIMIT 1 FOR UPDATE SKIP LOCKED)"));
    }
 
    /**

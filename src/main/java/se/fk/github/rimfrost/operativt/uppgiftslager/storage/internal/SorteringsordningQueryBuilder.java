@@ -117,7 +117,7 @@ public class SorteringsordningQueryBuilder
       }
 
       var sortGroupExpr = buildSortGroupExpr(entries, params);
-      var orderByClause = buildOrderByClause(entries);
+      var orderByClause = buildOrderByClause(entries, "u");
 
       var pageSql = "SELECT " + UPPGIFT_COLUMNS
             + " FROM (SELECT *, " + sortGroupExpr + " AS sort_group FROM " + table + ") AS u"
@@ -156,7 +156,7 @@ public class SorteringsordningQueryBuilder
       }
 
       var sortGroupExpr = buildSortGroupExpr(entries, params);
-      var orderByClause = buildOrderByClause(entries);
+      var orderByClause = buildOrderByClause(entries, "u");
 
       var pageSql = "SELECT " + UPPGIFT_COLUMNS
             + " FROM (SELECT *, " + sortGroupExpr + " AS sort_group FROM " + table
@@ -167,13 +167,15 @@ public class SorteringsordningQueryBuilder
    }
 
    /**
-    * Builds a query that selects the single highest-priority unassigned uppgift
+    * Builds a query that atomically selects the single highest-priority unassigned uppgift
     * and locks it with {@code FOR UPDATE SKIP LOCKED}.
     * <p>
-    * The query uses a two-phase approach: an inner subquery computes and orders by
-    * {@code sort_group} without locking; the outer query re-fetches the selected row
-    * by id and applies the row-level lock. Falls back to {@code created_at ASC} ordering
-    * if the sorteringsordning has no entries.
+    * Uses a CTE ({@code WITH candidate AS (...)}) so that locking and priority ordering happen
+    * in a single statement. If the top-ranked row is already held by another transaction,
+    * {@code SKIP LOCKED} skips it and the next eligible row is returned instead — avoiding
+    * the TOCTOU gap of a two-phase approach where a row can be claimed between the rank step
+    * and the lock step. Falls back to {@code created_at ASC} ordering if the sorteringsordning
+    * has no entries.
     *
     * @param sorteringsordning the sort specification that determines task priority
     * @return a {@link BuiltQuery} with {@code pageSql} ready to be executed (no {@code countSql})
@@ -194,16 +196,14 @@ public class SorteringsordningQueryBuilder
       }
 
       var sortGroupExpr = buildSortGroupExpr(entries, params);
-      var orderByClause = buildOrderByClause(entries);
+      var orderByClause = buildOrderByClause(entries, "ranked");
 
-      var innerOrderByClause = orderByClause.replace("u.sort_group", "ranked.sort_group")
-            .replace("u.", "ranked.");
-      var sql = "SELECT * FROM " + table + " WHERE id = ("
+      var sql = "WITH candidate AS ("
             + "SELECT id FROM (SELECT *, " + sortGroupExpr + " AS sort_group FROM " + table
             + " WHERE " + unassignedFilter + ") AS ranked"
-            + " ORDER BY " + innerOrderByClause
-            + " LIMIT 1"
-            + ") FOR UPDATE SKIP LOCKED";
+            + " ORDER BY " + orderByClause
+            + " LIMIT 1 FOR UPDATE SKIP LOCKED"
+            + ") SELECT * FROM " + table + " WHERE id = (SELECT id FROM candidate)";
 
       return new BuiltQuery(sql, null, params);
    }
@@ -313,10 +313,13 @@ public class SorteringsordningQueryBuilder
    /**
     * Builds the ORDER BY clause: sort_group first, then per-entry sort_by (as CASE WHEN expressions
     * that are non-null only for the target group), then created_at as a stable tiebreaker.
+    *
+    * @param entries the sorteringsordning entries
+    * @param alias   the table alias used in the enclosing query (e.g. {@code "u"} or {@code "ranked"})
     */
-   private String buildOrderByClause(List<SorteringsordningEntry> entries)
+   private String buildOrderByClause(List<SorteringsordningEntry> entries, String alias)
    {
-      var sb = new StringBuilder("u.sort_group ASC");
+      var sb = new StringBuilder(alias + ".sort_group ASC");
       for (int i = 0; i < entries.size(); i++)
       {
          var sortBy = entries.get(i).getSortBy();
@@ -324,11 +327,11 @@ public class SorteringsordningQueryBuilder
          {
             var col = SORT_FIELD_TO_COLUMN.get(sortBy.getField().toString());
             var dir = sortBy.getDirection() == SortBy.DirectionEnum.DESC ? "DESC" : "ASC";
-            sb.append(", CASE WHEN u.sort_group = ").append(i)
-                  .append(" THEN u.").append(col).append(" END ").append(dir);
+            sb.append(", CASE WHEN ").append(alias).append(".sort_group = ").append(i)
+                  .append(" THEN ").append(alias).append(".").append(col).append(" END ").append(dir);
          }
       }
-      sb.append(", u.created_at ASC");
+      sb.append(", ").append(alias).append(".created_at ASC");
       return sb.toString();
    }
 
