@@ -5,6 +5,7 @@ import io.smallrye.reactive.messaging.kafka.api.OutgoingKafkaRecordMetadata;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.OperativUppgift;
+import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.SorteringsordningFieldEq;
 
 import java.util.UUID;
 
@@ -14,6 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static se.fk.github.rimfrost.operativt.uppgiftslager.OulTestData.newCreateUppgiftRequest;
 import static se.fk.github.rimfrost.operativt.uppgiftslager.OulTestData.newEndUppgiftRequest;
+import static se.fk.github.rimfrost.operativt.uppgiftslager.OulTestData.newSorteringsordningSpecWithEqConstraint;
 import static se.fk.github.rimfrost.operativt.uppgiftslager.OulTestData.oulHandlaggareTypId;
 
 @QuarkusTest
@@ -113,6 +115,23 @@ public class OulHandlaggareTest extends OulTestBase
    }
 
    @Test
+   @DisplayName("OUL-FR-05.2: Lista tilldelade uppgifter — filtreras på handläggarens identitet, en annan handläggares uppgifter syns inte")
+   public void should_not_return_other_handlaggares_tasks()
+   {
+      var handlaggareA = UUID.randomUUID();
+      var handlaggareB = UUID.randomUUID();
+
+      sendCreateUppgiftRequest(newCreateUppgiftRequest(UUID.randomUUID()));
+      assignTaskToHandlaggare(handlaggareA);
+
+      sendCreateUppgiftRequest(newCreateUppgiftRequest(UUID.randomUUID()));
+      assignTaskToHandlaggare(handlaggareB);
+
+      assertEquals(1, getAssignedTasks(handlaggareA).getOperativaUppgifter().size());
+      assertEquals(1, getAssignedTasks(handlaggareB).getOperativaUppgifter().size());
+   }
+
+   @Test
    @DisplayName("OUL-FR-02.2, OUL-FR-05.1: Avsluta uppgift — uppgiften tas bort ur aktivt lager och syns inte längre i handläggarens lista")
    public void should_return_empty_task_list_after_assigned_task_end()
    {
@@ -127,6 +146,50 @@ public class OulHandlaggareTest extends OulTestBase
       assertNotNull(assignedTasks);
       assertNotNull(assignedTasks.getOperativaUppgifter());
       assertEquals(0, assignedTasks.getOperativaUppgifter().size());
+   }
+
+   @Test
+   @DisplayName("OUL-FR-05.3: Lista tilldelade uppgifter — sorterade enligt default sorteringsordning")
+   public void should_return_assigned_tasks_sorted_by_sorteringsordning()
+   {
+      var handlaggareId = UUID.randomUUID();
+
+      sendCreateSorteringsordningRequest(newSorteringsordningSpecWithEqConstraint(SorteringsordningFieldEq.ROLL, "PRIO"));
+
+      var lowRequest = newCreateUppgiftRequest(UUID.randomUUID());
+      sendCreateUppgiftRequest(lowRequest);
+
+      var highRequest = newCreateUppgiftRequest(UUID.randomUUID());
+      highRequest.setRoll("PRIO");
+      var highResponse = sendCreateUppgiftRequest(highRequest);
+
+      assignTaskToHandlaggare(handlaggareId);
+      assignTaskToHandlaggare(handlaggareId);
+
+      var assignedTasks = getAssignedTasks(handlaggareId);
+
+      assertEquals(2, assignedTasks.getOperativaUppgifter().size());
+      assertEquals("PRIO", assignedTasks.getOperativaUppgifter().getFirst().getRoll());
+      assertEquals(highResponse.getUppgiftId(), assignedTasks.getOperativaUppgifter().getFirst().getUppgiftId());
+   }
+
+   @Test
+   @DisplayName("OUL-FR-04.2: Hämta ny uppgift — väljer högst prioriterad otilldelad uppgift per default sorteringsordning")
+   public void should_assign_highest_priority_unassigned_task_per_sorteringsordning()
+   {
+      sendCreateSorteringsordningRequest(newSorteringsordningSpecWithEqConstraint(SorteringsordningFieldEq.ROLL, "PRIO"));
+
+      sendCreateUppgiftRequest(newCreateUppgiftRequest(UUID.randomUUID()));
+
+      var highRequest = newCreateUppgiftRequest(UUID.randomUUID());
+      highRequest.setRoll("PRIO");
+      var highResponse = sendCreateUppgiftRequest(highRequest);
+
+      var assignResponse = assignTaskToHandlaggare(UUID.randomUUID());
+
+      assertNotNull(assignResponse.getOperativUppgift());
+      assertEquals("PRIO", assignResponse.getOperativUppgift().getRoll());
+      assertEquals(highResponse.getUppgiftId(), assignResponse.getOperativUppgift().getUppgiftId());
    }
 
    private se.fk.rimfrost.Idtyp createKafkaIdTyp(UUID handlaggareId)

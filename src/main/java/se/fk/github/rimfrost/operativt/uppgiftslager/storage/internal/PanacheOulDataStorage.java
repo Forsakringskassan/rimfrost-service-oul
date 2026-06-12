@@ -2,7 +2,6 @@ package se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.persistence.LockModeType;
 import jakarta.transaction.Transactional;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.UppgiftEntityPage;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.Idtyp;
@@ -91,13 +90,24 @@ public class PanacheOulDataStorage implements OulDataStorage
       return new UppgiftEntityPage((int) total, items);
    }
 
+   /**
+    * {@inheritDoc}
+    * <p>
+    * Executes a native SQL query ordered by the sorteringsordning sort groups and per-entry
+    * sort_by fields. Falls back to {@code created_at ASC} when no entries are configured.
+    */
    @Override
-   public List<UppgiftEntity> findAllUppgifterByHandlaggarId(Idtyp handlaggarId)
+   public List<UppgiftEntity> findAllUppgifterByHandlaggarId(Idtyp handlaggarId, SorteringsordningEntity sorteringsordning)
    {
-      return uppgiftRepository
-            .find("handlaggarIdTypId = :typ_id AND handlaggarIdVarde = :varde",
-                  Map.of("typ_id", handlaggarId.typId(), "varde", handlaggarId.varde()))
-            .stream().map(oulDataStorageMapper::toUppgiftEntity).toList();
+      var built = queryBuilder.buildHandlaggareListQuery(sorteringsordning, handlaggarId.typId(), handlaggarId.varde());
+      var em = uppgiftRepository.getEntityManager();
+      var query = em.createNativeQuery(built.pageSql(),
+            se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.entity.UppgiftEntity.class);
+      built.params().forEach(query::setParameter);
+      @SuppressWarnings("unchecked")
+      List<se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.entity.UppgiftEntity> results = query
+            .getResultList();
+      return results.stream().map(oulDataStorageMapper::toUppgiftEntity).toList();
    }
 
    @Override
@@ -120,17 +130,33 @@ public class PanacheOulDataStorage implements OulDataStorage
       cachedTotal = -1L;
    }
 
+   /**
+    * {@inheritDoc}
+    * <p>
+    * Uses a two-phase native SQL approach: an inner subquery computes priority order without
+    * locking; the outer query re-selects the chosen row by id and applies
+    * {@code FOR UPDATE SKIP LOCKED}. If the row was concurrently claimed the outer SELECT
+    * returns empty and the method returns {@code null}.
+    */
    @Override
-   public UppgiftEntity assignNewUppgift(Idtyp handlaggarId)
+   public UppgiftEntity assignNewUppgift(Idtyp handlaggarId, SorteringsordningEntity sorteringsordning)
    {
-      var uppgift = uppgiftRepository.find("handlaggarIdTypId IS NULL and handlaggarIdVarde IS NULL")
-            .withLock(LockModeType.PESSIMISTIC_WRITE).firstResult();
+      var built = queryBuilder.buildAssignQuery(sorteringsordning);
+      var em = uppgiftRepository.getEntityManager();
+      var selectQuery = em.createNativeQuery(built.pageSql(),
+            se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.entity.UppgiftEntity.class);
+      built.params().forEach(selectQuery::setParameter);
 
-      if (uppgift == null)
+      @SuppressWarnings("unchecked")
+      List<se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.entity.UppgiftEntity> results = selectQuery
+            .getResultList();
+
+      if (results.isEmpty())
       {
          return null;
       }
 
+      var uppgift = results.getFirst();
       uppgift.setStatus(UppgiftStatus.TILLDELAD);
       uppgift.setHandlaggarIdTypId(handlaggarId.typId());
       uppgift.setHandlaggarIdVarde(handlaggarId.varde());

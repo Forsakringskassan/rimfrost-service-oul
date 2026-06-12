@@ -127,6 +127,88 @@ public class SorteringsordningQueryBuilder
    }
 
    /**
+    * Builds a query that fetches all uppgifter assigned to the given handläggare,
+    * ordered according to the sorteringsordning. Falls back to {@code created_at ASC}
+    * if the sorteringsordning has no entries.
+    *
+    * @param sorteringsordning the sort specification
+    * @param handlaggarTypId   the handläggare identity type id
+    * @param handlaggarVarde   the handläggare identity value
+    * @return a {@link BuiltQuery} ready to be executed (no {@code countSql})
+    */
+   public BuiltQuery buildHandlaggareListQuery(SorteringsordningEntity sorteringsordning, String handlaggarTypId,
+         String handlaggarVarde)
+   {
+      var entries = sorteringsordning.entries();
+      Map<String, Object> params = new HashMap<>();
+      params.put("hl_typ_id", handlaggarTypId);
+      params.put("hl_varde", handlaggarVarde);
+
+      var table = schema + ".uppgift";
+      var whereClause = "handlaggar_id_typ_id = :hl_typ_id AND handlaggar_id_varde = :hl_varde";
+
+      if (entries == null || entries.isEmpty())
+      {
+         return new BuiltQuery(
+               "SELECT * FROM " + table + " WHERE " + whereClause + " ORDER BY created_at ASC",
+               null,
+               params);
+      }
+
+      var sortGroupExpr = buildSortGroupExpr(entries, params);
+      var orderByClause = buildOrderByClause(entries);
+
+      var pageSql = "SELECT " + UPPGIFT_COLUMNS
+            + " FROM (SELECT *, " + sortGroupExpr + " AS sort_group FROM " + table
+            + " WHERE " + whereClause + ") AS u"
+            + " ORDER BY " + orderByClause;
+
+      return new BuiltQuery(pageSql, null, params);
+   }
+
+   /**
+    * Builds a query that selects the single highest-priority unassigned uppgift
+    * and locks it with {@code FOR UPDATE SKIP LOCKED}.
+    * <p>
+    * The query uses a two-phase approach: an inner subquery computes and orders by
+    * {@code sort_group} without locking; the outer query re-fetches the selected row
+    * by id and applies the row-level lock. Falls back to {@code created_at ASC} ordering
+    * if the sorteringsordning has no entries.
+    *
+    * @param sorteringsordning the sort specification that determines task priority
+    * @return a {@link BuiltQuery} with {@code pageSql} ready to be executed (no {@code countSql})
+    */
+   public BuiltQuery buildAssignQuery(SorteringsordningEntity sorteringsordning)
+   {
+      var entries = sorteringsordning.entries();
+      Map<String, Object> params = new HashMap<>();
+
+      var table = schema + ".uppgift";
+      var unassignedFilter = "handlaggar_id_typ_id IS NULL AND handlaggar_id_varde IS NULL";
+
+      if (entries == null || entries.isEmpty())
+      {
+         var sql = "SELECT * FROM " + table + " WHERE " + unassignedFilter
+               + " ORDER BY created_at ASC LIMIT 1 FOR UPDATE SKIP LOCKED";
+         return new BuiltQuery(sql, null, params);
+      }
+
+      var sortGroupExpr = buildSortGroupExpr(entries, params);
+      var orderByClause = buildOrderByClause(entries);
+
+      var innerOrderByClause = orderByClause.replace("u.sort_group", "ranked.sort_group")
+            .replace("u.", "ranked.");
+      var sql = "SELECT * FROM " + table + " WHERE id = ("
+            + "SELECT id FROM (SELECT *, " + sortGroupExpr + " AS sort_group FROM " + table
+            + " WHERE " + unassignedFilter + ") AS ranked"
+            + " ORDER BY " + innerOrderByClause
+            + " LIMIT 1"
+            + ") FOR UPDATE SKIP LOCKED";
+
+      return new BuiltQuery(sql, null, params);
+   }
+
+   /**
     * Builds the {@code CASE WHEN} expression that assigns each row to a sort group.
     * The first matching entry wins; unmatched rows get group index {@code entries.size()}.
     */

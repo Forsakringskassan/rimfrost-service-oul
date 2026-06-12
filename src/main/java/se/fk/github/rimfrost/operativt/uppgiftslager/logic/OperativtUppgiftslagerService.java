@@ -118,6 +118,14 @@ public class OperativtUppgiftslagerService
       return new SortedUppgiftPage(page.total(), items);
    }
 
+   /**
+    * Returns all uppgifter assigned to the given handläggare, sorted according to the
+    * default sorteringsordning. If no sorteringsordning is configured the order is unspecified.
+    *
+    * @param idTyp        the handläggare identity type id
+    * @param handlaggarId the handläggare identity value
+    * @return ordered collection of assigned uppgifter
+    */
    public Collection<UppgiftDto> getUppgifterHandlaggare(String idTyp, String handlaggarId)
    {
       log.info("Getting all tasks for handlaggarId: {}", handlaggarId);
@@ -125,10 +133,20 @@ public class OperativtUppgiftslagerService
             .typId(idTyp)
             .varde(handlaggarId)
             .build();
-      var uppgifter = storage.findAllUppgifterByHandlaggarId(handlaggare);
+      var sorteringsordning = storage.getDefaultSorteringsordning()
+            .orElse(new SorteringsordningEntity(null, null, List.of()));
+      var uppgifter = storage.findAllUppgifterByHandlaggarId(handlaggare, sorteringsordning);
       return uppgifter.stream().map(logicMapper::toUppgiftDto).toList();
    }
 
+   /**
+    * Assigns the highest-priority unassigned uppgift to the given handläggare according to the
+    * default sorteringsordning. Returns {@code null} when no unassigned uppgift is available.
+    *
+    * @param idTyp        the handläggare identity type id
+    * @param handlaggarId the handläggare identity value
+    * @return the assigned uppgift, or {@code null} if none is available
+    */
    public UppgiftDto assignNewTask(String idTyp, String handlaggarId)
    {
       log.info("Assigning new task to handlaggarId: {} with type: {}", handlaggarId, idTyp);
@@ -136,7 +154,9 @@ public class OperativtUppgiftslagerService
             .typId(idTyp)
             .varde(handlaggarId)
             .build();
-      var uppgift = storage.assignNewUppgift(handlaggare);
+      var sorteringsordning = storage.getDefaultSorteringsordning()
+            .orElse(new SorteringsordningEntity(null, null, List.of()));
+      var uppgift = storage.assignNewUppgift(handlaggare, sorteringsordning);
 
       if (uppgift == null)
       {

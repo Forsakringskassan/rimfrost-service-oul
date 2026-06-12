@@ -22,6 +22,7 @@ import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.SorteringsordningFieldEq;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.SorteringsordningFieldString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -429,6 +430,129 @@ public class SorteringsordningQueryBuilderTest
 
       assertThrows(IllegalArgumentException.class,
             () -> builder.build(entity(List.of(entry))));
+   }
+
+   /**
+    * {@code buildHandlaggareListQuery} must filter by handläggare identity so only that
+    * handläggare's tasks are included in the result.
+    */
+   @Test
+   @DisplayName("buildHandlaggareListQuery: WHERE-klausul filtrerar på handlaggar_id_typ_id och handlaggar_id_varde")
+   public void handlaggare_list_query_contains_handlaggare_filter()
+   {
+      var built = builder.buildHandlaggareListQuery(entity(List.of()), "typ-1", "varde-1");
+
+      assertTrue(built.pageSql().contains("handlaggar_id_typ_id = :hl_typ_id"));
+      assertTrue(built.pageSql().contains("handlaggar_id_varde = :hl_varde"));
+      assertEquals("typ-1", built.params().get("hl_typ_id"));
+      assertEquals("varde-1", built.params().get("hl_varde"));
+   }
+
+   /**
+    * Without sorteringsordning entries the fallback ORDER BY is {@code created_at ASC}.
+    */
+   @Test
+   @DisplayName("buildHandlaggareListQuery: tom entry-lista ger fallback ORDER BY created_at ASC")
+   public void handlaggare_list_query_empty_entries_falls_back_to_created_at()
+   {
+      var built = builder.buildHandlaggareListQuery(entity(List.of()), "t", "v");
+
+      assertTrue(built.pageSql().contains("ORDER BY created_at ASC"));
+   }
+
+   /**
+    * With a sorteringsordning the query wraps the table in a subquery and orders by sort_group,
+    * matching the same structure as the page query.
+    */
+   @Test
+   @DisplayName("buildHandlaggareListQuery: entry med constraints ger ORDER BY sort_group via subquery")
+   public void handlaggare_list_query_with_entries_orders_by_sort_group()
+   {
+      var entry = entryWithConstraints(eqConstraint(SorteringsordningFieldEq.ROLL, "PRIO"));
+      var built = builder.buildHandlaggareListQuery(entity(List.of(entry)), "t", "v");
+
+      assertTrue(built.pageSql().contains("sort_group"));
+      assertTrue(built.pageSql().contains("ORDER BY u.sort_group ASC"));
+      assertTrue(built.pageSql().contains("u.created_at ASC"));
+   }
+
+   /**
+    * {@code buildHandlaggareListQuery} must not include a countSql — it is a plain list query.
+    */
+   @Test
+   @DisplayName("buildHandlaggareListQuery: countSql är null")
+   public void handlaggare_list_query_has_no_count_sql()
+   {
+      var built = builder.buildHandlaggareListQuery(entity(List.of()), "t", "v");
+
+      assertNull(built.countSql());
+   }
+
+   /**
+    * {@code buildAssignQuery} must filter for unassigned rows so it never selects an already-claimed task.
+    */
+   @Test
+   @DisplayName("buildAssignQuery: filtrerar på handlaggar_id IS NULL")
+   public void assign_query_filters_unassigned_rows()
+   {
+      var built = builder.buildAssignQuery(entity(List.of()));
+
+      assertTrue(built.pageSql().contains("handlaggar_id_typ_id IS NULL"));
+      assertTrue(built.pageSql().contains("handlaggar_id_varde IS NULL"));
+   }
+
+   /**
+    * {@code buildAssignQuery} must include {@code FOR UPDATE SKIP LOCKED} to prevent two concurrent
+    * callers from claiming the same task.
+    */
+   @Test
+   @DisplayName("buildAssignQuery: innehåller FOR UPDATE SKIP LOCKED")
+   public void assign_query_contains_for_update_skip_locked()
+   {
+      var built = builder.buildAssignQuery(entity(List.of(catchAll())));
+
+      assertTrue(built.pageSql().contains("FOR UPDATE SKIP LOCKED"));
+   }
+
+   /**
+    * Without sorteringsordning entries the fallback assign query uses {@code ORDER BY created_at ASC}.
+    */
+   @Test
+   @DisplayName("buildAssignQuery: tom entry-lista ger fallback LIMIT 1 ORDER BY created_at ASC")
+   public void assign_query_empty_entries_falls_back_to_created_at()
+   {
+      var built = builder.buildAssignQuery(entity(List.of()));
+
+      assertTrue(built.pageSql().contains("ORDER BY created_at ASC"));
+      assertTrue(built.pageSql().contains("LIMIT 1"));
+   }
+
+   /**
+    * With a sorteringsordning the assign query must order by sort_group so that the highest-priority
+    * unassigned task is selected first.
+    */
+   @Test
+   @DisplayName("buildAssignQuery: entry med constraints ger ORDER BY ranked.sort_group i inner subquery")
+   public void assign_query_with_entries_orders_by_sort_group()
+   {
+      var entry = entryWithConstraints(eqConstraint(SorteringsordningFieldEq.ROLL, "PRIO"));
+      var built = builder.buildAssignQuery(entity(List.of(entry)));
+
+      assertTrue(built.pageSql().contains("ranked.sort_group"));
+      assertTrue(built.pageSql().contains("LIMIT 1"));
+      assertTrue(built.pageSql().contains("FOR UPDATE SKIP LOCKED"));
+   }
+
+   /**
+    * {@code buildAssignQuery} must not include a countSql — only one row is ever selected.
+    */
+   @Test
+   @DisplayName("buildAssignQuery: countSql är null")
+   public void assign_query_has_no_count_sql()
+   {
+      var built = builder.buildAssignQuery(entity(List.of()));
+
+      assertNull(built.countSql());
    }
 
    // --- builders ---

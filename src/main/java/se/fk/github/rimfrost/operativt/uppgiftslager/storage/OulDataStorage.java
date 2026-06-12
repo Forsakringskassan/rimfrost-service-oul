@@ -41,12 +41,13 @@ public interface OulDataStorage
    UppgiftEntity findUppgiftById(UUID id);
 
    /**
-    * Returns all uppgifter assigned to the given handläggare.
+    * Returns all uppgifter assigned to the given handläggare, ordered by the given sorteringsordning.
     *
-    * @param handlaggarId the handläggare identity
+    * @param handlaggarId      the handläggare identity
+    * @param sorteringsordning the sort specification; empty entries produce unspecified order
     * @return list of uppgifter for the handläggare
     */
-   List<UppgiftEntity> findAllUppgifterByHandlaggarId(Idtyp handlaggarId);
+   List<UppgiftEntity> findAllUppgifterByHandlaggarId(Idtyp handlaggarId, SorteringsordningEntity sorteringsordning);
 
    /**
     * Permanently removes the uppgift with the given id.
@@ -56,13 +57,15 @@ public interface OulDataStorage
    void deleteUppgift(UUID id);
 
    /**
-    * Atomically claims the first unassigned uppgift for the given handläggare.
+    * Atomically claims the highest-priority unassigned uppgift for the given handläggare,
+    * using the sorteringsordning to determine priority.
     * Returns {@code null} if no unassigned uppgift is available.
     *
-    * @param handlaggarId the handläggare to assign the uppgift to
+    * @param handlaggarId      the handläggare to assign the uppgift to
+    * @param sorteringsordning the sort specification that determines task priority
     * @return the assigned uppgift, or {@code null} if none available
     */
-   UppgiftEntity assignNewUppgift(Idtyp handlaggarId);
+   UppgiftEntity assignNewUppgift(Idtyp handlaggarId, SorteringsordningEntity sorteringsordning);
 
    /**
     * Removes the handläggare assignment from the given uppgift.
