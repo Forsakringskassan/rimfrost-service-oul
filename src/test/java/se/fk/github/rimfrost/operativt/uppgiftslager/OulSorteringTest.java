@@ -186,11 +186,11 @@ public class OulSorteringTest extends OulTestBase
       sendCreateUppgiftRequest(newCreateUppgiftRequest(UUID.randomUUID()));
       sendCreateUppgiftRequest(newCreateUppgiftRequest(UUID.randomUUID()));
 
-      UppgiftPage page = sendPreviewRequest(newSorteringsordningSpec(), 50, null);
+      UppgiftPage page = sendPreviewRequest(newSorteringsordningSpec(), 10, null);
 
       assertEquals(2, page.getTotal());
       assertEquals(2, page.getItems().size());
-      assertEquals(0, getSorteringsordningar(100).getTotal());
+      assertEquals(0, getSorteringsordningar(10).getTotal());
    }
 
    @Test
@@ -215,7 +215,7 @@ public class OulSorteringTest extends OulTestBase
       sendCreateUppgiftRequest(newCreateUppgiftRequest(UUID.randomUUID()));
       sendCreateUppgiftRequest(newCreateUppgiftRequest(UUID.randomUUID()));
 
-      UppgiftPage page = sendPreviewRequest(newSorteringsordningSpec(), 50, 1);
+      UppgiftPage page = sendPreviewRequest(newSorteringsordningSpec(), 10, 1);
 
       assertEquals(3, page.getTotal());
       assertEquals(2, page.getItems().size());
