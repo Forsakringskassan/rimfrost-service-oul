@@ -1,14 +1,21 @@
 # Plan: DB-nivå sortering och paginering (OUL-NFR-04.3)
 
-Adresserar OUL-NFR-04.3 från `krav-backlog.md`. Nuvarande implementation läser alla
-uppgifter till minnet, applicerar sorteringsordning i Java och paginerar i minnet.
-Det här är en förutsättning för att systemet ska skala.
+## Status: ✅ COMPLETE
 
-**Beroende:** Kräver persistent sorteringsordning (FKPOC-848).
+Implementerat i `fix/FKPOC-851-improve-sorting`. `SorteringsordningQueryBuilder` ersätter
+`SortOrderApplier` och `ConstraintMatcher`. Preview-flödet kör samma SQL-logik som listning.
+Steg 4 (prestandatest) är ej genomfört — se `test-gaps.md`.
 
 ---
 
-## Problembeskrivning
+Adresserade OUL-NFR-04.3 från `krav-backlog.md`. Den tidigare implementationen läste alla
+uppgifter till minnet, applicerade sorteringsordning i Java och paginerade i minnet.
+
+**Beroende:** Krävde persistent sorteringsordning (FKPOC-848). ✅
+
+---
+
+## Problembeskrivning (historik)
 
 ```
 getUppgifterPage()
@@ -17,7 +24,7 @@ getUppgifterPage()
   → subList(offset, offset+limit) // paginering i Java
 ```
 
-Med N uppgifter läses alltid N rader per anrop, oavsett `limit`.
+Med N uppgifter lästes alltid N rader per anrop, oavsett `limit`.
 
 ---
 

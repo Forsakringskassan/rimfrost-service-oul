@@ -80,19 +80,11 @@ public class SorteringsordningPersistenceEntity
    }
 
    /**
-    * @return the optimistic-lock version counter
+    * @return the optimistic-lock version counter managed by JPA
     */
    public long getVersion()
    {
       return version;
-   }
-
-   /**
-    * @param version the optimistic-lock version counter
-    */
-   public void setVersion(long version)
-   {
-      this.version = version;
    }
 
    /**

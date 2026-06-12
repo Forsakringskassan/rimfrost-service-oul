@@ -64,7 +64,7 @@ via villkor och styra sorteringsriktning inom sin grupp.
 ### OUL-FR-04 — Hämta ny uppgift (handläggare)
 
 - **OUL-FR-04.1** En handläggare ska kunna begära en ny icke tilldelad uppgift och automatiskt bli tilldelad den.
-- **OUL-FR-04.2** OUL väljer den första tillgängliga icke tilldelade uppgiften och sätter status till `TILLDELAD`.
+- **OUL-FR-04.2** OUL väljer den högst prioriterade tillgängliga icke tilldelade uppgiften enligt default sorteringsordning och sätter status till `TILLDELAD`. Om ingen sorteringsordning är konfigurerad väljs en godtycklig tillgänglig uppgift.
 - **OUL-FR-04.3** Handläggarens identitet anges via en typad identifierare bestående av identifierartyp och handläggar-ID.
 - **OUL-FR-04.4** Om ingen icke tilldelad uppgift finns ska ett tomt svar returneras utan felkod.
 - **OUL-FR-04.5** Vid tilldelning ska en statusnotifiering publiceras på Kafka.
@@ -73,6 +73,7 @@ via villkor och styra sorteringsriktning inom sin grupp.
 
 - **OUL-FR-05.1** En handläggare ska kunna lista alla uppgifter som är tilldelade till honom/henne.
 - **OUL-FR-05.2** Listan filtreras på handläggarens identitet.
+- **OUL-FR-05.3** Uppgifterna ska returneras sorterade enligt default sorteringsordning. Om ingen sorteringsordning är konfigurerad är ordningen i resultatet odefinierat.
 
 ### OUL-FR-06 — Statusnotifiering via Kafka
 

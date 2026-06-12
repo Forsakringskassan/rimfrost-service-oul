@@ -84,4 +84,55 @@ public class OulTestData
       spec.setEntries(List.of(entry));
       return spec;
    }
+
+   /**
+    * Creates a sorteringsordning spec with two entries: an eq-constraint entry that
+    * matches {@code value} on {@code field}, followed by a catch-all entry.
+    * Tasks matching the constraint land in group 0; all others in group 1.
+    *
+    * @param field the field to match on
+    * @param value the exact value to match
+    * @return a two-entry sorteringsordning spec
+    */
+   @SuppressWarnings("unchecked")
+   public static SorteringsordningSpec newSorteringsordningSpecWithEqConstraint(SorteringsordningFieldEq field,
+         String value)
+   {
+      var constraint = new ConstraintEq();
+      constraint.setField(field);
+      constraint.setOperator(ConstraintEq.OperatorEnum.EQ);
+      constraint.setValue(value);
+
+      var priorityEntry = new SorteringsordningEntry();
+      priorityEntry.setConstraints((List<Constraint>) (List<?>) List.of(constraint));
+
+      var catchAllEntry = new SorteringsordningEntry();
+
+      var spec = new SorteringsordningSpec();
+      spec.setEntries(List.of(priorityEntry, catchAllEntry));
+      return spec;
+   }
+
+   /**
+    * Creates a sorteringsordning spec with a single catch-all entry (no constraints)
+    * that sorts all tasks by the given field and direction.
+    *
+    * @param field     the field to sort on
+    * @param direction sort direction
+    * @return a single-entry catch-all sorteringsordning spec with sort_by configured
+    */
+   public static SorteringsordningSpec newSorteringsordningSpecWithSortBy(SorteringsordningField field,
+         SortBy.DirectionEnum direction)
+   {
+      var sortBy = new SortBy();
+      sortBy.setField(field);
+      sortBy.setDirection(direction);
+
+      var entry = new SorteringsordningEntry();
+      entry.setSortBy(sortBy);
+
+      var spec = new SorteringsordningSpec();
+      spec.setEntries(List.of(entry));
+      return spec;
+   }
 }

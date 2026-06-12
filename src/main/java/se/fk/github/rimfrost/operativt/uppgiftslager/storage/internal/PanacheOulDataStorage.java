@@ -2,8 +2,8 @@ package se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.persistence.LockModeType;
 import jakarta.transaction.Transactional;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.UppgiftEntityPage;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.Idtyp;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.SorteringsordningEntity;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.UppgiftEntity;
@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 /**
  * JPA/Panache implementation of {@link OulDataStorage}.
@@ -42,26 +43,71 @@ public class PanacheOulDataStorage implements OulDataStorage
    @Inject
    DefaultSorteringsordningRepository defaultSorteringsordningRepository;
 
+   @Inject
+   SorteringsordningQueryBuilder queryBuilder;
+
+   @ConfigProperty(name = "oul.uppgift.count-cache-ttl-ms", defaultValue = "5000")
+   long countCacheTtlMs;
+
+   private volatile long cachedTotal = -1;
+   private volatile long cacheTimestamp = 0L;
+
    @Override
    public void createUppgift(UppgiftEntity uppgift)
    {
       var entity = oulDataStorageMapper.toUppgiftEntity(uppgift);
       uppgiftRepository.persist(entity);
+      cachedTotal = -1L;
    }
 
+   /**
+    * {@inheritDoc}
+    * <p>
+    * Executes one sorted native SQL query (ORDER BY sort_group + per-entry sort_by + created_at) and
+    * one {@code COUNT(*)} query. Pagination is applied via {@code setFirstResult}/{@code setMaxResults}.
+    */
    @Override
-   public List<UppgiftEntity> findAllUppgifter()
+   public UppgiftEntityPage findUppgifterPage(SorteringsordningEntity sorteringsordning, int limit, int offset)
    {
-      return uppgiftRepository.findAll().stream().map(oulDataStorageMapper::toUppgiftEntity).toList();
+      var built = queryBuilder.build(sorteringsordning);
+      var em = uppgiftRepository.getEntityManager();
+
+      var pageQuery = em.createNativeQuery(
+            built.pageSql(),
+            se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.entity.UppgiftEntity.class);
+      built.params().forEach(pageQuery::setParameter);
+      pageQuery.setFirstResult(offset);
+      pageQuery.setMaxResults(limit);
+
+      // FQN is required: logic UppgiftEntity is already imported under the same simple name
+      @SuppressWarnings("unchecked")
+      List<se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.entity.UppgiftEntity> resultList = pageQuery
+            .getResultList();
+      var items = resultList.stream().map(oulDataStorageMapper::toUppgiftEntity).toList();
+
+      var total = fetchTotal(em, built.countSql());
+
+      return new UppgiftEntityPage((int) total, items);
    }
 
+   /**
+    * {@inheritDoc}
+    * <p>
+    * Executes a native SQL query ordered by the sorteringsordning sort groups and per-entry
+    * sort_by fields. Falls back to {@code created_at ASC} when no entries are configured.
+    */
    @Override
-   public List<UppgiftEntity> findAllUppgifterByHandlaggarId(Idtyp handlaggarId)
+   public List<UppgiftEntity> findAllUppgifterByHandlaggarId(Idtyp handlaggarId, SorteringsordningEntity sorteringsordning)
    {
-      return uppgiftRepository
-            .find("handlaggarIdTypId = :typ_id AND handlaggarIdVarde = :varde",
-                  Map.of("typ_id", handlaggarId.typId(), "varde", handlaggarId.varde()))
-            .stream().map(oulDataStorageMapper::toUppgiftEntity).toList();
+      var built = queryBuilder.buildHandlaggareListQuery(sorteringsordning, handlaggarId.typId(), handlaggarId.varde());
+      var em = uppgiftRepository.getEntityManager();
+      var query = em.createNativeQuery(built.pageSql(),
+            se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.entity.UppgiftEntity.class);
+      built.params().forEach(query::setParameter);
+      @SuppressWarnings("unchecked")
+      List<se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.entity.UppgiftEntity> results = query
+            .getResultList();
+      return results.stream().map(oulDataStorageMapper::toUppgiftEntity).toList();
    }
 
    @Override
@@ -81,19 +127,36 @@ public class PanacheOulDataStorage implements OulDataStorage
    public void deleteUppgift(UUID id)
    {
       uppgiftRepository.deleteById(id);
+      cachedTotal = -1L;
    }
 
+   /**
+    * {@inheritDoc}
+    * <p>
+    * Uses a two-phase native SQL approach: an inner subquery computes priority order without
+    * locking; the outer query re-selects the chosen row by id and applies
+    * {@code FOR UPDATE SKIP LOCKED}. If the row was concurrently claimed the outer SELECT
+    * returns empty and the method returns {@code null}.
+    */
    @Override
-   public UppgiftEntity assignNewUppgift(Idtyp handlaggarId)
+   public UppgiftEntity assignNewUppgift(Idtyp handlaggarId, SorteringsordningEntity sorteringsordning)
    {
-      var uppgift = uppgiftRepository.find("handlaggarIdTypId IS NULL and handlaggarIdVarde IS NULL")
-            .withLock(LockModeType.PESSIMISTIC_WRITE).firstResult();
+      var built = queryBuilder.buildAssignQuery(sorteringsordning);
+      var em = uppgiftRepository.getEntityManager();
+      var selectQuery = em.createNativeQuery(built.pageSql(),
+            se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.entity.UppgiftEntity.class);
+      built.params().forEach(selectQuery::setParameter);
 
-      if (uppgift == null)
+      @SuppressWarnings("unchecked")
+      List<se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.entity.UppgiftEntity> results = selectQuery
+            .getResultList();
+
+      if (results.isEmpty())
       {
          return null;
       }
 
+      var uppgift = results.getFirst();
       uppgift.setStatus(UppgiftStatus.TILLDELAD);
       uppgift.setHandlaggarIdTypId(handlaggarId.typId());
       uppgift.setHandlaggarIdVarde(handlaggarId.varde());
@@ -184,10 +247,6 @@ public class PanacheOulDataStorage implements OulDataStorage
             .toList();
    }
 
-   /**
-    * {@inheritDoc}
-    *
-    */
    @Override
    public void deleteSorteringsordning(UUID id)
    {
@@ -195,7 +254,7 @@ public class PanacheOulDataStorage implements OulDataStorage
       {
          throw new SorteringsordningNotFoundException(id);
       }
-      defaultSorteringsordningRepository.findByIdOptional(true).ifPresent(d -> {
+      defaultSorteringsordningRepository.findForUpdate().ifPresent(d -> {
          if (id.equals(d.getSorteringsordningId()))
          {
             throw new SorteringsordningIsDefaultException(id);
@@ -232,13 +291,38 @@ public class PanacheOulDataStorage implements OulDataStorage
    }
 
    /**
-    * Removes all sorteringsordningar and the default pointer.
-    * Intended for use in tests only.
+    * Resets the in-process count cache so that the next read triggers a fresh {@code COUNT(*)}.
+    * Package-private: only {@link se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.StorageTestCleaner}
+    * should call this.
     */
-   public void clearSorteringsordning()
+   void invalidateCountCache()
    {
-      defaultSorteringsordningRepository.deleteAll();
-      sorteringsordningRepository.deleteAll();
+      cachedTotal = -1L;
+   }
+
+   /**
+    * Returns the total number of uppgifter, using a short-lived in-process cache to avoid
+    * a full table scan on every paginated request.
+    * <p>
+    * The cached value is considered fresh for {@code oul.uppgift.count-cache-ttl-ms} milliseconds
+    * (default 5 000 ms). At most two concurrent threads can miss the cache simultaneously and
+    * both run COUNT(*); this is intentional and harmless given the TTL semantics.
+    *
+    * @param em       the entity manager to use for the query if the cache is cold
+    * @param countSql the COUNT(*) SQL to execute on a cache miss
+    * @return the total row count, possibly from cache
+    */
+   private long fetchTotal(jakarta.persistence.EntityManager em, String countSql)
+   {
+      long now = System.currentTimeMillis();
+      if (cachedTotal >= 0 && now - cacheTimestamp < countCacheTtlMs)
+      {
+         return cachedTotal;
+      }
+      long total = ((Number) em.createNativeQuery(countSql).getSingleResult()).longValue();
+      cacheTimestamp = now;
+      cachedTotal = total;
+      return total;
    }
 
 }
