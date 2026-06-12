@@ -61,12 +61,6 @@ public class PanacheOulDataStorage implements OulDataStorage
       cachedTotal = -1L;
    }
 
-   @Override
-   public List<UppgiftEntity> findAllUppgifter()
-   {
-      return uppgiftRepository.findAll().stream().map(oulDataStorageMapper::toUppgiftEntity).toList();
-   }
-
    /**
     * {@inheritDoc}
     * <p>

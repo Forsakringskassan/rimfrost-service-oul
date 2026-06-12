@@ -86,11 +86,6 @@ public class OperativtUppgiftslagerService
       return logicMapper.toUppgiftDto(endedTask);
    }
 
-   public List<UppgiftDto> getTasks()
-   {
-      return storage.findAllUppgifter().stream().map(logicMapper::toUppgiftDto).toList();
-   }
-
    /**
     * Returns a paginated and sorted page of uppgifter.
     * Sorting and pagination are pushed down to the database via a single SQL query.

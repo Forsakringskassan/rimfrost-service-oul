@@ -22,13 +22,6 @@ public interface OulDataStorage
    void createUppgift(UppgiftEntity uppgift);
 
    /**
-    * Returns all uppgifter regardless of status or assignee.
-    *
-    * @return unordered list of all uppgifter
-    */
-   List<UppgiftEntity> findAllUppgifter();
-
-   /**
     * Returns one page of uppgifter sorted according to the given sorteringsordning.
     * The total count reflects all rows, not just the page slice.
     *
