@@ -52,7 +52,7 @@ Tjänsten exponerar två API-ytor baserade på genererade OpenAPI-specifikatione
 | `POST` | `/uppgifter` | Skapa uppgift                                       |
 | `GET` | `/uppgifter` | Lista uppgifter (paginerat, med sortering)          |
 | `POST` | `/sorteringsordning` | Skapa sorteringsordning                             |
-| `GET` | `/sorteringsordning` | Lista alla sorteringsordningar                      |
+| `GET` | `/sorteringsordning` | Lista sorteringsordningar (paginerat)               |
 | `GET` | `/sorteringsordning/default` | Hämta aktiv standardsortering (404 om ingen finns)  |
 | `GET` | `/sorteringsordning/{id}` | Hämta specifik sorteringsordning                    |
 | `DELETE` | `/sorteringsordning/{id}` | Ta bort sorteringsordning (409 om den är standard)  |
@@ -60,6 +60,8 @@ Tjänsten exponerar två API-ytor baserade på genererade OpenAPI-specifikatione
 | `POST` | `/sorteringsordning/preview` | Förhandsgranska en sorteringsordning utan att spara |
 
 `GET /uppgifter` tar parametrarna `limit` (obligatorisk), `offset` (standard 0) och `sorteringsordningId` (valfri — standardsorteringen används om den saknas).
+
+`GET /sorteringsordning` tar parametrarna `limit` (obligatorisk) och `offset` (standard 0).
 
 ## Sortering
 

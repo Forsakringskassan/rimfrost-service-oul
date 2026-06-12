@@ -230,9 +230,16 @@ public class OperativtUppgiftslagerService
       return storage.getSorteringsordningById(id);
    }
 
-   public List<SorteringsordningEntity> getAllSorteringsordningar()
+   /**
+    * Returns a paginated page of sorteringsordningar ordered by creation time descending.
+    *
+    * @param limit  maximum items per page
+    * @param offset zero-based start index
+    * @return the page slice and total count
+    */
+   public SorteringsordningEntityPage getSorteringsordningarPage(int limit, int offset)
    {
-      return storage.getAllSorteringsordningar();
+      return storage.findSorteringsordningarPage(limit, offset);
    }
 
    /**

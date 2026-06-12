@@ -24,7 +24,7 @@ public class OulPreviewTest extends OulTestBase
 
       assertEquals(2, page.getTotal());
       assertEquals(2, page.getItems().size());
-      assertEquals(0, getSorteringsordningar().size());
+      assertEquals(0, getSorteringsordningar(100).getTotal());
    }
 
    @Test
