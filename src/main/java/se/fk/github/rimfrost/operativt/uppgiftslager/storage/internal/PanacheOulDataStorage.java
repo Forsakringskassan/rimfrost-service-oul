@@ -292,9 +292,10 @@ public class PanacheOulDataStorage implements OulDataStorage
 
    /**
     * Resets the in-process count cache so that the next read triggers a fresh {@code COUNT(*)}.
-    * Intended for use in tests only.
+    * Package-private: only {@link se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.StorageTestCleaner}
+    * should call this.
     */
-   public void invalidateCountCache()
+   void invalidateCountCache()
    {
       cachedTotal = -1L;
    }

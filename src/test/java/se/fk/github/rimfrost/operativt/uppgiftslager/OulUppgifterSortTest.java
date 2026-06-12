@@ -12,7 +12,6 @@ import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.SorteringsordningSpec;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.SortBy;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.OperativtUppgiftslagerService;
-import se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.PanacheOulDataStorage;
 import java.util.List;
 import java.util.UUID;
 
@@ -27,9 +26,6 @@ public class OulUppgifterSortTest extends OulTestBase
 {
    @Inject
    OperativtUppgiftslagerService service;
-
-   @Inject
-   PanacheOulDataStorage panacheOulDataStorage;
 
    @Test
    @DisplayName("GET /uppgifter utan sorteringsordning — returnerar alla uppgifter")
@@ -201,7 +197,7 @@ public class OulUppgifterSortTest extends OulTestBase
       assertEquals(2, before.getTotal());
 
       // Invalidate cache to simulate TTL expiry
-      panacheOulDataStorage.invalidateCountCache();
+      storageTestCleaner.invalidateCountCache();
 
       // Should issue a fresh COUNT(*) and still return the correct total
       var after = getUppgifter(50, 0, null);
