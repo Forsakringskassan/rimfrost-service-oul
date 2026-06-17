@@ -51,6 +51,15 @@ public interface OulDataStorage
    List<UppgiftEntity> findAllUppgifterByHandlaggarId(Idtyp handlaggarId, SorteringsordningEntity sorteringsordning);
 
    /**
+    * Returns all uppgifter assigned to any of the given team members, ordered by the given sorteringsordning.
+    *
+    * @param teamMembers       the team member identities to match against
+    * @param sorteringsordning the sort specification; empty entries produce unspecified order
+    * @return list of uppgifter assigned to any team member
+    */
+   List<UppgiftEntity> findAllUppgifterByTeam(List<Idtyp> teamMembers, SorteringsordningEntity sorteringsordning);
+
+   /**
     * Permanently removes the uppgift with the given id.
     *
     * @param id the uppgift UUID to delete

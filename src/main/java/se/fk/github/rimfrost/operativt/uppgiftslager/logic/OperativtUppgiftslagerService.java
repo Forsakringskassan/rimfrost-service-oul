@@ -19,6 +19,8 @@ import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.UppgiftDto;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.ImmutableUppgiftEntity;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.UppgiftEntity;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.enums.UppgiftStatus;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.exception.NotTeamMemberException;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.team.TeamService;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.OulDataStorage;
 
 /**
@@ -39,6 +41,9 @@ public class OperativtUppgiftslagerService
 
    @Inject
    OulDataStorage storage;
+
+   @Inject
+   TeamService teamService;
 
    public UppgiftDto addOperativeTask(OperativtUppgiftslagerAddRequest addRequest, String notificationTopic,
          String replyTopic, Map<String, String> cloudeventAttributes)
@@ -137,6 +142,50 @@ public class OperativtUppgiftslagerService
             .orElse(new SorteringsordningEntity(null, null, List.of()));
       var uppgifter = storage.findAllUppgifterByHandlaggarId(handlaggare, sorteringsordning);
       return uppgifter.stream().map(logicMapper::toUppgiftDto).toList();
+   }
+
+   /**
+    * Returns all uppgifter assigned to any member of the caller's team, sorted according to the
+    * default sorteringsordning.
+    *
+    * @param callerHandlaggare the calling handläggare's identity (used to determine team)
+    * @return ordered collection of team uppgifter
+    */
+   public Collection<UppgiftDto> getUppgifterTeam(Idtyp callerHandlaggare)
+   {
+      log.info("Getting all team tasks for handlaggarId: {}", callerHandlaggare.varde());
+      var teamMembers = teamService.teamMembers();
+      var sorteringsordning = storage.getDefaultSorteringsordning()
+            .orElse(new SorteringsordningEntity(null, null, List.of()));
+      var uppgifter = storage.findAllUppgifterByTeam(teamMembers, sorteringsordning);
+      return uppgifter.stream().map(logicMapper::toUppgiftDto).toList();
+   }
+
+   /**
+    * Reassigns the given uppgift to the calling handläggare.
+    * Throws {@link NotTeamMemberException} (→ HTTP 403) if the current assignee is not a team member.
+    *
+    * @param uppgiftId         the uppgift to reassign
+    * @param callerHandlaggare the new handläggare identity
+    * @return the updated uppgift, or {@code null} if the uppgift does not exist
+    */
+   public UppgiftDto reassignUppgift(UUID uppgiftId, Idtyp callerHandlaggare)
+   {
+      log.info("Reassigning uppgift {} to handlaggarId: {}", uppgiftId, callerHandlaggare.varde());
+      var current = storage.findUppgiftById(uppgiftId);
+
+      if (current == null)
+      {
+         return null;
+      }
+
+      if (current.handlaggarId() == null || !teamService.isTeamMember(current.handlaggarId()))
+      {
+         throw new NotTeamMemberException(uppgiftId);
+      }
+
+      var updated = storage.updateUppgift(uppgiftId, callerHandlaggare);
+      return logicMapper.toUppgiftDto(updated);
    }
 
    /**

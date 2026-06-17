@@ -12,13 +12,19 @@ import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.SorteringsordningField;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.SorteringsordningFieldEq;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.SorteringsordningSpec;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.team.HardcodedTeamService;
+
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 public class OulTestData
 {
-   public static final String oulHandlaggareTypId = "116759e4-18fd-4209-849c-90abbd257d22";
+   public static final String oulHandlaggareTypId = HardcodedTeamService.HANDLAGGARE_TYP_ID;
+
+   public static final UUID TEAM_MEMBER_1 = HardcodedTeamService.TEAM_MEMBER_1;
+   public static final UUID TEAM_MEMBER_2 = HardcodedTeamService.TEAM_MEMBER_2;
+   public static final UUID TEAM_MEMBER_3 = HardcodedTeamService.TEAM_MEMBER_3;
 
    public static CreateUppgiftRequest newCreateUppgiftRequest(UUID handlaggningId)
    {

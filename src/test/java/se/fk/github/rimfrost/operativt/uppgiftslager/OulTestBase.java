@@ -10,6 +10,7 @@ import jakarta.inject.Inject;
 import org.eclipse.microprofile.reactive.messaging.spi.Connector;
 import org.junit.jupiter.api.BeforeEach;
 import se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.GetUppgifterHandlaggareResponse;
+import se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.PostUppgiftHandlaggareResponse;
 import se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.PostUppgifterHandlaggareResponse;
 import se.fk.rimfrost.oul.management.regler.jaxrsspec.controllers.generatedsource.model.CreateUppgiftRequest;
 import se.fk.rimfrost.oul.management.regler.jaxrsspec.controllers.generatedsource.model.EndUppgiftRequest;
@@ -21,9 +22,7 @@ import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.UppgiftPage;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.StorageTestCleaner;
 import se.fk.rimfrost.oul.management.regler.jaxrsspec.controllers.generatedsource.model.UppgiftResponse;
-
 import java.util.UUID;
-
 import static io.restassured.RestAssured.given;
 import static se.fk.github.rimfrost.operativt.uppgiftslager.OulTestData.oulHandlaggareTypId;
 
@@ -110,11 +109,29 @@ public abstract class OulTestBase
             .then().statusCode(expectedStatus);
    }
 
+   /**
+    * Returns a bearer token encoding the given handläggare identity using the standard test typId.
+    *
+    * @param handlaggarId the handläggare varde
+    * @return Authorization header value
+    */
+   public static String bearerToken(UUID handlaggarId)
+   {
+      return "Bearer " + oulHandlaggareTypId + ":" + handlaggarId;
+   }
+
+   /**
+    * Assigns a new task to the given handläggare via POST /uppgifter/handlaggare.
+    *
+    * @param handlaggarId the handläggare varde
+    * @return the assigned task
+    */
    public static PostUppgifterHandlaggareResponse assignTaskToHandlaggare(UUID handlaggarId)
    {
-      return given().contentType(ContentType.JSON).when()
-            .post("/uppgifter/handlaggare/" + oulHandlaggareTypId + "/{handlaggarId}", handlaggarId).then()
-            .statusCode(200).extract().as(PostUppgifterHandlaggareResponse.class);
+      return given().contentType(ContentType.JSON)
+            .header("Authorization", bearerToken(handlaggarId))
+            .when().post("/uppgifter/handlaggare")
+            .then().statusCode(200).extract().as(PostUppgifterHandlaggareResponse.class);
    }
 
    public static OperativUppgift unassignTask(UUID uppgiftId)
@@ -141,11 +158,62 @@ public abstract class OulTestBase
             .when().patch("/uppgifter/{uppgiftId}", uppgiftId).then().statusCode(expectedStatus);
    }
 
+   /**
+    * Returns tasks assigned to the given handläggare via GET /uppgifter/handlaggare.
+    *
+    * @param handlaggarId the handläggare varde
+    * @return assigned tasks
+    */
    public static GetUppgifterHandlaggareResponse getAssignedTasks(UUID handlaggarId)
    {
-      return given().contentType(ContentType.JSON).when()
-            .get("/uppgifter/handlaggare/" + oulHandlaggareTypId + "/{handlaggarId}", handlaggarId).then()
-            .statusCode(200).extract().as(GetUppgifterHandlaggareResponse.class);
+      return given().contentType(ContentType.JSON)
+            .header("Authorization", bearerToken(handlaggarId))
+            .when().get("/uppgifter/handlaggare")
+            .then().statusCode(200).extract().as(GetUppgifterHandlaggareResponse.class);
+   }
+
+   /**
+    * Returns all tasks assigned to any team member of the given handläggare via GET /uppgifter/team.
+    *
+    * @param handlaggarId the caller's handläggare varde
+    * @return team tasks
+    */
+   public static GetUppgifterHandlaggareResponse getTeamTasks(UUID handlaggarId)
+   {
+      return given().contentType(ContentType.JSON)
+            .header("Authorization", bearerToken(handlaggarId))
+            .when().get("/uppgifter/team")
+            .then().statusCode(200).extract().as(GetUppgifterHandlaggareResponse.class);
+   }
+
+   /**
+    * Reassigns the given uppgift to the calling handläggare via POST /uppgifter/{uppgift_id}/handlaggare.
+    *
+    * @param uppgiftId        the ID of the uppgift to reassign
+    * @param callerHandlaggarId the caller's handläggare varde
+    * @return the updated uppgift
+    */
+   public static PostUppgiftHandlaggareResponse reassignTask(UUID uppgiftId, UUID callerHandlaggarId)
+   {
+      return given().contentType(ContentType.JSON)
+            .header("Authorization", bearerToken(callerHandlaggarId))
+            .when().post("/uppgifter/" + uppgiftId + "/handlaggare")
+            .then().statusCode(200).extract().as(PostUppgiftHandlaggareResponse.class);
+   }
+
+   /**
+    * Attempts to reassign the given uppgift, expecting the given HTTP status code.
+    *
+    * @param uppgiftId          the ID of the uppgift to reassign
+    * @param callerHandlaggarId the caller's handläggare varde
+    * @param expectedStatus     expected HTTP response status
+    */
+   public static void reassignTask(UUID uppgiftId, UUID callerHandlaggarId, int expectedStatus)
+   {
+      given().contentType(ContentType.JSON)
+            .header("Authorization", bearerToken(callerHandlaggarId))
+            .when().post("/uppgifter/" + uppgiftId + "/handlaggare")
+            .then().statusCode(expectedStatus);
    }
 
    public static SorteringsordningResponse sendCreateSorteringsordningRequest(SorteringsordningSpec spec)

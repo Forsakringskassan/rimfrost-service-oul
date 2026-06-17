@@ -112,6 +112,26 @@ public class PanacheOulDataStorage implements OulDataStorage
       return results.stream().map(oulDataStorageMapper::toUppgiftEntity).toList();
    }
 
+   /**
+    * {@inheritDoc}
+    * <p>
+    * Executes a native SQL query with a disjunction of {@code (typ_id, varde)} predicates —
+    * one pair per team member — ordered by the sorteringsordning.
+    */
+   @Override
+   public List<UppgiftEntity> findAllUppgifterByTeam(List<Idtyp> teamMembers, SorteringsordningEntity sorteringsordning)
+   {
+      var built = queryBuilder.buildTeamListQuery(sorteringsordning, teamMembers);
+      var em = uppgiftRepository.getEntityManager();
+      var query = em.createNativeQuery(built.pageSql(),
+            se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.entity.UppgiftEntity.class);
+      built.params().forEach(query::setParameter);
+      @SuppressWarnings("unchecked")
+      List<se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.entity.UppgiftEntity> results = query
+            .getResultList();
+      return results.stream().map(oulDataStorageMapper::toUppgiftEntity).toList();
+   }
+
    @Override
    public UppgiftEntity findUppgiftById(UUID id)
    {

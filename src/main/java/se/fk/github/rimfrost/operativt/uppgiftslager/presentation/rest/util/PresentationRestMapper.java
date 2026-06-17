@@ -51,6 +51,12 @@ public class PresentationRestMapper
       };
    }
 
+   /**
+    * Maps a {@link UppgiftDto} to a {@link PostUppgifterHandlaggareResponse}.
+    *
+    * @param uppgiftEntity the DTO to map, or {@code null} for an empty response
+    * @return the mapped response
+    */
    public PostUppgifterHandlaggareResponse toPostUppgifterHandlaggareResponse(UppgiftDto uppgiftEntity)
    {
       PostUppgifterHandlaggareResponse response = new PostUppgifterHandlaggareResponse();
@@ -58,6 +64,19 @@ public class PresentationRestMapper
       {
          response.setOperativUppgift(toUppgift(uppgiftEntity));
       }
+      return response;
+   }
+
+   /**
+    * Maps a {@link UppgiftDto} to a {@link PostUppgiftHandlaggareResponse}.
+    *
+    * @param uppgiftDto the reassigned uppgift DTO
+    * @return the mapped response
+    */
+   public PostUppgiftHandlaggareResponse toPostUppgiftHandlaggareResponse(UppgiftDto uppgiftDto)
+   {
+      PostUppgiftHandlaggareResponse response = new PostUppgiftHandlaggareResponse();
+      response.setOperativUppgift(toUppgift(uppgiftDto));
       return response;
    }
 
