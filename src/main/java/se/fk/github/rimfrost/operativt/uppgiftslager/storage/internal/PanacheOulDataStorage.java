@@ -15,6 +15,7 @@ import se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.entity.Def
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.entity.SorteringsordningPersistenceEntity;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.SorteringsordningIsDefaultException;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.SorteringsordningNotFoundException;
+import se.fk.github.rimfrost.operativt.uppgiftslager.storage.UppgiftNotFoundException;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.repository.DefaultSorteringsordningRepository;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.repository.SorteringsordningRepository;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.repository.UppgiftRepository;
@@ -139,7 +140,7 @@ public class PanacheOulDataStorage implements OulDataStorage
 
       if (entity == null)
       {
-         return null;
+         throw new UppgiftNotFoundException(id);
       }
 
       return oulDataStorageMapper.toUppgiftEntity(entity);
@@ -194,7 +195,7 @@ public class PanacheOulDataStorage implements OulDataStorage
 
       if (uppgift == null)
       {
-         return null;
+         throw new UppgiftNotFoundException(id);
       }
 
       var status = uppgift.getStatus();
@@ -219,7 +220,7 @@ public class PanacheOulDataStorage implements OulDataStorage
 
       if (uppgift == null)
       {
-         return null;
+         throw new UppgiftNotFoundException(id);
       }
 
       if (handlaggarId != null)

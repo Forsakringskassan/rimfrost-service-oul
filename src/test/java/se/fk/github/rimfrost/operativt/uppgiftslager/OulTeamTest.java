@@ -94,6 +94,13 @@ public class OulTeamTest extends OulTestBase
    }
 
    @Test
+   @DisplayName("POST /uppgifter/{id}/handlaggare returns 404 when uppgift does not exist")
+   public void reassignTask_returns404_whenUppgiftDoesNotExist()
+   {
+      reassignTask(UUID.randomUUID(), TEAM_MEMBER_1, 404);
+   }
+
+   @Test
    @DisplayName("AC7: POST /uppgifter/{id}/handlaggare returns 403 when current assignee is outside team")
    public void reassignTask_returns403_whenCurrentAssigneeIsOutsideTeam()
    {

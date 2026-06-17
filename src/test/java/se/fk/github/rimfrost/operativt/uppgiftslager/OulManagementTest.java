@@ -62,6 +62,13 @@ public class OulManagementTest extends OulTestBase
    }
 
    @Test
+   @DisplayName("GET /uppgifter returns 404 when the requested sorteringsordningId does not exist")
+   public void should_return_404_on_get_uppgifter_when_sorteringsordning_not_found()
+   {
+      getUppgifter(50, UUID.randomUUID(), 404);
+   }
+
+   @Test
    @DisplayName("OUL-FR-02.4: Avsluta uppgift — HTTP 404 returneras när uppgifts-ID inte finns")
    public void should_return_404_on_end_when_uppgift_not_found()
    {
