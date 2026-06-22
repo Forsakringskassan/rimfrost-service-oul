@@ -186,15 +186,17 @@ public class SorteringsordningQueryBuilder
       var entries = sorteringsordning.entries();
       Map<String, Object> params = new HashMap<>();
 
-      var whereClause = IntStream.range(0, teamMembers.size())
+      var inValues = IntStream.range(0, teamMembers.size())
             .mapToObj(i -> {
                var typKey = "tm_typ_" + i;
                var vardeKey = "tm_varde_" + i;
                params.put(typKey, teamMembers.get(i).typId());
                params.put(vardeKey, teamMembers.get(i).varde());
-               return "(handlaggar_id_typ_id = :" + typKey + " AND handlaggar_id_varde = :" + vardeKey + ")";
+               return "(:" + typKey + ", :" + vardeKey + ")";
             })
-            .collect(Collectors.joining(" OR "));
+            .collect(Collectors.joining(", "));
+
+      var whereClause = "(handlaggar_id_typ_id, handlaggar_id_varde) IN (" + inValues + ")";
 
       var table = schema + ".uppgift";
 
