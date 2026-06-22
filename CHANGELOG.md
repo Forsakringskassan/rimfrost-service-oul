@@ -2,6 +2,20 @@
 
 Changelog of rimfrost-service-oul.
 
+## 1.3.0 (2026-06-22)
+
+### Features
+
+-  Use PostgreSQL row-constructor IN for buildTeamListQuery WHERE clause ([c4b98](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/c4b986b20e46b52) Ulf Slunga)  
+-  Replace null-return not-found pattern with typed exceptions across all layers ([e011f](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/e011ff80575ec4d) Ulf Slunga)  
+-  Remove superseded FKPOC-833 planning docs ([09d38](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/09d386b5ab603e3) Ulf Slunga)  
+-  Replace try/catch in SorteringController with ExceptionMappers ([c7036](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/c70361e7ba8ea49) Ulf Slunga)  
+-  Reorganise docs into per-ticket subdirectories ([2294f](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/2294f6f9057bdd1) Ulf Slunga)  
+
+### Bug Fixes
+
+-  Replace jaxrsclientfactory dependency ([ce9d1](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/ce9d19de8dd479f) Lars Persson)  
+
 ## 1.2.0 (2026-06-12)
 
 ### Features
