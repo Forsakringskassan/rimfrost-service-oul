@@ -15,6 +15,7 @@ import se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.entity.Def
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.entity.SorteringsordningPersistenceEntity;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.SorteringsordningIsDefaultException;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.SorteringsordningNotFoundException;
+import se.fk.github.rimfrost.operativt.uppgiftslager.storage.UppgiftNotFoundException;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.repository.DefaultSorteringsordningRepository;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.repository.SorteringsordningRepository;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.repository.UppgiftRepository;
@@ -112,6 +113,26 @@ public class PanacheOulDataStorage implements OulDataStorage
       return results.stream().map(oulDataStorageMapper::toUppgiftEntity).toList();
    }
 
+   /**
+    * {@inheritDoc}
+    * <p>
+    * Executes a native SQL query with a disjunction of {@code (typ_id, varde)} predicates —
+    * one pair per team member — ordered by the sorteringsordning.
+    */
+   @Override
+   public List<UppgiftEntity> findAllUppgifterByTeam(List<Idtyp> teamMembers, SorteringsordningEntity sorteringsordning)
+   {
+      var built = queryBuilder.buildTeamListQuery(sorteringsordning, teamMembers);
+      var em = uppgiftRepository.getEntityManager();
+      var query = em.createNativeQuery(built.pageSql(),
+            se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.entity.UppgiftEntity.class);
+      built.params().forEach(query::setParameter);
+      @SuppressWarnings("unchecked")
+      List<se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.entity.UppgiftEntity> results = query
+            .getResultList();
+      return results.stream().map(oulDataStorageMapper::toUppgiftEntity).toList();
+   }
+
    @Override
    public UppgiftEntity findUppgiftById(UUID id)
    {
@@ -119,7 +140,7 @@ public class PanacheOulDataStorage implements OulDataStorage
 
       if (entity == null)
       {
-         return null;
+         throw new UppgiftNotFoundException(id);
       }
 
       return oulDataStorageMapper.toUppgiftEntity(entity);
@@ -174,7 +195,7 @@ public class PanacheOulDataStorage implements OulDataStorage
 
       if (uppgift == null)
       {
-         return null;
+         throw new UppgiftNotFoundException(id);
       }
 
       var status = uppgift.getStatus();
@@ -199,7 +220,7 @@ public class PanacheOulDataStorage implements OulDataStorage
 
       if (uppgift == null)
       {
-         return null;
+         throw new UppgiftNotFoundException(id);
       }
 
       if (handlaggarId != null)

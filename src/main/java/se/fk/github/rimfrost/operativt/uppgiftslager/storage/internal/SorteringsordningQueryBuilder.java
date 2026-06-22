@@ -8,7 +8,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.Idtyp;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.SorteringsordningEntity;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.ConstraintBetween;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.ConstraintContains;
@@ -146,6 +149,56 @@ public class SorteringsordningQueryBuilder
 
       var table = schema + ".uppgift";
       var whereClause = "handlaggar_id_typ_id = :hl_typ_id AND handlaggar_id_varde = :hl_varde";
+
+      if (entries == null || entries.isEmpty())
+      {
+         return new BuiltQuery(
+               "SELECT * FROM " + table + " WHERE " + whereClause + " ORDER BY created_at ASC",
+               null,
+               params);
+      }
+
+      var sortGroupExpr = buildSortGroupExpr(entries, params);
+      var orderByClause = buildOrderByClause(entries, "u");
+
+      var pageSql = "SELECT " + UPPGIFT_COLUMNS
+            + " FROM (SELECT *, " + sortGroupExpr + " AS sort_group FROM " + table
+            + " WHERE " + whereClause + ") AS u"
+            + " ORDER BY " + orderByClause;
+
+      return new BuiltQuery(pageSql, null, params);
+   }
+
+   /**
+    * Builds a query that fetches all uppgifter assigned to any of the given team members,
+    * ordered according to the sorteringsordning. Falls back to {@code created_at ASC}
+    * if the sorteringsordning has no entries.
+    * <p>
+    * The team member filter is expressed as a disjunction of {@code (typ_id, varde)} equality
+    * predicates using named parameters — one pair per team member — to prevent SQL injection.
+    *
+    * @param sorteringsordning the sort specification
+    * @param teamMembers       the team member identities to filter on; must not be empty
+    * @return a {@link BuiltQuery} ready to be executed (no {@code countSql})
+    */
+   public BuiltQuery buildTeamListQuery(SorteringsordningEntity sorteringsordning, List<Idtyp> teamMembers)
+   {
+      var entries = sorteringsordning.entries();
+      Map<String, Object> params = new HashMap<>();
+
+      var inValues = IntStream.range(0, teamMembers.size())
+            .mapToObj(i -> {
+               var typKey = "tm_typ_" + i;
+               var vardeKey = "tm_varde_" + i;
+               params.put(typKey, teamMembers.get(i).typId());
+               params.put(vardeKey, teamMembers.get(i).varde());
+               return "(:" + typKey + ", :" + vardeKey + ")";
+            })
+            .collect(Collectors.joining(", "));
+
+      var whereClause = "(handlaggar_id_typ_id, handlaggar_id_varde) IN (" + inValues + ")";
+
+      var table = schema + ".uppgift";
 
       if (entries == null || entries.isEmpty())
       {

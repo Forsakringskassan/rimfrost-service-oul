@@ -13,8 +13,6 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
-import se.fk.github.rimfrost.operativt.uppgiftslager.storage.SorteringsordningIsDefaultException;
-import se.fk.github.rimfrost.operativt.uppgiftslager.storage.SorteringsordningNotFoundException;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
@@ -99,7 +97,8 @@ public class SorteringController implements SorteringsordningApi
 
    /**
     * Deletes the sorteringsordning with the given id.
-    * Returns 404 if not found, 409 if it is the current default.
+    * Exceptions mapped by {@link se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.exception.SorteringsordningNotFoundExceptionMapper}
+    * and {@link se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.exception.SorteringsordningIsDefaultExceptionMapper}.
     *
     * @param sorteringsordningId the UUID of the sorteringsordning to delete
     */
@@ -109,23 +108,12 @@ public class SorteringController implements SorteringsordningApi
    @ResponseStatus(204)
    public void deleteSorteringsordning(@PathParam("sorteringsordningId") UUID sorteringsordningId)
    {
-      try
-      {
-         operativtUppgiftslagerService.deleteSorteringsordning(sorteringsordningId);
-      }
-      catch (SorteringsordningNotFoundException e)
-      {
-         throw new WebApplicationException(Response.Status.NOT_FOUND);
-      }
-      catch (SorteringsordningIsDefaultException e)
-      {
-         throw new WebApplicationException(Response.Status.CONFLICT);
-      }
+      operativtUppgiftslagerService.deleteSorteringsordning(sorteringsordningId);
    }
 
    /**
     * Sets the given sorteringsordning as the system default.
-    * Returns 404 if not found.
+    * Exceptions mapped by {@link se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.exception.SorteringsordningNotFoundExceptionMapper}.
     *
     * @param sorteringsordningId the UUID of the sorteringsordning to set as default
     */
@@ -135,13 +123,6 @@ public class SorteringController implements SorteringsordningApi
    @ResponseStatus(204)
    public void setDefaultSorteringsordning(@PathParam("sorteringsordningId") UUID sorteringsordningId)
    {
-      try
-      {
-         operativtUppgiftslagerService.setDefaultSorteringsordning(sorteringsordningId);
-      }
-      catch (SorteringsordningNotFoundException e)
-      {
-         throw new WebApplicationException(Response.Status.NOT_FOUND);
-      }
+      operativtUppgiftslagerService.setDefaultSorteringsordning(sorteringsordningId);
    }
 }

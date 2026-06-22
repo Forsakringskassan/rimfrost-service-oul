@@ -1,20 +1,26 @@
 package se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest;
 
-import jakarta.ws.rs.*;
-import java.util.UUID;
-import org.eclipse.microprofile.openapi.annotations.media.Content;
-import org.eclipse.microprofile.openapi.annotations.media.Schema;
-import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.vertx.ext.web.RoutingContext;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.OperativtUppgiftslagerService;
+import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.util.BearerTokenExtractor;
 import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.util.PresentationRestMapper;
 import se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.OperativtUppgiftslagerControllerApi;
-import se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.*;
+import se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.GetUppgifterHandlaggareResponse;
+import se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.PostUppgiftHandlaggareResponse;
+import se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.PostUppgifterHandlaggareResponse;
 
+import java.util.UUID;
+
+/**
+ * REST controller exposing handläggare uppgifter operations.
+ *
+ * <p>Handläggare identity is read from the {@code Authorization: Bearer <typId>:<varde>} header on every request.
+ */
 @SuppressWarnings("unused")
 @Produces("application/json")
 @Consumes("application/json")
@@ -30,24 +36,70 @@ public class OperativtUppgiftslagerController implements OperativtUppgiftslagerC
    @Inject
    PresentationRestMapper presentationRestMapper;
 
+   @Inject
+   BearerTokenExtractor bearerTokenExtractor;
+
+   @Inject
+   RoutingContext routingContext;
+
+   /**
+    * Returns tasks assigned to the calling handläggare (identity from bearer token).
+    *
+    * @return assigned tasks
+    */
    @GET
-   @Path("/handlaggare/{id_typ}/{handlaggar_id}")
-   @APIResponse(responseCode = "200", description = "Uppgifter för en handläggare", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = GetUppgifterHandlaggareResponse.class)))
+   @Path("/handlaggare")
    @Override
-   public GetUppgifterHandlaggareResponse getUppgifterHandlaggare(@PathParam("id_typ") String idTyp,
-         @PathParam("handlaggar_id") String handlaggarId)
+   public GetUppgifterHandlaggareResponse getUppgifterHandlaggare()
    {
-      var uppgifter = operativtUppgiftslagerService.getUppgifterHandlaggare(idTyp, handlaggarId);
+      var handlaggare = bearerTokenExtractor.extract(routingContext.request().getHeader("Authorization"));
+      var uppgifter = operativtUppgiftslagerService.getUppgifterHandlaggare(handlaggare.typId(), handlaggare.varde());
       return presentationRestMapper.toGetUppgifterHandlaggareResponse(uppgifter);
    }
 
-   @POST
-   @Path("/handlaggare/{id_typ}/{handlaggar_id}")
-   @APIResponse(responseCode = "200", description = "Hämta uppgift för en handläggare", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = PostUppgifterHandlaggareResponse.class)))
-   public PostUppgifterHandlaggareResponse postUppgifterHandlaggare(@PathParam("id_typ") String idTyp,
-         @PathParam("handlaggar_id") String handlaggarId)
+   /**
+    * Returns all tasks assigned to any team member of the calling handläggare (identity from bearer token).
+    *
+    * @return team tasks
+    */
+   @GET
+   @Path("/team")
+   @Override
+   public GetUppgifterHandlaggareResponse getUppgifterTeam()
    {
-      var uppgift = operativtUppgiftslagerService.assignNewTask(idTyp, handlaggarId);
+      var handlaggare = bearerTokenExtractor.extract(routingContext.request().getHeader("Authorization"));
+      var uppgifter = operativtUppgiftslagerService.getUppgifterTeam(handlaggare);
+      return presentationRestMapper.toGetUppgifterHandlaggareResponse(uppgifter);
+   }
+
+   /**
+    * Assigns a new task to the calling handläggare (identity from bearer token).
+    *
+    * @return the assigned task
+    */
+   @POST
+   @Path("/handlaggare")
+   @Override
+   public PostUppgifterHandlaggareResponse postUppgifterHandlaggare()
+   {
+      var handlaggare = bearerTokenExtractor.extract(routingContext.request().getHeader("Authorization"));
+      var uppgift = operativtUppgiftslagerService.assignNewTask(handlaggare.typId(), handlaggare.varde());
       return presentationRestMapper.toPostUppgifterHandlaggareResponse(uppgift);
+   }
+
+   /**
+    * Reassigns the given uppgift to the calling handläggare (identity from bearer token).
+    *
+    * @param uppgiftId the ID of the uppgift to reassign
+    * @return the updated uppgift
+    */
+   @POST
+   @Path("/{uppgift_id}/handlaggare")
+   @Override
+   public PostUppgiftHandlaggareResponse postUppgiftHandlaggare(@PathParam("uppgift_id") UUID uppgiftId)
+   {
+      var handlaggare = bearerTokenExtractor.extract(routingContext.request().getHeader("Authorization"));
+      var uppgift = operativtUppgiftslagerService.reassignUppgift(uppgiftId, handlaggare);
+      return presentationRestMapper.toPostUppgiftHandlaggareResponse(uppgift);
    }
 }

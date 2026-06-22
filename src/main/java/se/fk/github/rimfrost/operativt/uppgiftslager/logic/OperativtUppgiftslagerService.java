@@ -19,6 +19,9 @@ import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.UppgiftDto;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.ImmutableUppgiftEntity;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.UppgiftEntity;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.enums.UppgiftStatus;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.exception.NotTeamMemberException;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.exception.SorteringsordningNotFoundException;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.team.TeamService;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.OulDataStorage;
 
 /**
@@ -39,6 +42,9 @@ public class OperativtUppgiftslagerService
 
    @Inject
    OulDataStorage storage;
+
+   @Inject
+   TeamService teamService;
 
    public UppgiftDto addOperativeTask(OperativtUppgiftslagerAddRequest addRequest, String notificationTopic,
          String replyTopic, Map<String, String> cloudeventAttributes)
@@ -65,15 +71,18 @@ public class OperativtUppgiftslagerService
       return logicMapper.toUppgiftDto(uppgift);
    }
 
+   /**
+    * Ends the given uppgift with the provided reason.
+    * Throws {@link se.fk.github.rimfrost.operativt.uppgiftslager.storage.UppgiftNotFoundException} (→ HTTP 404) if the uppgift does not exist.
+    *
+    * @param uppgiftId the uppgift to end
+    * @param reason    the reason for ending the uppgift
+    * @return the ended uppgift
+    */
    public UppgiftDto endTask(UUID uppgiftId, String reason)
    {
       log.info("Ending task {} with reason: {}", uppgiftId, reason);
       var task = storage.findUppgiftById(uppgiftId);
-
-      if (task == null)
-      {
-         return null;
-      }
 
       var endedTask = ImmutableUppgiftEntity.builder()
             .from(task)
@@ -89,23 +98,21 @@ public class OperativtUppgiftslagerService
    /**
     * Returns a paginated and sorted page of uppgifter.
     * Sorting and pagination are pushed down to the database via a single SQL query.
-    * Returns {@code null} if a specific sorteringsordningId is given but not found.
+    * Throws {@link SorteringsordningNotFoundException} (→ HTTP 404) if a specific
+    * sorteringsordningId is given but not found.
     *
-    * @param limit              maximum items per page
-    * @param offset             zero-based start index
+    * @param limit               maximum items per page
+    * @param offset              zero-based start index
     * @param sorteringsordningId specific sorteringsordning to use, or {@code null} for the default
-    * @return the sorted page, or {@code null} if the requested sorteringsordning does not exist
+    * @return the sorted page
     */
    public SortedUppgiftPage getUppgifterPage(int limit, int offset, UUID sorteringsordningId)
    {
       SorteringsordningEntity sorteringsordning;
       if (sorteringsordningId != null)
       {
-         sorteringsordning = storage.getSorteringsordningById(sorteringsordningId).orElse(null);
-         if (sorteringsordning == null)
-         {
-            return null;
-         }
+         sorteringsordning = storage.getSorteringsordningById(sorteringsordningId)
+               .orElseThrow(() -> new SorteringsordningNotFoundException(sorteringsordningId));
       }
       else
       {
@@ -140,6 +147,46 @@ public class OperativtUppgiftslagerService
    }
 
    /**
+    * Returns all uppgifter assigned to any member of the caller's team, sorted according to the
+    * default sorteringsordning.
+    *
+    * @param callerHandlaggare the calling handläggare's identity (used to determine team)
+    * @return ordered collection of team uppgifter
+    */
+   public Collection<UppgiftDto> getUppgifterTeam(Idtyp callerHandlaggare)
+   {
+      log.info("Getting all team tasks for handlaggarId: {}", callerHandlaggare.varde());
+      var teamMembers = teamService.teamMembers();
+      var sorteringsordning = storage.getDefaultSorteringsordning()
+            .orElse(new SorteringsordningEntity(null, null, List.of()));
+      var uppgifter = storage.findAllUppgifterByTeam(teamMembers, sorteringsordning);
+      return uppgifter.stream().map(logicMapper::toUppgiftDto).toList();
+   }
+
+   /**
+    * Reassigns the given uppgift to the calling handläggare.
+    * Throws {@link se.fk.github.rimfrost.operativt.uppgiftslager.storage.UppgiftNotFoundException} (→ HTTP 404) if the uppgift does not exist.
+    * Throws {@link NotTeamMemberException} (→ HTTP 403) if the current assignee is not a team member.
+    *
+    * @param uppgiftId         the uppgift to reassign
+    * @param callerHandlaggare the new handläggare identity
+    * @return the updated uppgift
+    */
+   public UppgiftDto reassignUppgift(UUID uppgiftId, Idtyp callerHandlaggare)
+   {
+      log.info("Reassigning uppgift {} to handlaggarId: {}", uppgiftId, callerHandlaggare.varde());
+      var current = storage.findUppgiftById(uppgiftId);
+
+      if (current.handlaggarId() == null || !teamService.isTeamMember(current.handlaggarId()))
+      {
+         throw new NotTeamMemberException(uppgiftId);
+      }
+
+      var updated = storage.updateUppgift(uppgiftId, callerHandlaggare);
+      return logicMapper.toUppgiftDto(updated);
+   }
+
+   /**
     * Assigns the highest-priority unassigned uppgift to the given handläggare according to the
     * default sorteringsordning. Returns {@code null} when no unassigned uppgift is available.
     *
@@ -169,28 +216,31 @@ public class OperativtUppgiftslagerService
       return logicMapper.toUppgiftDto(uppgift);
    }
 
+   /**
+    * Removes the handläggare assignment from the given uppgift.
+    * Throws {@link se.fk.github.rimfrost.operativt.uppgiftslager.storage.UppgiftNotFoundException} (→ HTTP 404) if the uppgift does not exist.
+    *
+    * @param uppgiftId the uppgift to unassign
+    * @return the updated uppgift
+    */
    public UppgiftDto unassignTask(UUID uppgiftId)
    {
       var uppgift = storage.unassignUppgift(uppgiftId);
-
-      if (uppgift == null)
-      {
-         return null;
-      }
-
       notifyStatusUpdate(uppgift);
       return logicMapper.toUppgiftDto(uppgift);
    }
 
+   /**
+    * Updates the handläggare assignment on the given uppgift.
+    * Throws {@link se.fk.github.rimfrost.operativt.uppgiftslager.storage.UppgiftNotFoundException} (→ HTTP 404) if the uppgift does not exist.
+    *
+    * @param uppgiftId    the uppgift to update
+    * @param handlaggarId the new handläggare identity, or {@code null} to clear
+    * @return the updated uppgift
+    */
    public UppgiftDto updateTask(UUID uppgiftId, Idtyp handlaggarId)
    {
       var uppgift = storage.updateUppgift(uppgiftId, handlaggarId);
-
-      if (uppgift == null)
-      {
-         return null;
-      }
-
       notifyStatusUpdate(uppgift);
       return logicMapper.toUppgiftDto(uppgift);
    }

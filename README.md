@@ -35,15 +35,19 @@ NY → TILLDELAD → AVSLUTAD
 
 Tjänsten exponerar två API-ytor baserade på genererade OpenAPI-specifikationer.
 
-### Handläggare-API (`/uppgifter/handlaggare`)
+### Handläggare-API (`/uppgifter`)
 
-| Metod | Sökväg | Beskrivning                             |
-|---|---|-----------------------------------------|
-| `GET` | `/uppgifter/handlaggare/{id_typ}/{handlaggar_id}` | Hämta alla uppgifter för en handläggare |
-| `POST` | `/uppgifter/handlaggare/{id_typ}/{handlaggar_id}` | Tilldela nästa icke tilldelade uppgift  |
-| `DELETE` | `/uppgifter/{uppgiftId}/handlaggare` | Avsluta tilldelning av uppgiften        |
-| `PATCH` | `/uppgifter/{uppgiftId}` | Uppdatera handläggartilldelning         |
-| `POST` | `/uppgifter/{uppgiftId}/end` | Avsluta uppgift med orsak               |
+Handläggarens identitet hämtas från `Authorization: Bearer <typId>:<varde>`-headern.
+
+| Metod | Sökväg | Beskrivning                                                              |
+|---|---|--------------------------------------------------------------------------|
+| `GET` | `/uppgifter/handlaggare` | Hämta alla uppgifter för anropande handläggare                           |
+| `POST` | `/uppgifter/handlaggare` | Tilldela nästa icke tilldelade uppgift till anropande handläggare        |
+| `GET` | `/uppgifter/team` | Hämta alla uppgifter för samtliga medlemmar i anroparens team            |
+| `POST` | `/uppgifter/{uppgift_id}/handlaggare` | Omtilldela uppgift till anroparen (403 om nuvarande handläggare är utanför teamet) |
+| `DELETE` | `/uppgifter/{uppgiftId}/handlaggare` | Avsluta tilldelning av uppgiften                                         |
+| `PATCH` | `/uppgifter/{uppgiftId}` | Uppdatera handläggartilldelning                                          |
+| `POST` | `/uppgifter/{uppgiftId}/end` | Avsluta uppgift med orsak                                                |
 
 ### Management-API
 

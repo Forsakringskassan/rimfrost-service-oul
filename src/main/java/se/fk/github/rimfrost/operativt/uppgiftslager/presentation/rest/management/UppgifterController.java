@@ -90,11 +90,6 @@ public class UppgifterController implements UppgifterApi, ReglerApi
       log.info("Ending uppgift: {}", uppgiftId);
       var uppgift = operativtUppgiftslagerService.endTask(uppgiftId, endUppgiftRequest.getReason());
 
-      if (uppgift == null)
-      {
-         throw new WebApplicationException(Response.Status.NOT_FOUND);
-      }
-
       var endResponseProcessInfo = new ProcessInfo();
       endResponseProcessInfo.setCloudeventAttributes(uppgift.cloudeventAttributes());
       endResponseProcessInfo.setReplyTopic(uppgift.replyTopic());
@@ -114,10 +109,6 @@ public class UppgifterController implements UppgifterApi, ReglerApi
          @QueryParam("offset") @Min(0) Integer offset)
    {
       var page = operativtUppgiftslagerService.getUppgifterPage(limit, offset != null ? offset : 0, sorteringsordningId);
-      if (page == null)
-      {
-         throw new WebApplicationException(Response.Status.NOT_FOUND);
-      }
       return managementMapper.toUppgiftPage(page);
    }
 
@@ -125,12 +116,6 @@ public class UppgifterController implements UppgifterApi, ReglerApi
    public OperativUppgift unassignUppgift(UUID uppgiftId)
    {
       var uppgift = operativtUppgiftslagerService.unassignTask(uppgiftId);
-
-      if (uppgift == null)
-      {
-         throw new WebApplicationException(Response.Status.NOT_FOUND);
-      }
-
       return managementMapper.toOperativUppgift(uppgift);
    }
 
@@ -145,12 +130,6 @@ public class UppgifterController implements UppgifterApi, ReglerApi
       }
 
       var uppgift = operativtUppgiftslagerService.updateTask(uppgiftId, handlaggarId);
-
-      if (uppgift == null)
-      {
-         throw new WebApplicationException(Response.Status.NOT_FOUND);
-      }
-
       return managementMapper.toOperativUppgift(uppgift);
    }
 }

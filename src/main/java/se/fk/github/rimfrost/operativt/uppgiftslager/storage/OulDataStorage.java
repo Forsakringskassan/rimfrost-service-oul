@@ -34,10 +34,11 @@ public interface OulDataStorage
    UppgiftEntityPage findUppgifterPage(SorteringsordningEntity sorteringsordning, int limit, int offset);
 
    /**
-    * Returns the uppgift with the given id, or {@code null} if not found.
+    * Returns the uppgift with the given id.
     *
     * @param id the uppgift UUID
-    * @return the matching uppgift, or {@code null}
+    * @return the matching uppgift
+    * @throws UppgiftNotFoundException if no uppgift with the given id exists
     */
    UppgiftEntity findUppgiftById(UUID id);
 
@@ -49,6 +50,15 @@ public interface OulDataStorage
     * @return list of uppgifter for the handläggare
     */
    List<UppgiftEntity> findAllUppgifterByHandlaggarId(Idtyp handlaggarId, SorteringsordningEntity sorteringsordning);
+
+   /**
+    * Returns all uppgifter assigned to any of the given team members, ordered by the given sorteringsordning.
+    *
+    * @param teamMembers       the team member identities to match against
+    * @param sorteringsordning the sort specification; empty entries produce unspecified order
+    * @return list of uppgifter assigned to any team member
+    */
+   List<UppgiftEntity> findAllUppgifterByTeam(List<Idtyp> teamMembers, SorteringsordningEntity sorteringsordning);
 
    /**
     * Permanently removes the uppgift with the given id.
@@ -70,20 +80,20 @@ public interface OulDataStorage
 
    /**
     * Removes the handläggare assignment from the given uppgift.
-    * Returns {@code null} if the uppgift does not exist.
     *
     * @param id the uppgift UUID to unassign
-    * @return the updated uppgift, or {@code null} if not found
+    * @return the updated uppgift
+    * @throws UppgiftNotFoundException if no uppgift with the given id exists
     */
    UppgiftEntity unassignUppgift(UUID id);
 
    /**
     * Updates the handläggare assignment on an existing uppgift.
-    * Returns {@code null} if the uppgift does not exist.
     *
-    * @param id          the uppgift UUID to update
+    * @param id           the uppgift UUID to update
     * @param handlaggarId the new handläggare identity, or {@code null} to clear
-    * @return the updated uppgift, or {@code null} if not found
+    * @return the updated uppgift
+    * @throws UppgiftNotFoundException if no uppgift with the given id exists
     */
    UppgiftEntity updateUppgift(UUID id, Idtyp handlaggarId);
 
