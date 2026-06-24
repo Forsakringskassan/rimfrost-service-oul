@@ -38,6 +38,15 @@ public class OulManagementTest extends OulTestBase
       assertEquals(createUppgiftRequest.getProcessInfo().getReplyTopic(), createResponse.getProcessInfo().getReplyTopic());
    }
 
+   @Test
+   public void should_return_400_when_process_info_is_null_during_create_uppgift()
+   {
+      var handlaggningId = UUID.randomUUID();
+      var createUppgiftRequest = newCreateUppgiftRequest(handlaggningId);
+      createUppgiftRequest.setProcessInfo(null);
+      sendCreateUppgiftRequest(createUppgiftRequest, 400);
+   }
+
    @ParameterizedTest
    @CsvSource(
    {

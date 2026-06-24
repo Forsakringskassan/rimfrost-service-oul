@@ -65,7 +65,7 @@ public class ManagementMapper
 
    public SorteringsordningResponse toSorteringsordningResponse(SorteringsordningEntity entity)
    {
-      return new SorteringsordningResponse(entity.id(), entity.skapad(), entity.entries());
+      return new SorteringsordningResponse(entity.id(), entity.skapad(), entity.namn(), entity.entries());
    }
 
    public List<OperativUppgift> toOperativUppgiftList(List<UppgiftDto> uppgiftDtoList)

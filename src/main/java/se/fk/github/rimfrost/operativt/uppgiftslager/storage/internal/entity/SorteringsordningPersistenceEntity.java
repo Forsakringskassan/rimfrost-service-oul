@@ -37,6 +37,9 @@ public class SorteringsordningPersistenceEntity
    @Column(nullable = false)
    private Instant updatedAt;
 
+   @Column(nullable = false)
+   private String namn;
+
    @Column(nullable = false, columnDefinition = "text")
    @Convert(converter = SorteringsordningEntriesConverter.class)
    private List<SorteringsordningEntry> entries;
@@ -112,6 +115,22 @@ public class SorteringsordningPersistenceEntity
    public Instant getUpdatedAt()
    {
       return updatedAt;
+   }
+
+   /**
+    * @return String the name of this sorteringsordning
+    */
+   public String getNamn()
+   {
+      return namn;
+   }
+
+   /**
+    * @param namn the name to store
+    */
+   public void setNamn(String namn)
+   {
+      this.namn = namn;
    }
 
    /**

@@ -241,6 +241,7 @@ public class PanacheOulDataStorage implements OulDataStorage
       var jpaEntity = new SorteringsordningPersistenceEntity();
       jpaEntity.setId(entity.id());
       jpaEntity.setCreatedAt(entity.skapad().toInstant());
+      jpaEntity.setNamn(entity.namn());
       jpaEntity.setEntries(entity.entries());
       sorteringsordningRepository.persist(jpaEntity);
 

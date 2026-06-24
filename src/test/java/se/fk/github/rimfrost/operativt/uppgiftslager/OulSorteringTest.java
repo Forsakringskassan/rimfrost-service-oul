@@ -10,8 +10,10 @@ import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.SorteringsordningEntry;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.SorteringsordningField;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.SorteringsordningPage;
+import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.SorteringsordningResponse;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.SorteringsordningSpec;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.UppgiftPage;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -25,11 +27,45 @@ public class OulSorteringTest extends OulTestBase
    @DisplayName("OUL-FR-09.1, OUL-FR-09.4: Skapa sorteringsordning — svar innehåller genererat id och skapad-tidpunkt")
    public void should_create_sorteringsordning()
    {
-      var response = sendCreateSorteringsordningRequest(newSorteringsordningSpec());
+      var sorteringsordningSpec = newSorteringsordningSpec();
+      var response = sendCreateSorteringsordningRequest(sorteringsordningSpec);
 
       assertNotNull(response.getId());
       assertNotNull(response.getSkapad());
+      assertEquals(sorteringsordningSpec.getNamn(), response.getNamn());
       assertEquals(1, response.getEntries().size());
+   }
+
+   @Test
+   public void should_return_400_when_namn_is_empty_during_create_sorteringsordning()
+   {
+      var sorteringsordningSpec = newSorteringsordningSpec();
+      sorteringsordningSpec.setNamn("");
+      sendCreateSorteringsordningRequest(sorteringsordningSpec, 400);
+   }
+
+   @Test
+   public void should_return_400_when_namn_is_null_during_create_sorteringsordning()
+   {
+      var sorteringsordningSpec = newSorteringsordningSpec();
+      sorteringsordningSpec.setNamn(null);
+      sendCreateSorteringsordningRequest(sorteringsordningSpec, 400);
+   }
+
+   @Test
+   public void should_return_400_when_entries_is_empty_during_create_sorteringsordning()
+   {
+      var sorteringsordningSpec = newSorteringsordningSpec();
+      sorteringsordningSpec.setEntries(List.of());
+      sendCreateSorteringsordningRequest(sorteringsordningSpec, 400);
+   }
+
+   @Test
+   public void should_return_400_when_entries_is_null_during_create_sorteringsordning()
+   {
+      var sorteringsordningSpec = newSorteringsordningSpec();
+      sorteringsordningSpec.setNamn(null);
+      sendCreateSorteringsordningRequest(sorteringsordningSpec, 400);
    }
 
    @Test
@@ -68,7 +104,7 @@ public class OulSorteringTest extends OulTestBase
 
       assertEquals(2, page.getTotal());
       assertEquals(2, page.getItems().size());
-      var ids = page.getItems().stream().map(s -> s.getId()).toList();
+      var ids = page.getItems().stream().map(SorteringsordningResponse::getId).toList();
       assertTrue(ids.contains(first.getId()));
       assertTrue(ids.contains(second.getId()));
    }
@@ -121,6 +157,7 @@ public class OulSorteringTest extends OulTestBase
 
       assertEquals(created.getId(), fetched.getId());
       assertEquals(created.getSkapad(), fetched.getSkapad());
+      assertEquals(created.getNamn(), fetched.getNamn());
    }
 
    @Test
@@ -253,14 +290,14 @@ public class OulSorteringTest extends OulTestBase
    @DisplayName("OUL-FR-11.2: Lista sorteringsordningar — saknat limit-param ger HTTP 400")
    public void should_return_400_when_limit_is_missing()
    {
-      getSorteringsordningar(null, 400);
+      getSorteringsordningarWithExpectedStatus(null, 400);
    }
 
    @Test
    @DisplayName("OUL-FR-11.2: Lista sorteringsordningar — limit=0 ger HTTP 400")
    public void should_return_400_when_limit_is_zero()
    {
-      getSorteringsordningar(0, 400);
+      getSorteringsordningarWithExpectedStatus(0, 400);
    }
 
    @Test
@@ -273,6 +310,7 @@ public class OulSorteringTest extends OulTestBase
       var entry = new SorteringsordningEntry();
       entry.setSortBy(sortBy);
       var spec = new SorteringsordningSpec();
+      spec.setNamn("namn");
       spec.setEntries(List.of(entry));
 
       var created = sendCreateSorteringsordningRequest(spec);

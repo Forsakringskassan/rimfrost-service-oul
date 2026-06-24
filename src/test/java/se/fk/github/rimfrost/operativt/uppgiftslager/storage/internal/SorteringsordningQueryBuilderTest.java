@@ -66,7 +66,7 @@ public class SorteringsordningQueryBuilderTest
    @DisplayName("Null entries ger fallback-query")
    public void null_entries_returns_fallback_query()
    {
-      var entity = new SorteringsordningEntity(null, null, null);
+      var entity = new SorteringsordningEntity(null, null, null, null);
       var built = builder.build(entity);
 
       assertTrue(built.pageSql().contains("ORDER BY created_at ASC"));
@@ -550,7 +550,7 @@ public class SorteringsordningQueryBuilderTest
 
    private static SorteringsordningEntity entity(List<SorteringsordningEntry> entries)
    {
-      return new SorteringsordningEntity(UUID.randomUUID(), OffsetDateTime.now(), entries);
+      return new SorteringsordningEntity(UUID.randomUUID(), OffsetDateTime.now(), UUID.randomUUID().toString(), entries);
    }
 
    private static SorteringsordningEntry catchAll()
