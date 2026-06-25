@@ -117,7 +117,7 @@ public class OperativtUppgiftslagerService
       else
       {
          sorteringsordning = storage.getDefaultSorteringsordning()
-               .orElse(new SorteringsordningEntity(null, null, List.of()));
+               .orElse(new SorteringsordningEntity(null, null, null, List.of()));
       }
 
       var page = storage.findUppgifterPage(sorteringsordning, limit, offset);
@@ -141,7 +141,7 @@ public class OperativtUppgiftslagerService
             .varde(handlaggarId)
             .build();
       var sorteringsordning = storage.getDefaultSorteringsordning()
-            .orElse(new SorteringsordningEntity(null, null, List.of()));
+            .orElse(new SorteringsordningEntity(null, null, null, List.of()));
       var uppgifter = storage.findAllUppgifterByHandlaggarId(handlaggare, sorteringsordning);
       return uppgifter.stream().map(logicMapper::toUppgiftDto).toList();
    }
@@ -158,7 +158,7 @@ public class OperativtUppgiftslagerService
       log.info("Getting all team tasks for handlaggarId: {}", callerHandlaggare.varde());
       var teamMembers = teamService.teamMembers();
       var sorteringsordning = storage.getDefaultSorteringsordning()
-            .orElse(new SorteringsordningEntity(null, null, List.of()));
+            .orElse(new SorteringsordningEntity(null, null, null, List.of()));
       var uppgifter = storage.findAllUppgifterByTeam(teamMembers, sorteringsordning);
       return uppgifter.stream().map(logicMapper::toUppgiftDto).toList();
    }
@@ -202,7 +202,7 @@ public class OperativtUppgiftslagerService
             .varde(handlaggarId)
             .build();
       var sorteringsordning = storage.getDefaultSorteringsordning()
-            .orElse(new SorteringsordningEntity(null, null, List.of()));
+            .orElse(new SorteringsordningEntity(null, null, null, List.of()));
       var uppgift = storage.assignNewUppgift(handlaggare, sorteringsordning);
 
       if (uppgift == null)
@@ -256,7 +256,7 @@ public class OperativtUppgiftslagerService
     */
    public SortedUppgiftPage previewSorteringsordning(SorteringsordningSpec spec, int limit, int offset)
    {
-      var entity = new SorteringsordningEntity(null, null, spec.getEntries());
+      var entity = new SorteringsordningEntity(null, null, spec.getNamn(), spec.getEntries());
       var page = storage.findUppgifterPage(entity, limit, offset);
       var items = page.items().stream().map(logicMapper::toUppgiftDto).toList();
       return new SortedUppgiftPage(page.total(), items);
@@ -265,7 +265,7 @@ public class OperativtUppgiftslagerService
    public SorteringsordningEntity createSorteringsordning(SorteringsordningSpec spec)
    {
       var entity = new SorteringsordningEntity(UUID.randomUUID(), OffsetDateTime.now().truncatedTo(ChronoUnit.MICROS),
-            spec.getEntries());
+            spec.getNamn(), spec.getEntries());
       storage.saveSorteringsordning(entity);
       return entity;
    }

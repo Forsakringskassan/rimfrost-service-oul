@@ -63,6 +63,13 @@ public abstract class OulTestBase
             .extract().as(UppgiftResponse.class);
    }
 
+   public void sendCreateUppgiftRequest(CreateUppgiftRequest createUppgiftRequest, int expectedStatusCode)
+   {
+      given().contentType(ContentType.JSON).body(createUppgiftRequest)
+            .when().post("/uppgifter")
+            .then().statusCode(expectedStatusCode);
+   }
+
    public static UppgiftResponse sendEndUppgiftRequest(UUID uppgiftId, EndUppgiftRequest endUppgiftRequest)
    {
       return given().contentType(ContentType.JSON).body(endUppgiftRequest)
@@ -265,7 +272,7 @@ public abstract class OulTestBase
             .extract().as(SorteringsordningPage.class);
    }
 
-   public static void getSorteringsordningar(Integer limit, int expectedStatus)
+   public static void getSorteringsordningarWithExpectedStatus(Integer limit, int expectedStatus)
    {
       var req = given().contentType(ContentType.JSON);
       if (limit != null)

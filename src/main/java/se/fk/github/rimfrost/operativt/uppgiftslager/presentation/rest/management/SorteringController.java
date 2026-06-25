@@ -2,8 +2,11 @@ package se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.manageme
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
@@ -13,7 +16,6 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
 import org.jboss.resteasy.reactive.ResponseStatus;
@@ -44,7 +46,7 @@ public class SorteringController implements SorteringsordningApi
    @Override
    @POST
    @ResponseStatus(201)
-   public SorteringsordningResponse createSorteringsordning(@NotNull SorteringsordningSpec sorteringsordningSpec)
+   public SorteringsordningResponse createSorteringsordning(@Valid @NotNull SorteringsordningSpec sorteringsordningSpec)
    {
       var entity = operativtUppgiftslagerService.createSorteringsordning(sorteringsordningSpec);
       return managementMapper.toSorteringsordningResponse(entity);
@@ -53,7 +55,7 @@ public class SorteringController implements SorteringsordningApi
    @Override
    @GET
    public SorteringsordningPage getSorteringsordningar(@QueryParam("limit") @NotNull @Min(1) Integer limit,
-         @QueryParam("offset") @Min(0) Integer offset)
+         @QueryParam("offset") @DefaultValue("0") @Min(0) Integer offset)
    {
       if (limit == null)
       {
@@ -87,8 +89,8 @@ public class SorteringController implements SorteringsordningApi
    @POST
    @Path("/preview")
    public UppgiftPage previewSorteringsordning(@QueryParam("limit") @NotNull @Min(1) Integer limit,
-         @NotNull SorteringsordningSpec sorteringsordningSpec,
-         @QueryParam("offset") @Min(0) Integer offset)
+         @Valid @NotNull SorteringsordningSpec sorteringsordningSpec,
+         @QueryParam("offset") @DefaultValue("0") @Min(0) Integer offset)
    {
       var page = operativtUppgiftslagerService.previewSorteringsordning(
             sorteringsordningSpec, limit, offset != null ? offset : 0);

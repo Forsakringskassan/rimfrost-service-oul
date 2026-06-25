@@ -167,6 +167,7 @@ public class OulUppgifterSortTest extends OulTestBase
       entry.setConstraints((List<Constraint>) (List<?>) List.of(constraint));
 
       var spec = new SorteringsordningSpec();
+      spec.setNamn(UUID.randomUUID().toString());
       spec.setEntries(List.of(entry));
       return spec;
    }

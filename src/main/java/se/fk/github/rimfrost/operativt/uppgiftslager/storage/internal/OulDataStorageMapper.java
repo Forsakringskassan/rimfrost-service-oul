@@ -144,6 +144,7 @@ public class OulDataStorageMapper
     */
    public SorteringsordningEntity toSorteringsordningEntity(SorteringsordningPersistenceEntity entity)
    {
-      return new SorteringsordningEntity(entity.getId(), entity.getCreatedAt().atOffset(ZoneOffset.UTC), entity.getEntries());
+      return new SorteringsordningEntity(entity.getId(), entity.getCreatedAt().atOffset(ZoneOffset.UTC), entity.getNamn(),
+            entity.getEntries());
    }
 }

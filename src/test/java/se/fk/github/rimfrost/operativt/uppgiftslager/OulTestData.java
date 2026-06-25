@@ -66,6 +66,7 @@ public class OulTestData
    {
       var entry = new SorteringsordningEntry();
       var spec = new SorteringsordningSpec();
+      spec.setNamn(UUID.randomUUID().toString());
       spec.setEntries(List.of(entry));
       return spec;
    }
@@ -115,6 +116,7 @@ public class OulTestData
       var catchAllEntry = new SorteringsordningEntry();
 
       var spec = new SorteringsordningSpec();
+      spec.setNamn(UUID.randomUUID().toString());
       spec.setEntries(List.of(priorityEntry, catchAllEntry));
       return spec;
    }
@@ -138,6 +140,7 @@ public class OulTestData
       entry.setSortBy(sortBy);
 
       var spec = new SorteringsordningSpec();
+      spec.setNamn(UUID.randomUUID().toString());
       spec.setEntries(List.of(entry));
       return spec;
    }
