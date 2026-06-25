@@ -2,6 +2,12 @@
 
 Changelog of rimfrost-service-oul.
 
+## 1.4.1 (2026-06-25)
+
+### Bug Fixes
+
+-  Fix null issue with sorteringsordning namn migration ([84678](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/846780360727b1c) Lars Persson)  
+
 ## 1.4.0 (2026-06-25)
 
 ### Features
