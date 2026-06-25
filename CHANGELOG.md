@@ -2,6 +2,12 @@
 
 Changelog of rimfrost-service-oul.
 
+## 1.4.0 (2026-06-25)
+
+### Features
+
+-  Add support for including a name with sorteringsordning ([820e5](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/820e58b427af725) Lars Persson)  
+
 ## 1.3.0 (2026-06-22)
 
 ### Features
