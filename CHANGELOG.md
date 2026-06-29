@@ -2,6 +2,13 @@
 
 Changelog of rimfrost-service-oul.
 
+## 1.4.2 (2026-06-29)
+
+### Bug Fixes
+
+-  Improve ValidationException handling ([10c51](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/10c5195221d4739) Lars Persson)  
+-  Add index-dependency properties for jaxrs specs ([e35cd](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/e35cdc249e55bae) Lars Persson)  
+
 ## 1.4.1 (2026-06-25)
 
 ### Bug Fixes
