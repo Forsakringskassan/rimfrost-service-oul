@@ -43,6 +43,12 @@ public abstract class OulTestBase
    @BeforeEach
    public void resetOul()
    {
+      var wireMockServer = WireMockTestResource.getWireMockServer();
+      if (wireMockServer != null && wireMockServer.isRunning())
+      {
+         wireMockServer.resetToDefaultMappings();
+      }
+
       RestAssured.config = RestAssuredConfig.config().objectMapperConfig(
             ObjectMapperConfig.objectMapperConfig().jackson2ObjectMapperFactory((cls, charset) -> objectMapper));
       storageTestCleaner.clearAll();
@@ -139,6 +145,20 @@ public abstract class OulTestBase
             .header("Authorization", bearerToken(handlaggarId))
             .when().post("/uppgifter/handlaggare")
             .then().statusCode(200).extract().as(PostUppgifterHandlaggareResponse.class);
+   }
+
+   /**
+    * Assigns a new task to the given handläggare via POST /uppgifter/handlaggare.
+    *
+    * @param handlaggarId the handläggare varde
+    * @param expectedStatusCode the expected response status code
+    */
+   public static void assignTaskToHandlaggare(UUID handlaggarId, int expectedStatusCode)
+   {
+      given().contentType(ContentType.JSON)
+            .header("Authorization", bearerToken(handlaggarId))
+            .when().post("/uppgifter/handlaggare")
+            .then().statusCode(expectedStatusCode);
    }
 
    public static OperativUppgift unassignTask(UUID uppgiftId)

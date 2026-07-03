@@ -1,5 +1,6 @@
 package se.fk.github.rimfrost.operativt.uppgiftslager;
 
+import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.DisplayName;
@@ -22,6 +23,10 @@ import static se.fk.github.rimfrost.operativt.uppgiftslager.OulTestData.newSorte
 import static se.fk.github.rimfrost.operativt.uppgiftslager.OulTestData.newSorteringsordningSpec;
 
 @QuarkusTest
+@QuarkusTestResource.List(
+{
+      @QuarkusTestResource(WireMockTestResource.class)
+})
 public class OulUppgifterSortTest extends OulTestBase
 {
    @Inject

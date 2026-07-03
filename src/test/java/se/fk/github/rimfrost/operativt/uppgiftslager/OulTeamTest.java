@@ -1,5 +1,6 @@
 package se.fk.github.rimfrost.operativt.uppgiftslager;
 
+import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -19,6 +20,10 @@ import static se.fk.github.rimfrost.operativt.uppgiftslager.OulTestData.oulHandl
  * Integration tests for team-based task listing (AC1) and reassignment (AC5, AC6, AC7).
  */
 @QuarkusTest
+@QuarkusTestResource.List(
+{
+      @QuarkusTestResource(WireMockTestResource.class)
+})
 public class OulTeamTest extends OulTestBase
 {
    @Test

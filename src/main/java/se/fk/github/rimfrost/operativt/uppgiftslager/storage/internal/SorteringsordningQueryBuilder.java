@@ -1,13 +1,13 @@
 package se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal;
 
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -233,13 +233,28 @@ public class SorteringsordningQueryBuilder
     * @param sorteringsordning the sort specification that determines task priority
     * @return a {@link BuiltQuery} with {@code pageSql} ready to be executed (no {@code countSql})
     */
-   public BuiltQuery buildAssignQuery(SorteringsordningEntity sorteringsordning)
+   public BuiltQuery buildAssignQuery(SorteringsordningEntity sorteringsordning, List<UUID> excludeUppgiftIds)
    {
       var entries = sorteringsordning.entries();
       Map<String, Object> params = new HashMap<>();
 
       var table = schema + ".uppgift";
-      var unassignedFilter = "handlaggar_id_typ_id IS NULL AND handlaggar_id_varde IS NULL";
+      StringBuilder unassignedFilter = new StringBuilder("handlaggar_id_typ_id IS NULL AND handlaggar_id_varde IS NULL");
+
+      if (excludeUppgiftIds != null && !excludeUppgiftIds.isEmpty())
+      {
+         unassignedFilter.append(" AND id NOT IN (");
+
+         for (int i = 0; i < excludeUppgiftIds.size(); i++)
+         {
+            var key = "excl_id_" + i;
+
+            unassignedFilter.append(i == 0 ? "" : ", ").append(":").append(key);
+            params.put(key, excludeUppgiftIds.get(i));
+         }
+
+         unassignedFilter.append(")");
+      }
 
       if (entries == null || entries.isEmpty())
       {

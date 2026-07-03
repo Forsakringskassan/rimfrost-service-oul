@@ -4,12 +4,13 @@ import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import se.fk.github.rimfrost.operativt.uppgiftslager.logic.SortedUppgiftPage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.SorteringsordningEntity;
+import se.fk.github.rimfrost.operativt.uppgiftslager.storage.exception.SidUppgiftException;
+import se.fk.github.rimfrost.operativt.uppgiftslager.storage.exception.UppgiftNotFoundException;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.SorteringsordningSpec;
 import se.fk.github.rimfrost.operativt.uppgiftslager.integration.kafka.OperativtUppgiftslagerProducer;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.Idtyp;
@@ -73,7 +74,7 @@ public class OperativtUppgiftslagerService
 
    /**
     * Ends the given uppgift with the provided reason.
-    * Throws {@link se.fk.github.rimfrost.operativt.uppgiftslager.storage.UppgiftNotFoundException} (→ HTTP 404) if the uppgift does not exist.
+    * Throws {@link UppgiftNotFoundException} (→ HTTP 404) if the uppgift does not exist.
     *
     * @param uppgiftId the uppgift to end
     * @param reason    the reason for ending the uppgift
@@ -165,7 +166,7 @@ public class OperativtUppgiftslagerService
 
    /**
     * Reassigns the given uppgift to the calling handläggare.
-    * Throws {@link se.fk.github.rimfrost.operativt.uppgiftslager.storage.UppgiftNotFoundException} (→ HTTP 404) if the uppgift does not exist.
+    * Throws {@link UppgiftNotFoundException} (→ HTTP 404) if the uppgift does not exist.
     * Throws {@link NotTeamMemberException} (→ HTTP 403) if the current assignee is not a team member.
     *
     * @param uppgiftId         the uppgift to reassign
@@ -203,7 +204,21 @@ public class OperativtUppgiftslagerService
             .build();
       var sorteringsordning = storage.getDefaultSorteringsordning()
             .orElse(new SorteringsordningEntity(null, null, null, List.of()));
-      var uppgift = storage.assignNewUppgift(handlaggare, sorteringsordning);
+
+      UppgiftEntity uppgift;
+      List<UUID> excludedUppgiftIds = new ArrayList<>();
+      while (true)
+      {
+         try
+         {
+            uppgift = storage.assignNewUppgift(handlaggare, sorteringsordning, excludedUppgiftIds);
+            break;
+         }
+         catch (SidUppgiftException e)
+         {
+            excludedUppgiftIds.add(e.getUppgiftsId());
+         }
+      }
 
       if (uppgift == null)
       {
@@ -218,7 +233,7 @@ public class OperativtUppgiftslagerService
 
    /**
     * Removes the handläggare assignment from the given uppgift.
-    * Throws {@link se.fk.github.rimfrost.operativt.uppgiftslager.storage.UppgiftNotFoundException} (→ HTTP 404) if the uppgift does not exist.
+    * Throws {@link UppgiftNotFoundException} (→ HTTP 404) if the uppgift does not exist.
     *
     * @param uppgiftId the uppgift to unassign
     * @return the updated uppgift
@@ -232,7 +247,7 @@ public class OperativtUppgiftslagerService
 
    /**
     * Updates the handläggare assignment on the given uppgift.
-    * Throws {@link se.fk.github.rimfrost.operativt.uppgiftslager.storage.UppgiftNotFoundException} (→ HTTP 404) if the uppgift does not exist.
+    * Throws {@link UppgiftNotFoundException} (→ HTTP 404) if the uppgift does not exist.
     *
     * @param uppgiftId    the uppgift to update
     * @param handlaggarId the new handläggare identity, or {@code null} to clear
