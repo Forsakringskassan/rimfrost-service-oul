@@ -1,5 +1,6 @@
 package se.fk.github.rimfrost.operativt.uppgiftslager;
 
+import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -19,6 +20,10 @@ import static se.fk.github.rimfrost.operativt.uppgiftslager.OulTestData.newEndUp
 import static se.fk.github.rimfrost.operativt.uppgiftslager.OulTestData.oulHandlaggareTypId;
 
 @QuarkusTest
+@QuarkusTestResource.List(
+{
+      @QuarkusTestResource(WireMockTestResource.class)
+})
 public class OulManagementTest extends OulTestBase
 {
    @Test

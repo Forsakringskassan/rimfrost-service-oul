@@ -3,7 +3,7 @@ package se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.exceptio
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
-import se.fk.github.rimfrost.operativt.uppgiftslager.storage.UppgiftNotFoundException;
+import se.fk.github.rimfrost.operativt.uppgiftslager.storage.exception.UppgiftNotFoundException;
 
 /**
  * Maps {@link UppgiftNotFoundException} to HTTP 404 Not Found.

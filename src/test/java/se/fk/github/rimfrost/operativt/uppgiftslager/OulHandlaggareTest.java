@@ -1,7 +1,14 @@
 package se.fk.github.rimfrost.operativt.uppgiftslager;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.TextNode;
+import com.github.tomakehurst.wiremock.WireMockServer;
+import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.stubbing.Scenario;
+import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.smallrye.reactive.messaging.kafka.api.OutgoingKafkaRecordMetadata;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.OperativUppgift;
@@ -19,8 +26,20 @@ import static se.fk.github.rimfrost.operativt.uppgiftslager.OulTestData.newSorte
 import static se.fk.github.rimfrost.operativt.uppgiftslager.OulTestData.oulHandlaggareTypId;
 
 @QuarkusTest
+@QuarkusTestResource.List(
+{
+      @QuarkusTestResource(WireMockTestResource.class)
+})
 public class OulHandlaggareTest extends OulTestBase
 {
+   private static WireMockServer wireMockServer;
+
+   @BeforeAll
+   static void setup()
+   {
+      wireMockServer = WireMockTestResource.getWireMockServer();
+   }
+
    @Test
    @DisplayName("OUL-FR-04.1, OUL-FR-04.2, OUL-FR-04.3, OUL-FR-04.5, OUL-FR-06.1, OUL-FR-06.2, OUL-FR-06.3: Hämta ny uppgift — tilldelas handläggare med status TILLDELAD och Kafka-notis publiceras med korrekt innehåll")
    public void should_assign_task_to_handlaggare()
@@ -190,6 +209,74 @@ public class OulHandlaggareTest extends OulTestBase
       assertNotNull(assignResponse.getOperativUppgift());
       assertEquals("PRIO", assignResponse.getOperativUppgift().getRoll());
       assertEquals(highResponse.getUppgiftId(), assignResponse.getOperativUppgift().getUppgiftId());
+   }
+
+   @Test
+   @DisplayName("OUL-FR-04.6: Hämta ny uppgift — hoppar över att tilldela tillgänglig uppgift p.g.a. att uppgift är sid markerad")
+   public void should_skip_assign_of_uppgift_when_sid_uppgift_and_not_sid_handlaggare()
+   {
+      wireMockServer.stubFor(WireMock.post(WireMock.urlPathEqualTo("/sid/status"))
+            .willReturn(WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json")
+                  .withBody("{\"sid\":true}")));
+
+      var handlaggareId = UUID.randomUUID();
+
+      sendCreateUppgiftRequest(newCreateUppgiftRequest(UUID.randomUUID()));
+      var assignResponse = assignTaskToHandlaggare(handlaggareId);
+      assertNull(assignResponse.getOperativUppgift());
+   }
+
+   @Test
+   @DisplayName("OUL-FR-04.6: Hämta ny uppgift — hoppar över första tillgänglig uppgift p.g.a. att uppgift är sid markerad och väljer nästa")
+   public void should_assign_next_uppgift_when_first_is_sid_uppgift_and_not_sid_handlaggare()
+   {
+      wireMockServer.stubFor(WireMock.post(WireMock.urlPathEqualTo("/sid/status"))
+            .inScenario("Sid Scenario")
+            .whenScenarioStateIs(Scenario.STARTED)
+            .willReturn(
+                  WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json").withBody("{\"sid\":true}"))
+            .willSetStateTo("Not Sid"));
+
+      wireMockServer.stubFor(WireMock.post(WireMock.urlPathEqualTo("/sid/status"))
+            .inScenario("Sid Scenario")
+            .whenScenarioStateIs("Not Sid")
+            .willReturn(
+                  WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json").withBody("{\"sid\":false}"))
+            .willSetStateTo("Not Sid"));
+
+      var handlaggareId = UUID.randomUUID();
+
+      sendCreateUppgiftRequest(newCreateUppgiftRequest(UUID.randomUUID()));
+      var expectedUppgiftResponse = sendCreateUppgiftRequest(newCreateUppgiftRequest(UUID.randomUUID()));
+      var assignResponse = assignTaskToHandlaggare(handlaggareId);
+      assertNotNull(assignResponse.getOperativUppgift());
+      assertEquals(expectedUppgiftResponse.getUppgiftId(), assignResponse.getOperativUppgift().getUppgiftId());
+   }
+
+   @Test
+   @DisplayName("OUL-FR-04.6: Hämta ny uppgift — ger status 500 när läsning av handläggning misslyckas")
+   public void should_return_500_on_assign_uppgift_when_handlaggning_read_fails()
+   {
+      wireMockServer.stubFor(WireMock.get(WireMock.urlPathMatching("/handlaggning/.+"))
+            .willReturn(WireMock.aResponse().withStatus(500)));
+
+      var handlaggareId = UUID.randomUUID();
+
+      sendCreateUppgiftRequest(newCreateUppgiftRequest(UUID.randomUUID()));
+      assignTaskToHandlaggare(handlaggareId, 500);
+   }
+
+   @Test
+   @DisplayName("OUL-FR-04.6: Hämta ny uppgift — ger status 500 när läsning av sid status misslyckas")
+   public void should_return_500_on_assign_uppgift_when_sid_status_read_fails()
+   {
+      wireMockServer.stubFor(WireMock.post(WireMock.urlPathMatching("/sid/status"))
+            .willReturn(WireMock.aResponse().withStatus(500)));
+
+      var handlaggareId = UUID.randomUUID();
+
+      sendCreateUppgiftRequest(newCreateUppgiftRequest(UUID.randomUUID()));
+      assignTaskToHandlaggare(handlaggareId, 500);
    }
 
    private se.fk.rimfrost.Idtyp createKafkaIdTyp(UUID handlaggareId)

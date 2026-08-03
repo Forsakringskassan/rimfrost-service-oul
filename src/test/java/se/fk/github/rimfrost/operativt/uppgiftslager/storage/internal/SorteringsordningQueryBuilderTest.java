@@ -22,6 +22,7 @@ import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.SorteringsordningFieldEq;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.SorteringsordningFieldString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -495,7 +496,7 @@ public class SorteringsordningQueryBuilderTest
    @DisplayName("buildAssignQuery: filtrerar på handlaggar_id IS NULL")
    public void assign_query_filters_unassigned_rows()
    {
-      var built = builder.buildAssignQuery(entity(List.of()));
+      var built = builder.buildAssignQuery(entity(List.of()), List.of());
 
       assertTrue(built.pageSql().contains("handlaggar_id_typ_id IS NULL"));
       assertTrue(built.pageSql().contains("handlaggar_id_varde IS NULL"));
@@ -509,7 +510,7 @@ public class SorteringsordningQueryBuilderTest
    @DisplayName("buildAssignQuery: tom entry-lista ger fallback LIMIT 1 FOR UPDATE SKIP LOCKED")
    public void assign_query_empty_entries_falls_back_to_created_at()
    {
-      var built = builder.buildAssignQuery(entity(List.of()));
+      var built = builder.buildAssignQuery(entity(List.of()), List.of());
 
       assertTrue(built.pageSql().contains("ORDER BY created_at ASC"));
       assertTrue(built.pageSql().contains("LIMIT 1"));
@@ -527,7 +528,7 @@ public class SorteringsordningQueryBuilderTest
    public void assign_query_with_entries_uses_cte_with_locking_inside()
    {
       var entry = entryWithConstraints(eqConstraint(SorteringsordningFieldEq.ROLL, "PRIO"));
-      var built = builder.buildAssignQuery(entity(List.of(entry)));
+      var built = builder.buildAssignQuery(entity(List.of(entry)), List.of());
 
       assertTrue(built.pageSql().startsWith("WITH candidate AS ("));
       assertTrue(built.pageSql().contains("ranked.sort_group"));
@@ -541,9 +542,48 @@ public class SorteringsordningQueryBuilderTest
    @DisplayName("buildAssignQuery: countSql är null")
    public void assign_query_has_no_count_sql()
    {
-      var built = builder.buildAssignQuery(entity(List.of()));
+      var built = builder.buildAssignQuery(entity(List.of()), List.of());
 
       assertNull(built.countSql());
+   }
+
+   /**
+    * {@code buildAssignQuery} must not include id condition on empty exclude list.
+    */
+   @Test
+   @DisplayName("buildAssignQuery: id exclusion list is not present")
+   public void assign_query_has_no_id_exclusion_condition_on_empty_exclude_list()
+   {
+      var built = builder.buildAssignQuery(entity(List.of()), List.of());
+
+      assertFalse(built.pageSql().contains("handlaggar_id_varde IS NULL AND id NOT IN ("));
+   }
+
+   /**
+    * {@code buildAssignQuery} must include id condition on non-empty exclude list.
+    */
+   @Test
+   @DisplayName("buildAssignQuery: id exclusion list is present")
+   public void assign_query_has_id_exclusion_condition_on_non_empty_exclude_list()
+   {
+      var built = builder.buildAssignQuery(entity(List.of()), List.of(UUID.randomUUID()));
+
+      assertTrue(built.pageSql().contains("handlaggar_id_varde IS NULL AND id NOT IN ("));
+   }
+
+   /**
+    * {@code buildAssignQuery} must include correct number of params and correct values with exclude list.
+    */
+   @Test
+   @DisplayName("buildAssignQuery: params count and values are correct with exclude list")
+   public void assign_query_has_correct_parameter_count_on_non_empty_exclude_list()
+   {
+      var excludedId = UUID.randomUUID();
+      var built = builder.buildAssignQuery(entity(List.of()), List.of(excludedId));
+
+      assertEquals(1, built.params().size());
+      assertTrue(built.params().containsKey("excl_id_0"));
+      assertEquals(excludedId, built.params().get("excl_id_0"));
    }
 
    // --- builders ---

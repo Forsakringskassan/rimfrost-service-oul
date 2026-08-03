@@ -1,5 +1,6 @@
 package se.fk.github.rimfrost.operativt.uppgiftslager;
 
+import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 
 import java.util.UUID;
@@ -12,6 +13,10 @@ import static se.fk.github.rimfrost.operativt.uppgiftslager.OulTestData.newCreat
 import static se.fk.github.rimfrost.operativt.uppgiftslager.OulTestData.newEndUppgiftRequest;
 
 @QuarkusTest
+@QuarkusTestResource.List(
+{
+      @QuarkusTestResource(WireMockTestResource.class)
+})
 public class OulSequenceTest extends OulTestBase
 {
    @Test

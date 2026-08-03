@@ -4,6 +4,8 @@ import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.SorteringsordningEntityPage;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.UppgiftEntityPage;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.Idtyp;
@@ -11,19 +13,25 @@ import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.Sorteringsordn
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.UppgiftEntity;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.enums.UppgiftStatus;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.OulDataStorage;
+import se.fk.github.rimfrost.operativt.uppgiftslager.storage.exception.HandlaggningReadException;
+import se.fk.github.rimfrost.operativt.uppgiftslager.storage.exception.SidStatusException;
+import se.fk.github.rimfrost.operativt.uppgiftslager.storage.exception.SidUppgiftException;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.entity.DefaultSorteringsordningEntity;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.entity.SorteringsordningPersistenceEntity;
-import se.fk.github.rimfrost.operativt.uppgiftslager.storage.SorteringsordningIsDefaultException;
-import se.fk.github.rimfrost.operativt.uppgiftslager.storage.SorteringsordningNotFoundException;
-import se.fk.github.rimfrost.operativt.uppgiftslager.storage.UppgiftNotFoundException;
+import se.fk.github.rimfrost.operativt.uppgiftslager.storage.exception.SorteringsordningIsDefaultException;
+import se.fk.github.rimfrost.operativt.uppgiftslager.storage.exception.SorteringsordningNotFoundException;
+import se.fk.github.rimfrost.operativt.uppgiftslager.storage.exception.UppgiftNotFoundException;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.repository.DefaultSorteringsordningRepository;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.repository.SorteringsordningRepository;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.repository.UppgiftRepository;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import se.fk.rimfrost.framework.handlaggning.adapter.HandlaggningAdapter;
+import se.fk.rimfrost.framework.handlaggning.exception.HandlaggningException;
+import se.fk.rimfrost.framework.sid.adapter.SidAdapter;
+import se.fk.rimfrost.framework.sid.exception.SidException;
 
 /**
  * JPA/Panache implementation of {@link OulDataStorage}.
@@ -34,6 +42,8 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 @Transactional
 public class PanacheOulDataStorage implements OulDataStorage
 {
+   private final static Logger LOGGER = LoggerFactory.getLogger(PanacheOulDataStorage.class);
+
    @Inject
    UppgiftRepository uppgiftRepository;
 
@@ -48,6 +58,12 @@ public class PanacheOulDataStorage implements OulDataStorage
 
    @Inject
    SorteringsordningQueryBuilder queryBuilder;
+
+   @Inject
+   HandlaggningAdapter handlaggningAdapter;
+
+   @Inject
+   SidAdapter sidAdapter;
 
    @ConfigProperty(name = "oul.uppgift.count-cache-ttl-ms", defaultValue = "5000")
    long countCacheTtlMs;
@@ -162,9 +178,10 @@ public class PanacheOulDataStorage implements OulDataStorage
     * returns empty and the method returns {@code null}.
     */
    @Override
-   public UppgiftEntity assignNewUppgift(Idtyp handlaggarId, SorteringsordningEntity sorteringsordning)
+   public UppgiftEntity assignNewUppgift(Idtyp handlaggarId, SorteringsordningEntity sorteringsordning,
+         List<UUID> excludeUppgiftIds)
    {
-      var built = queryBuilder.buildAssignQuery(sorteringsordning);
+      var built = queryBuilder.buildAssignQuery(sorteringsordning, excludeUppgiftIds);
       var em = uppgiftRepository.getEntityManager();
       var selectQuery = em.createNativeQuery(built.pageSql(),
             se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.entity.UppgiftEntity.class);
@@ -180,6 +197,14 @@ public class PanacheOulDataStorage implements OulDataStorage
       }
 
       var uppgift = results.getFirst();
+
+      if (containsSid(uppgift))
+      {
+         // TODO: Only throw exception if handlaggare does not have SID role
+
+         throw new SidUppgiftException(uppgift.getId());
+      }
+
       uppgift.setStatus(UppgiftStatus.TILLDELAD);
       uppgift.setHandlaggarIdTypId(handlaggarId.typId());
       uppgift.setHandlaggarIdVarde(handlaggarId.varde());
@@ -358,4 +383,32 @@ public class PanacheOulDataStorage implements OulDataStorage
       return total;
    }
 
+   private boolean containsSid(se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.entity.UppgiftEntity uppgift)
+   {
+      try
+      {
+         var handlaggning = handlaggningAdapter.readHandlaggning(uppgift.getHandlaggningId());
+         return sidAdapter.containsSid(handlaggning.yrkande().individYrkandeRoller().stream().map(
+               individYrkandeRoll -> (se.fk.rimfrost.framework.sid.model.Idtyp) se.fk.rimfrost.framework.sid.model.ImmutableIdtyp
+                     .builder()
+                     .typId(individYrkandeRoll.individ().typId())
+                     .varde(individYrkandeRoll.individ().varde())
+                     .build())
+               .toList());
+      }
+      catch (HandlaggningException e)
+      {
+         LOGGER.error("Failed to read handlaggning for handlaggning id: {} and uppgift id: {}", uppgift.getHandlaggningId(),
+               uppgift.getId(), e);
+
+         throw new HandlaggningReadException(e);
+      }
+      catch (SidException e)
+      {
+         LOGGER.error("Failed to read SID status for handlaggning id: {} and uppgift id: {}", uppgift.getHandlaggningId(),
+               uppgift.getId(), e);
+
+         throw new SidStatusException(e);
+      }
+   }
 }

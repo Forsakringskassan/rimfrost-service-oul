@@ -1,4 +1,4 @@
-package se.fk.github.rimfrost.operativt.uppgiftslager.storage;
+package se.fk.github.rimfrost.operativt.uppgiftslager.storage.exception;
 
 import java.util.UUID;
 
