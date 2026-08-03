@@ -239,7 +239,7 @@ public class OulHandlaggareTest extends OulTestBase
 
       wireMockServer.stubFor(WireMock.post(WireMock.urlPathEqualTo("/sid/status"))
             .inScenario("Sid Scenario")
-            .whenScenarioStateIs("Not sid")
+            .whenScenarioStateIs("Not Sid")
             .willReturn(
                   WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json").withBody("{\"sid\":false}"))
             .willSetStateTo("Not Sid"));
