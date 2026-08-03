@@ -405,7 +405,8 @@ public class PanacheOulDataStorage implements OulDataStorage
       }
       catch (SidException e)
       {
-         LOGGER.error("Failed to read sid status for ");
+         LOGGER.error("Failed to read SID status for handlaggning id: {} and uppgift id: {}", uppgift.getHandlaggningId(),
+               uppgift.getId(), e);
 
          throw new SidStatusException(e);
       }
