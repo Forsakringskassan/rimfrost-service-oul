@@ -563,7 +563,7 @@ public class SorteringsordningQueryBuilderTest
     * {@code buildAssignQuery} must include id condition on non-empty exclude list.
     */
    @Test
-   @DisplayName("buildAssignQuery: id exclusion list is not present")
+   @DisplayName("buildAssignQuery: id exclusion list is present")
    public void assign_query_has_id_exclusion_condition_on_non_empty_exclude_list()
    {
       var built = builder.buildAssignQuery(entity(List.of()), List.of(UUID.randomUUID()));
