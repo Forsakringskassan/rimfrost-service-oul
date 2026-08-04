@@ -9,8 +9,6 @@ public interface OperativtUppgiftslagerAddRequest
 
    String version();
 
-   Idtyp[] individer();
-
    UUID handlaggningId();
 
    String regel();

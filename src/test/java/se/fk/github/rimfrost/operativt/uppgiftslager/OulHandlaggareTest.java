@@ -57,8 +57,6 @@ public class OulHandlaggareTest extends OulTestBase
       assertNotNull(assignResponse.getOperativUppgift().getSkapad());
       assertEquals(createHandlaggningIdtyp(handlaggareId), assignResponse.getOperativUppgift().getHandlaggarId());
       assertEquals(OperativUppgift.StatusEnum.TILLDELAD, assignResponse.getOperativUppgift().getStatus());
-      assertEquals(createUppgiftRequest.getIndivider().stream().map(this::toHandlaggningIdtyp).toList(),
-            assignResponse.getOperativUppgift().getIndivider());
       assertEquals(createUppgiftRequest.getRegel(), assignResponse.getOperativUppgift().getRegel());
       assertEquals(createUppgiftRequest.getBeskrivning(), assignResponse.getOperativUppgift().getBeskrivning());
       assertEquals(createUppgiftRequest.getVerksamhetslogik(), assignResponse.getOperativUppgift().getVerksamhetslogik());
@@ -125,7 +123,6 @@ public class OulHandlaggareTest extends OulTestBase
       assertEquals(assignResponse.getOperativUppgift().getHandlaggarId(), assignedTask.getHandlaggarId());
       assertEquals(handlaggareId.toString(), assignedTask.getHandlaggarId().getVarde());
       assertEquals(OperativUppgift.StatusEnum.TILLDELAD, assignResponse.getOperativUppgift().getStatus());
-      assertEquals(assignResponse.getOperativUppgift().getIndivider(), assignedTask.getIndivider());
       assertEquals(assignResponse.getOperativUppgift().getRegel(), assignedTask.getRegel());
       assertEquals(assignResponse.getOperativUppgift().getBeskrivning(), assignedTask.getBeskrivning());
       assertEquals(assignResponse.getOperativUppgift().getVerksamhetslogik(), assignedTask.getVerksamhetslogik());
@@ -298,12 +295,4 @@ public class OulHandlaggareTest extends OulTestBase
       return idtyp;
    }
 
-   private se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.Idtyp toHandlaggningIdtyp(
-         se.fk.rimfrost.oul.management.regler.jaxrsspec.controllers.generatedsource.model.Idtyp managementIdtyp)
-   {
-      se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.Idtyp idtyp = new se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.Idtyp();
-      idtyp.setTypId(managementIdtyp.getTypId());
-      idtyp.setVarde(managementIdtyp.getVarde());
-      return idtyp;
-   }
 }

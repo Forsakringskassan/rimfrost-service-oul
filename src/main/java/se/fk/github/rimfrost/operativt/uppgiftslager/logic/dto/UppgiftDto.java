@@ -30,8 +30,6 @@ public interface UppgiftDto
 
    String regel();
 
-   Idtyp[] individer();
-
    String beskrivning();
 
    String verksamhetslogik();

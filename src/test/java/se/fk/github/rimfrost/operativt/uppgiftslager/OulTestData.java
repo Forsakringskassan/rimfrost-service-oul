@@ -4,7 +4,6 @@ import se.fk.rimfrost.oul.management.regler.jaxrsspec.controllers.generatedsourc
 import se.fk.rimfrost.oul.management.regler.jaxrsspec.controllers.generatedsource.model.EndUppgiftRequest;
 import se.fk.rimfrost.oul.management.regler.jaxrsspec.controllers.generatedsource.model.Erbjudande;
 import se.fk.rimfrost.oul.management.regler.jaxrsspec.controllers.generatedsource.model.ProcessInfo;
-import se.fk.rimfrost.oul.management.regler.jaxrsspec.controllers.generatedsource.model.Idtyp;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.Constraint;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.ConstraintEq;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.SortBy;
@@ -28,10 +27,6 @@ public class OulTestData
 
    public static CreateUppgiftRequest newCreateUppgiftRequest(UUID handlaggningId)
    {
-      var individ = new Idtyp();
-      individ.setTypId("d8bc00b6-445e-4085-ac31-d743cfb5f303");
-      individ.setVarde("19900101-1234");
-
       var erbjudande = new Erbjudande();
       erbjudande.setId("55f84389-8e66-4122-8f07-c157141d5b1d");
       erbjudande.setNamn("Erbjudande namn");
@@ -39,7 +34,6 @@ public class OulTestData
       var request = new CreateUppgiftRequest();
       request.setVersion("1.0");
       request.setHandlaggningId(handlaggningId);
-      request.setIndivider(List.of(individ));
       request.setRegel("Test Regel");
       request.setRoll("Test Roll");
       request.setBeskrivning("Test Beskrivning");

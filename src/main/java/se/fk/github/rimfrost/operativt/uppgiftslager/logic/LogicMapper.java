@@ -54,7 +54,6 @@ public class LogicMapper
             .utford(uppgift.utford())
             .status(uppgift.status())
             .regel(uppgift.regel())
-            .individer(uppgift.individer())
             .beskrivning(uppgift.beskrivning())
             .verksamhetslogik(uppgift.verksamhetslogik())
             .roll(uppgift.roll())

@@ -33,7 +33,6 @@ via villkor och styra sorteringsriktning inom sin grupp.
 - **OUL-FR-01.2** En ny uppgift ska tilldelas status `NY` vid skapandet.
 - **OUL-FR-01.3** Uppgiften ska knytas till ett handläggningsärende.
 - **OUL-FR-01.4** Uppgiften ska innehålla:
-  - berörda individer
   - vilken regel som triggade uppgiften
   - roll som ska utföra uppgiften
   - beskrivning
@@ -41,6 +40,7 @@ via villkor och styra sorteringsriktning inom sin grupp.
 - **OUL-FR-01.5** Uppgiften ska vara kopplad till ett erbjudande.
 - **OUL-FR-01.6** Uppgiften ska innehålla CloudEvent-attribut som OUL bevarar och returnerar oförändrade, för att möjliggöra korrelation mellan regeln och dess flödesprocess.
 - **OUL-FR-01.7** OUL ska returnera ett unikt uppgifts-ID vid skapandet.
+- **OUL-FR-01.8** OUL ska inte lagra eller returnera berörda individer. Individer hämtas av OUL internt vid behov (t.ex. SID-kontroll vid tilldelning) direkt från handläggningstjänsten via det `handlaggningId` som uppgiften är knuten till. Konsumenter som behöver individinformation ska hämta den från handläggningstjänsten.
 
 ### OUL-FR-02 — Avsluta uppgift
 

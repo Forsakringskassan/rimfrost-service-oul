@@ -31,8 +31,6 @@ public interface UppgiftEntity
 
    String regel();
 
-   Idtyp[] individer();
-
    String beskrivning();
 
    String verksamhetslogik();

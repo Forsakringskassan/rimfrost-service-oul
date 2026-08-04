@@ -2,7 +2,6 @@ package se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.manageme
 
 import jakarta.enterprise.context.ApplicationScoped;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -35,7 +34,6 @@ public class ManagementMapper
       return ImmutableOperativtUppgiftslagerAddRequest.builder()
             .version(request.getVersion())
             .handlaggningId(request.getHandlaggningId())
-            .individer(toIdtyper(request.getIndivider()))
             .regel(request.getRegel())
             .beskrivning(request.getBeskrivning())
             .verksamhetslogik(request.getVerksamhetslogik())
@@ -83,7 +81,6 @@ public class ManagementMapper
       uppgift.planeradTill(uppgiftDto.planeradTill());
       uppgift.utford(uppgiftDto.utford());
       uppgift.status(enumMapper.mapUppgiftStatusToStatus(uppgiftDto.status()));
-      uppgift.individer(Arrays.stream(uppgiftDto.individer()).map(this::toIdtyp).toList());
       uppgift.setRegel(uppgiftDto.regel());
       uppgift.beskrivning(uppgiftDto.beskrivning());
       uppgift.verksamhetslogik(uppgiftDto.verksamhetslogik());
@@ -91,18 +88,6 @@ public class ManagementMapper
       uppgift.url(uppgiftDto.url());
       uppgift.erbjudande(toErbjudande(uppgiftDto.erbjudande()));
       return uppgift;
-   }
-
-   private Idtyp[] toIdtyper(
-         List<se.fk.rimfrost.oul.management.regler.jaxrsspec.controllers.generatedsource.model.Idtyp> individer)
-   {
-      if (individer == null)
-      {
-         return new Idtyp[0];
-      }
-      return individer.stream()
-            .map(i -> ImmutableIdtyp.builder().typId(i.getTypId()).varde(i.getVarde()).build())
-            .toArray(Idtyp[]::new);
    }
 
    public Idtyp toIdTyp(se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.Idtyp idtyp)

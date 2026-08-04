@@ -10,9 +10,7 @@ import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.UppgiftEntity;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.Idtyp;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.entity.SorteringsordningPersistenceEntity;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.entity.UppgiftCloudEventAttributeEntity;
-import se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.entity.UppgiftIndividEntity;
 import java.time.ZoneOffset;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,7 +39,6 @@ public class OulDataStorageMapper
       entity.setErbjudandeId(uppgift.erbjudande().id());
       entity.setErbjudandeNamn(uppgift.erbjudande().namn());
       entity.setReason(uppgift.reason());
-      entity.setIndivider(Arrays.stream(uppgift.individer()).map(idtyp -> toIndividEntity(uppgift.uppgiftId(), idtyp)).toList());
       entity.setCloudEventAttributes(uppgift.cloudeventAttributes().entrySet().stream()
             .map(e -> toCloudEventAttributeEntity(uppgift.uppgiftId(), e.getKey(), e.getValue())).toList());
 
@@ -94,25 +91,7 @@ public class OulDataStorageMapper
             .replyTopic(entity.getReplyTopic())
             .erbjudande(erbjudande)
             .reason(entity.getReason())
-            .individer(entity.getIndivider().stream().map(this::toIdtyp).toArray(Idtyp[]::new))
             .cloudeventAttributes(toCloudEventAttributesMap(entity.getCloudEventAttributes()))
-            .build();
-   }
-
-   private UppgiftIndividEntity toIndividEntity(UUID uppgiftId, Idtyp individ)
-   {
-      var entity = new UppgiftIndividEntity();
-      entity.setUppgiftId(uppgiftId);
-      entity.setTypId(individ.typId());
-      entity.setVarde(individ.varde());
-      return entity;
-   }
-
-   private Idtyp toIdtyp(UppgiftIndividEntity entity)
-   {
-      return ImmutableIdtyp.builder()
-            .typId(entity.getTypId())
-            .varde(entity.getVarde())
             .build();
    }
 
