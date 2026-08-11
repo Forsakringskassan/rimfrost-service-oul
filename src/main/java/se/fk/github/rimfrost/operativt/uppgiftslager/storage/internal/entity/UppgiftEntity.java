@@ -88,10 +88,6 @@ public class UppgiftEntity
 
    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
    @JoinColumn(name = "uppgift_id", nullable = false, insertable = false, updatable = false)
-   private List<UppgiftIndividEntity> individer;
-
-   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-   @JoinColumn(name = "uppgift_id", nullable = false, insertable = false, updatable = false)
    private List<UppgiftCloudEventAttributeEntity> cloudEventAttributes;
 
    @PrePersist
@@ -291,16 +287,6 @@ public class UppgiftEntity
    public void setReason(String reason)
    {
       this.reason = reason;
-   }
-
-   public List<UppgiftIndividEntity> getIndivider()
-   {
-      return individer;
-   }
-
-   public void setIndivider(List<UppgiftIndividEntity> individer)
-   {
-      this.individer = individer;
    }
 
    public List<UppgiftCloudEventAttributeEntity> getCloudEventAttributes()

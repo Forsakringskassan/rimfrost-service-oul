@@ -130,7 +130,6 @@ public class OulManagementTest extends OulTestBase
       assertEquals(handlaggningId, uppgift.getHandlaggningId());
       assertNotNull(uppgift.getSkapad());
       assertEquals(assignedTask ? "TILLDELAD" : "NY", uppgift.getStatus());
-      assertEquals(createUppgiftRequest.getIndivider().stream().map(this::toIdtyp).toList(), uppgift.getIndivider());
       assertEquals(createUppgiftRequest.getRegel(), uppgift.getRegel());
       assertEquals(createUppgiftRequest.getBeskrivning(), uppgift.getBeskrivning());
       assertEquals(createUppgiftRequest.getVerksamhetslogik(), uppgift.getVerksamhetslogik());
@@ -242,20 +241,6 @@ public class OulManagementTest extends OulTestBase
 
       assertNotNull(updateResponse);
       assertEquals(assignedUppgift, updateResponse);
-   }
-
-   private se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.Idtyp toIdtyp(
-         se.fk.rimfrost.oul.management.regler.jaxrsspec.controllers.generatedsource.model.Idtyp id)
-   {
-      if (id == null)
-      {
-         return null;
-      }
-
-      var idtyp = new Idtyp();
-      idtyp.setTypId(id.getTypId());
-      idtyp.setVarde(id.getVarde());
-      return idtyp;
    }
 
    private se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.Erbjudande toErbjudande(
