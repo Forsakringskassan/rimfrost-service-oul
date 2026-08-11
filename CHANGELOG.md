@@ -2,6 +2,31 @@
 
 Changelog of rimfrost-service-oul.
 
+## 1.5.0 (2026-08-11)
+
+### Features
+
+-  Fix incomplete SID status error log message ([8118a](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/8118ae5abed6569) Ulf Slunga)  
+-  Evaluate SID status when assigning uppgift ([4a27f](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/4a27fe8efe3b4f8) Lars Persson)  
+
+### Bug Fixes
+
+-  FKPOC-889 — remove individer from OUL; fetch from handläggning on demand ([a3ca1](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/a3ca1e5bcffb1ad) Ulf Slunga)  
+-  Replace SNAPSHOT version of rimfrost-framework-sid-adapter with 0.0.1 ([8444b](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/8444b8732b74d91) Ulf Slunga)  
+
+### Other changes
+
+**Update src/test/java/se/fk/github/rimfrost/operativt/uppgiftslager/storage/internal/SorteringsordningQueryBuilderTest.java**
+
+
+[06983](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/06983554a98dbc0) Ulf Slunga *2026-08-03 13:19:03*
+
+**Update src/test/java/se/fk/github/rimfrost/operativt/uppgiftslager/OulHandlaggareTest.java**
+
+
+[7012a](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/7012af8bea1321b) Ulf Slunga *2026-08-03 13:18:47*
+
+
 ## 1.4.2 (2026-06-29)
 
 ### Bug Fixes
