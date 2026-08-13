@@ -49,6 +49,7 @@ public class WireMockTestResource implements QuarkusTestResourceLifecycleManager
       Map<String, String> map = new HashMap<>();
       map.put("handlaggning.api.base-url", server.baseUrl());
       map.put("sid.api.base-url", server.baseUrl());
+      map.put("team.api.base-url", server.baseUrl());
       return map;
    }
 }

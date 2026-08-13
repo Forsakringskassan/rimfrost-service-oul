@@ -1,0 +1,22 @@
+{
+  "priority": 1,
+  "request": {
+    "method": "GET",
+    "urlPathPattern": "/individ/4c34906c-03d9-425f-9a1a-062ef6eb88c7/a1a1a1a1-.+/team"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "team": [
+        {
+          "id": 1,
+          "namn": "Test Team",
+          "kontor": "Test"
+        }
+      ]
+    }
+  }
+}

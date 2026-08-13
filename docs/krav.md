@@ -65,7 +65,7 @@ via villkor och styra sorteringsriktning inom sin grupp.
 
 - **OUL-FR-04.1** En handläggare ska kunna begära en ny icke tilldelad uppgift och automatiskt bli tilldelad den.
 - **OUL-FR-04.2** OUL väljer den högst prioriterade tillgängliga icke tilldelade uppgiften enligt default sorteringsordning och sätter status till `TILLDELAD`. Om ingen sorteringsordning är konfigurerad väljs en godtycklig tillgänglig uppgift.
-- **OUL-FR-04.3** Handläggarens identitet anges via en typad identifierare bestående av identifierartyp och handläggar-ID.
+- **OUL-FR-04.3** Handläggarens identitet fastställs från bearer-token.
 - **OUL-FR-04.4** Om ingen icke tilldelad uppgift finns ska ett tomt svar returneras utan felkod.
 - **OUL-FR-04.5** Vid tilldelning ska en statusnotifiering publiceras på Kafka.
 - **OUL-FR-04.6** Vid tilldelning av uppgift så ska SID status tas hänsyn till. Om en uppgift är SID markerad och handläggaren inte har SID roll så ska uppgiften hoppas över och nästa uppgift utvärderas.
@@ -135,6 +135,26 @@ via villkor och styra sorteringsriktning inom sin grupp.
 
 - **OUL-FR-14.1** En Administratör ska kunna ange en specifik sorteringsordning som default via `PUT /sorteringsordning/{id}/default`.
 - **OUL-FR-14.2** Om angivet ID inte hittas ska HTTP 404 returneras.
+
+### OUL-FR-16 — Teammedlemskap via team-API
+
+- **OUL-FR-16.1** Vid behov av att avgöra om en handläggare tillhör ett visst team ska OUL anropa team-tjänstens OpenAPI för att hämta aktuellt teammedlemskap.
+- **OUL-FR-16.2** Teammedlemskap ska alltid hämtas från team-API:et vid varje kontroll och får inte cachas på ett sätt som riskerar inaktuella data.
+
+### OUL-FR-17 — Hämta teamets uppgifter (handläggare)
+
+- **OUL-FR-17.1** En handläggare ska kunna hämta alla uppgifter tilldelade till någon av handläggarens teammedlemmar via `GET /uppgifter/team`.
+- **OUL-FR-17.2** Handläggarens identitet fastställs från bearer-token.
+- **OUL-FR-17.3** OUL avgör handläggarens teamtillhörighet via team-API:et (se OUL-FR-16).
+- **OUL-FR-17.4** Om handläggaren inte tillhör ett känt team ska HTTP 403 returneras.
+
+### OUL-FR-18 — Tilldela om uppgift till anropande handläggare
+
+- **OUL-FR-18.1** En handläggare ska kunna ta över en uppgift som är tilldelad en annan handläggare via `POST /uppgifter/{uppgift_id}/handlaggare`.
+- **OUL-FR-18.2** Handläggarens identitet fastställs från bearer-token.
+- **OUL-FR-18.3** Omtilldelning är endast tillåten om den nuvarande tilldelade handläggaren tillhör samma team som den anropande handläggaren. Om så inte är fallet ska HTTP 403 returneras.
+- **OUL-FR-18.4** Om angiven uppgift inte finns ska HTTP 404 returneras.
+- **OUL-FR-18.5** Vid omtilldelning ska en statusnotifiering publiceras på Kafka i enlighet med OUL-FR-06.
 
 ### OUL-FR-15 — Villkorsutvärdering
 

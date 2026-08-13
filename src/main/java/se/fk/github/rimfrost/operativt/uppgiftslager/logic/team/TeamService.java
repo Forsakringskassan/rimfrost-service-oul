@@ -6,23 +6,24 @@ import java.util.List;
 /**
  * Provides team membership information for handläggare.
  *
- * <p>The current implementation is hardcoded for POC purposes. When the real team API is
- * available, only this interface's implementation changes — all callers remain unchanged.
+ * <p>The implementation ({@link TeamApiService}) resolves membership via the team API.
  */
 public interface TeamService
 {
    /**
-    * Returns whether the given handläggare is a member of the team.
+    * Returns all members of the given handläggare's team(s).
     *
-    * @param handlaggare the handläggare identity to check
-    * @return {@code true} if the handläggare is a team member
-    */
-   boolean isTeamMember(Idtyp handlaggare);
-
-   /**
-    * Returns all current team members.
-    *
+    * @param caller the calling handläggare's identity
     * @return immutable list of team member identities
     */
-   List<Idtyp> teamMembers();
+   List<Idtyp> teamMembers(Idtyp caller);
+
+   /**
+    * Returns whether {@code caller} and {@code other} share at least one team.
+    *
+    * @param caller the calling handläggare's identity
+    * @param other  the other handläggare's identity to compare against
+    * @return {@code true} if they belong to at least one common team
+    */
+   boolean isSameTeam(Idtyp caller, Idtyp other);
 }
