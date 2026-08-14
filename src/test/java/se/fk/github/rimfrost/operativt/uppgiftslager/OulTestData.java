@@ -11,19 +11,18 @@ import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.SorteringsordningField;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.SorteringsordningFieldEq;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.SorteringsordningSpec;
-import se.fk.github.rimfrost.operativt.uppgiftslager.logic.team.HardcodedTeamService;
-
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 public class OulTestData
 {
-   public static final String oulHandlaggareTypId = HardcodedTeamService.HANDLAGGARE_TYP_ID;
+   /** UUID identifying the "card" handläggare identity type, as returned by the team API. */
+   public static final String oulHandlaggareTypId = "4c34906c-03d9-425f-9a1a-062ef6eb88c7";
 
-   public static final UUID TEAM_MEMBER_1 = HardcodedTeamService.TEAM_MEMBER_1;
-   public static final UUID TEAM_MEMBER_2 = HardcodedTeamService.TEAM_MEMBER_2;
-   public static final UUID TEAM_MEMBER_3 = HardcodedTeamService.TEAM_MEMBER_3;
+   public static final UUID TEAM_MEMBER_1 = UUID.fromString("a1a1a1a1-0000-0000-0000-000000000001");
+   public static final UUID TEAM_MEMBER_2 = UUID.fromString("a1a1a1a1-0000-0000-0000-000000000002");
+   public static final UUID TEAM_MEMBER_3 = UUID.fromString("a1a1a1a1-0000-0000-0000-000000000003");
 
    public static CreateUppgiftRequest newCreateUppgiftRequest(UUID handlaggningId)
    {

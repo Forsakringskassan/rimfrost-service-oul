@@ -149,6 +149,8 @@ public class OperativtUppgiftslagerService
    /**
     * Returns all uppgifter assigned to any member of the caller's team, sorted according to the
     * default sorteringsordning.
+    * Throws {@link NotTeamMemberException} (→ HTTP 403) if the caller belongs to no known team (OUL-FR-17.4).
+    * Returns an empty list if the caller's team(s) have no members.
     *
     * @param callerHandlaggare the calling handläggare's identity (used to determine team)
     * @return ordered collection of team uppgifter
@@ -156,7 +158,12 @@ public class OperativtUppgiftslagerService
    public Collection<UppgiftDto> getUppgifterTeam(Idtyp callerHandlaggare)
    {
       log.info("Getting all team tasks for handlaggarId: {}", callerHandlaggare.varde());
-      var teamMembers = teamService.teamMembers();
+      // throws NotTeamMemberException (→ 403) if the caller belongs to no known team
+      var teamMembers = teamService.teamMembers(callerHandlaggare);
+      if (teamMembers.isEmpty())
+      {
+         return List.of();
+      }
       var sorteringsordning = storage.getDefaultSorteringsordning()
             .orElse(new SorteringsordningEntity(null, null, null, List.of()));
       var uppgifter = storage.findAllUppgifterByTeam(teamMembers, sorteringsordning);
@@ -167,6 +174,7 @@ public class OperativtUppgiftslagerService
     * Reassigns the given uppgift to the calling handläggare.
     * Throws {@link UppgiftNotFoundException} (→ HTTP 404) if the uppgift does not exist.
     * Throws {@link NotTeamMemberException} (→ HTTP 403) if the current assignee is not a team member.
+    * Publishes a Kafka status-update notification after a successful reassignment.
     *
     * @param uppgiftId         the uppgift to reassign
     * @param callerHandlaggare the new handläggare identity
@@ -177,12 +185,14 @@ public class OperativtUppgiftslagerService
       log.info("Reassigning uppgift {} to handlaggarId: {}", uppgiftId, callerHandlaggare.varde());
       var current = storage.findUppgiftById(uppgiftId);
 
-      if (current.handlaggarId() == null || !teamService.isTeamMember(current.handlaggarId()))
+      if (current.handlaggarId() == null || !teamService.isSameTeam(callerHandlaggare, current.handlaggarId()))
       {
          throw new NotTeamMemberException(uppgiftId);
       }
 
       var updated = storage.updateUppgift(uppgiftId, callerHandlaggare);
+      notifyStatusUpdate(updated);
+      log.info("Reassigned uppgift {} to handlaggarId: {}", uppgiftId, callerHandlaggare.varde());
       return logicMapper.toUppgiftDto(updated);
    }
 

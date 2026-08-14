@@ -1,0 +1,19 @@
+{
+  "request": {
+    "method": "GET",
+    "url": "/team/1/individer"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "individer": [
+        {"typId": "4c34906c-03d9-425f-9a1a-062ef6eb88c7", "varde": "a1a1a1a1-0000-0000-0000-000000000001"},
+        {"typId": "4c34906c-03d9-425f-9a1a-062ef6eb88c7", "varde": "a1a1a1a1-0000-0000-0000-000000000002"},
+        {"typId": "4c34906c-03d9-425f-9a1a-062ef6eb88c7", "varde": "a1a1a1a1-0000-0000-0000-000000000003"}
+      ]
+    }
+  }
+}
