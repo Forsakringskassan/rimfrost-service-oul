@@ -150,6 +150,7 @@ public class OperativtUppgiftslagerService
     * Returns all uppgifter assigned to any member of the caller's team, sorted according to the
     * default sorteringsordning.
     * Throws {@link NotTeamMemberException} (→ HTTP 403) if the caller belongs to no known team (OUL-FR-17.4).
+    * Returns an empty list if the caller's team(s) have no members.
     *
     * @param callerHandlaggare the calling handläggare's identity (used to determine team)
     * @return ordered collection of team uppgifter
@@ -157,10 +158,11 @@ public class OperativtUppgiftslagerService
    public Collection<UppgiftDto> getUppgifterTeam(Idtyp callerHandlaggare)
    {
       log.info("Getting all team tasks for handlaggarId: {}", callerHandlaggare.varde());
+      // throws NotTeamMemberException (→ 403) if the caller belongs to no known team
       var teamMembers = teamService.teamMembers(callerHandlaggare);
       if (teamMembers.isEmpty())
       {
-         throw new NotTeamMemberException();
+         return List.of();
       }
       var sorteringsordning = storage.getDefaultSorteringsordning()
             .orElse(new SorteringsordningEntity(null, null, null, List.of()));

@@ -12,9 +12,11 @@ public interface TeamService
 {
    /**
     * Returns all members of the given handläggare's team(s).
+    * Throws {@link se.fk.github.rimfrost.operativt.uppgiftslager.logic.exception.NotTeamMemberException}
+    * if the caller belongs to no known team.
     *
     * @param caller the calling handläggare's identity
-    * @return immutable list of team member identities
+    * @return immutable list of team member identities (may be empty if teams exist but have no members)
     */
    List<Idtyp> teamMembers(Idtyp caller);
 

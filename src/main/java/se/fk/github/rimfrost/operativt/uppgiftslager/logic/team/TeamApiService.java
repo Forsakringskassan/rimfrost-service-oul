@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import se.fk.github.rimfrost.operativt.uppgiftslager.integration.team.TeamAdapter;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.Idtyp;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.ImmutableIdtyp;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.exception.NotTeamMemberException;
 import se.fk.rimfrost.jaxrsspec.controllers.generatedsource.model.Team;
 import java.util.List;
 import java.util.Set;
@@ -34,7 +35,12 @@ public class TeamApiService implements TeamService
    @Override
    public List<Idtyp> teamMembers(Idtyp caller)
    {
-      return teamIds(caller).stream()
+      var ids = teamIds(caller);
+      if (ids.isEmpty())
+      {
+         throw new NotTeamMemberException();
+      }
+      return ids.stream()
             .flatMap(this::teamIndivider)
             .map(i -> (Idtyp) ImmutableIdtyp.builder()
                   .typId(i.getTypId().toString())
