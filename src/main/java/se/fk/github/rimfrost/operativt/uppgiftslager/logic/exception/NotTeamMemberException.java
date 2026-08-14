@@ -9,6 +9,8 @@ import java.util.UUID;
  */
 public class NotTeamMemberException extends RuntimeException
 {
+   private static final long serialVersionUID = 1L;
+
    /**
     * Used when the caller does not belong to any known team.
     */
