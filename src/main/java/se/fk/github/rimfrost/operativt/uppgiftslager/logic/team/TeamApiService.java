@@ -3,6 +3,8 @@ package se.fk.github.rimfrost.operativt.uppgiftslager.logic.team;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import se.fk.github.rimfrost.operativt.uppgiftslager.integration.team.TeamAdapter;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.Idtyp;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.ImmutableIdtyp;
@@ -10,6 +12,7 @@ import se.fk.rimfrost.jaxrsspec.controllers.generatedsource.model.Team;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * {@link TeamService} implementation backed by the team API.
@@ -23,6 +26,8 @@ import java.util.stream.Collectors;
 @ApplicationScoped
 public class TeamApiService implements TeamService
 {
+   private static final Logger log = LoggerFactory.getLogger(TeamApiService.class);
+
    @Inject
    TeamAdapter teamAdapter;
 
@@ -30,7 +35,7 @@ public class TeamApiService implements TeamService
    public List<Idtyp> teamMembers(Idtyp caller)
    {
       return teamIds(caller).stream()
-            .flatMap(teamId -> teamAdapter.getTeamIndivider(teamId).getIndivider().stream())
+            .flatMap(this::teamIndivider)
             .map(i -> (Idtyp) ImmutableIdtyp.builder()
                   .typId(i.getTypId().toString())
                   .varde(i.getVarde())
@@ -49,6 +54,27 @@ public class TeamApiService implements TeamService
       }
       var otherTeamIds = teamIds(other);
       return callerTeamIds.stream().anyMatch(otherTeamIds::contains);
+   }
+
+   /**
+    * Returns the members of the given team.
+    * Returns an empty stream if the team is not found (404) — guards against
+    * a race condition where a team ID returned by the individ lookup no longer exists.
+    *
+    * @param teamId the team ID
+    * @return stream of team member identities
+    */
+   private Stream<se.fk.rimfrost.jaxrsspec.controllers.generatedsource.model.Idtyp> teamIndivider(Integer teamId)
+   {
+      try
+      {
+         return teamAdapter.getTeamIndivider(teamId).getIndivider().stream();
+      }
+      catch (NotFoundException e)
+      {
+         log.warn("Team {} not found when fetching members; skipping", teamId);
+         return Stream.empty();
+      }
    }
 
    /**
