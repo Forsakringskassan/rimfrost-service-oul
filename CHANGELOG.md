@@ -2,6 +2,16 @@
 
 Changelog of rimfrost-service-oul.
 
+## 1.5.1 (2026-08-14)
+
+### Bug Fixes
+
+-  upgrade management-regler-api-jaxrs-spec to 0.0.6 ([d1d4c](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/d1d4cb7f3d212a6) Ulf Slunga)  
+-  Move 403 logic into TeamApiService to distinguish no-team from empty-team ([81a13](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/81a132da8ec31b1) Ulf Slunga)  
+-  Skip unknown teams gracefully in teamMembers (NotFoundException on getTeamIndivider) ([e1307](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/e130798af238cc5) Ulf Slunga)  
+-  Add serialVersionUID to NotTeamMemberException ([cee15](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/cee15489c0972b8) Ulf Slunga)  
+-  FKPOC-866 — replace hardcoded team service with real team API ([2e5f5](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/2e5f5149a3e9f08) Ulf Slunga)  
+
 ## 1.5.0 (2026-08-11)
 
 ### Features
