@@ -12,9 +12,9 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.glassfish.jersey.apache5.connector.Apache5ConnectorProvider;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.proxy.WebResourceFactory;
-import se.fk.rimfrost.jaxrsspec.controllers.generatedsource.TeamControllerApi;
-import se.fk.rimfrost.jaxrsspec.controllers.generatedsource.model.GetIndividTeamResponse;
-import se.fk.rimfrost.jaxrsspec.controllers.generatedsource.model.GetTeamMembersResponse;
+import se.fk.rimfrost.team.jaxrsspec.controllers.generatedsource.TeamControllerApi;
+import se.fk.rimfrost.team.jaxrsspec.controllers.generatedsource.model.GetIndividTeamResponse;
+import se.fk.rimfrost.team.jaxrsspec.controllers.generatedsource.model.GetTeamMembersResponse;
 
 /**
  * HTTP adapter for the team API, using the Jersey proxy client pattern.

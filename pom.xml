@@ -73,9 +73,9 @@
       <version>0.0.6</version>
     </dependency>
     <dependency>
-      <groupId>se.fk.rimfrost</groupId>
+      <groupId>se.fk.rimfrost.team</groupId>
       <artifactId>rimfrost-service-team-openapi-jaxrs-spec</artifactId>
-      <version>0.0.1</version>
+      <version>0.0.2</version>
     </dependency>
     <dependency>
       <groupId>se.fk.rimfrost.framework.handlaggning</groupId>

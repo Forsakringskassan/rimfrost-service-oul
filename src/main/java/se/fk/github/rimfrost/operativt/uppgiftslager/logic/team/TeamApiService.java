@@ -9,7 +9,7 @@ import se.fk.github.rimfrost.operativt.uppgiftslager.integration.team.TeamAdapte
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.Idtyp;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.ImmutableIdtyp;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.exception.NotTeamMemberException;
-import se.fk.rimfrost.jaxrsspec.controllers.generatedsource.model.Team;
+import se.fk.rimfrost.team.jaxrsspec.controllers.generatedsource.model.Team;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -70,7 +70,7 @@ public class TeamApiService implements TeamService
     * @param teamId the team ID
     * @return stream of team member identities
     */
-   private Stream<se.fk.rimfrost.jaxrsspec.controllers.generatedsource.model.Idtyp> teamIndivider(Integer teamId)
+   private Stream<se.fk.rimfrost.team.jaxrsspec.controllers.generatedsource.model.Idtyp> teamIndivider(Integer teamId)
    {
       try
       {
