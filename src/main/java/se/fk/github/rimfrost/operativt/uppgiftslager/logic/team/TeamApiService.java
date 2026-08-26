@@ -9,6 +9,7 @@ import se.fk.github.rimfrost.operativt.uppgiftslager.integration.team.TeamAdapte
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.Idtyp;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.ImmutableIdtyp;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.exception.NotTeamMemberException;
+import se.fk.rimfrost.team.jaxrsspec.controllers.generatedsource.model.Behorighet;
 import se.fk.rimfrost.team.jaxrsspec.controllers.generatedsource.model.Team;
 import java.util.List;
 import java.util.Set;
@@ -60,6 +61,20 @@ public class TeamApiService implements TeamService
       }
       var otherTeamIds = teamIds(other);
       return callerTeamIds.stream().anyMatch(otherTeamIds::contains);
+   }
+
+   @Override
+   public boolean harSidBehorighet(Idtyp handlaggare)
+   {
+      try
+      {
+         return teamAdapter.getBehorigheter(handlaggare.typId(), handlaggare.varde())
+               .getBehorigheter().contains(Behorighet.SID);
+      }
+      catch (NotFoundException e)
+      {
+         return false;
+      }
    }
 
    /**
