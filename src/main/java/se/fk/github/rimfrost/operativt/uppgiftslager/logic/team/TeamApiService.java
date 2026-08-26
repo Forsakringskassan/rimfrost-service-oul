@@ -98,7 +98,7 @@ public class TeamApiService implements TeamService
             () -> teamAdapter.getTeamIndivider(teamId).getIndivider(),
             List.of(),
             "Team {} not found when fetching members; skipping", teamId);
-      return individer.stream();
+      return individer != null ? individer.stream() : Stream.empty();
    }
 
    /**
