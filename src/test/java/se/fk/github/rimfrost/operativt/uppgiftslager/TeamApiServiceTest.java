@@ -108,7 +108,7 @@ class TeamApiServiceTest
    }
 
    @Test
-   @DisplayName("OUL-FR-04.6: propagates exception when team API returns 500")        
+   @DisplayName("OUL-FR-04.6: propagates exception when team API returns 500")
    void harSidBehorighet_throws_whenTeamApiUnavailable()
    {
       var varde = "a1a1a1a1-0000-0000-0000-000000000013";
