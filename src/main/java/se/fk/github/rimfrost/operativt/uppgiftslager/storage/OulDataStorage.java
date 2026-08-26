@@ -79,9 +79,12 @@ public interface OulDataStorage
     * @param handlaggarId      the handläggare to assign the uppgift to
     * @param sorteringsordning the sort specification that determines task priority
     * @param excludeUppgiftIds uppgifter to exclude from consideration when selecting uppgift
+    * @param harSidBehorighet  whether {@code handlaggarId} has SID-behörighet, resolved once by
+    *                          the caller rather than re-resolved on every retry of this call
     * @return the assigned uppgift, or {@code null} if none available
     */
-   UppgiftEntity assignNewUppgift(Idtyp handlaggarId, SorteringsordningEntity sorteringsordning, List<UUID> excludeUppgiftIds);
+   UppgiftEntity assignNewUppgift(Idtyp handlaggarId, SorteringsordningEntity sorteringsordning,
+         List<UUID> excludeUppgiftIds, boolean harSidBehorighet);
 
    /**
     * Removes the handläggare assignment from the given uppgift.

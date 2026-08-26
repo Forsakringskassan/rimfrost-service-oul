@@ -273,6 +273,24 @@ public class OulHandlaggareTest extends OulTestBase
    }
 
    @Test
+   @DisplayName("OUL-FR-04.6: Hämta ny uppgift — skippar sid-märkt uppgift (fail-open) när behörighetskontrollen är otillgänglig")
+   public void should_skip_sid_uppgift_when_behorighet_check_unavailable()
+   {
+      wireMockServer.stubFor(WireMock.post(WireMock.urlPathEqualTo("/sid/status"))
+            .willReturn(WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json")
+                  .withBody("{\"sid\":true}")));
+
+      wireMockServer.stubFor(WireMock.get(WireMock.urlPathMatching("/individ/.+/behorigheter"))
+            .willReturn(WireMock.aResponse().withStatus(500)));
+
+      var handlaggareId = UUID.randomUUID();
+
+      sendCreateUppgiftRequest(newCreateUppgiftRequest(UUID.randomUUID()));
+      var assignResponse = assignTaskToHandlaggare(handlaggareId);
+      assertNull(assignResponse.getOperativUppgift());
+   }
+
+   @Test
    @DisplayName("OUL-FR-04.6: Hämta ny uppgift — ger status 500 när läsning av handläggning misslyckas")
    public void should_return_500_on_assign_uppgift_when_handlaggning_read_fails()
    {

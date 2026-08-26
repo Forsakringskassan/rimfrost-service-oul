@@ -213,6 +213,7 @@ public class OperativtUppgiftslagerService
             .build();
       var sorteringsordning = storage.getDefaultSorteringsordning()
             .orElse(new SorteringsordningEntity(null, null, null, List.of()));
+      var harSidBehorighet = resolveSidBehorighet(handlaggare);
 
       UppgiftEntity uppgift;
       List<UUID> excludedUppgiftIds = new ArrayList<>();
@@ -220,7 +221,7 @@ public class OperativtUppgiftslagerService
       {
          try
          {
-            uppgift = storage.assignNewUppgift(handlaggare, sorteringsordning, excludedUppgiftIds);
+            uppgift = storage.assignNewUppgift(handlaggare, sorteringsordning, excludedUppgiftIds, harSidBehorighet);
             break;
          }
          catch (SidUppgiftException e)
@@ -238,6 +239,32 @@ public class OperativtUppgiftslagerService
       notifyStatusUpdate(uppgift);
       log.info("Assigned task {} to handlaggarId: {}", uppgift.uppgiftId(), handlaggarId);
       return logicMapper.toUppgiftDto(uppgift);
+   }
+
+   /**
+    * Resolves whether {@code handlaggare} has SID-behörighet, once per {@link #assignNewTask}
+    * call rather than once per retry. Fails open (treats as {@code false}, i.e. skip SID
+    * uppgifter) on any failure beyond a plain "not found" — a Team API outage should degrade
+    * to the old unconditional-skip behaviour for SID uppgifter, not turn "assign me a task"
+    * into a hard failure for every handläggare whose next-in-line uppgift happens to be
+    * SID-marked.
+    *
+    * @param handlaggare the handläggare identity
+    * @return whether the handläggare has SID-behörighet, or {@code false} if that could not
+    *         be determined
+    */
+   private boolean resolveSidBehorighet(Idtyp handlaggare)
+   {
+      try
+      {
+         return teamService.harSidBehorighet(handlaggare);
+      }
+      catch (RuntimeException e)
+      {
+         log.warn("Failed to resolve SID-behörighet for handlaggarId: {}; treating as no behörighet",
+               handlaggare.varde(), e);
+         return false;
+      }
    }
 
    /**
