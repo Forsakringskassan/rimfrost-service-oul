@@ -93,6 +93,7 @@ class TeamApiServiceTest
    }
 
    @Test
+   @DisplayName("OUL-FR-04.6: returns false when handläggare is not found (404)")
    void harSidBehorighet_returnsFalse_whenHandlaggareNotFound()
    {
       var varde = "a1a1a1a1-0000-0000-0000-000000000012";
