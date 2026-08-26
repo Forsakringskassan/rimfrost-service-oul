@@ -88,12 +88,12 @@ public class TeamAdapter
    }
 
    /**
-    * Returns the behörigheter that the given individ has.
+    * Returns the behörigheter that the given handläggare has.
     *
     * @param idTyp   the identity type
     * @param idVarde the identity value
     * @return response containing the list of behörigheter
-    * @throws NotFoundException      if the individ is not found
+    * @throws NotFoundException      if the handläggare is not found
     * @throws ProcessingException    if the team service is unreachable
     * @throws WebApplicationException for other HTTP errors
     */

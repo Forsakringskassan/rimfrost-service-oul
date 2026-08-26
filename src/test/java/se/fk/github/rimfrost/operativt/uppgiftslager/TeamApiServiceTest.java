@@ -77,6 +77,21 @@ class TeamApiServiceTest
    }
 
    @Test
+   void harSidBehorighet_returnsFalse_whenBehorigheterFieldIsNull()
+   {
+      var varde = "a1a1a1a1-0000-0000-0000-000000000014";
+      wireMockServer.stubFor(WireMock.get(WireMock.urlPathEqualTo(
+            "/individ/" + oulHandlaggareTypId + "/" + varde + "/behorigheter"))
+            .willReturn(WireMock.aResponse().withStatus(200)
+                  .withHeader("Content-Type", "application/json")
+                  .withBody("{\"behorigheter\":null}")));
+
+      var handlaggare = ImmutableIdtyp.builder().typId(oulHandlaggareTypId).varde(varde).build();
+
+      assertFalse(teamService.harSidBehorighet(handlaggare));
+   }
+
+   @Test
    void harSidBehorighet_returnsFalse_whenHandlaggareNotFound()
    {
       var varde = "a1a1a1a1-0000-0000-0000-000000000012";
