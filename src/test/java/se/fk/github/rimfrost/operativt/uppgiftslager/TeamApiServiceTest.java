@@ -62,6 +62,7 @@ class TeamApiServiceTest
    }
 
    @Test
+   @DisplayName("OUL-FR-04.6: returns false when behörigheter list is empty")
    void harSidBehorighet_returnsFalse_whenBehorigheterIsEmpty()
    {
       var varde = "a1a1a1a1-0000-0000-0000-000000000011";
