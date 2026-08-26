@@ -28,4 +28,13 @@ public interface TeamService
     * @return {@code true} if they belong to at least one common team
     */
    boolean isSameTeam(Idtyp caller, Idtyp other);
+
+   /**
+    * Returns whether the given handläggare has SID-behörighet (authorization to handle
+    * uppgifter involving individer with skyddad identitet).
+    *
+    * @param handlaggare the handläggare's identity
+    * @return {@code true} if the handläggare has SID-behörighet
+    */
+   boolean harSidBehorighet(Idtyp handlaggare);
 }

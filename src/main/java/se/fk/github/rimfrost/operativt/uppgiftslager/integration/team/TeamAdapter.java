@@ -13,6 +13,7 @@ import org.glassfish.jersey.apache5.connector.Apache5ConnectorProvider;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.proxy.WebResourceFactory;
 import se.fk.rimfrost.team.jaxrsspec.controllers.generatedsource.TeamControllerApi;
+import se.fk.rimfrost.team.jaxrsspec.controllers.generatedsource.model.GetBehorigheterResponse;
 import se.fk.rimfrost.team.jaxrsspec.controllers.generatedsource.model.GetIndividTeamResponse;
 import se.fk.rimfrost.team.jaxrsspec.controllers.generatedsource.model.GetTeamMembersResponse;
 
@@ -84,5 +85,20 @@ public class TeamAdapter
    public GetTeamMembersResponse getTeamIndivider(Integer teamId)
    {
       return teamClient.getTeamIndivider(teamId);
+   }
+
+   /**
+    * Returns the behörigheter that the given handläggare has.
+    *
+    * @param idTyp   the identity type
+    * @param idVarde the identity value
+    * @return response containing the list of behörigheter
+    * @throws NotFoundException      if the handläggare is not found
+    * @throws ProcessingException    if the team service is unreachable
+    * @throws WebApplicationException for other HTTP errors
+    */
+   public GetBehorigheterResponse getBehorigheter(String idTyp, String idVarde)
+   {
+      return teamClient.getBehorigheter(idTyp, idVarde);
    }
 }
