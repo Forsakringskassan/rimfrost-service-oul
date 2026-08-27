@@ -179,7 +179,7 @@ public class PanacheOulDataStorage implements OulDataStorage
     */
    @Override
    public UppgiftEntity assignNewUppgift(Idtyp handlaggarId, SorteringsordningEntity sorteringsordning,
-         List<UUID> excludeUppgiftIds)
+         List<UUID> excludeUppgiftIds, boolean harSidBehorighet)
    {
       var built = queryBuilder.buildAssignQuery(sorteringsordning, excludeUppgiftIds);
       var em = uppgiftRepository.getEntityManager();
@@ -198,10 +198,8 @@ public class PanacheOulDataStorage implements OulDataStorage
 
       var uppgift = results.getFirst();
 
-      if (containsSid(uppgift))
+      if (containsSid(uppgift) && !harSidBehorighet)
       {
-         // TODO: Only throw exception if handlaggare does not have SID role
-
          throw new SidUppgiftException(uppgift.getId());
       }
 
