@@ -21,6 +21,7 @@ import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.ImmutableUppgi
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.UppgiftEntity;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.enums.UppgiftStatus;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.exception.NotTeamMemberException;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.exception.SidNotAuthorizedException;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.exception.SorteringsordningNotFoundException;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.team.TeamService;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.OulDataStorage;
@@ -174,6 +175,9 @@ public class OperativtUppgiftslagerService
     * Reassigns the given uppgift to the calling handläggare.
     * Throws {@link UppgiftNotFoundException} (→ HTTP 404) if the uppgift does not exist.
     * Throws {@link NotTeamMemberException} (→ HTTP 403) if the current assignee is not a team member.
+    * Throws {@link SidNotAuthorizedException} (→ HTTP 403) if the uppgift is SID-märkt and the
+    * caller lacks SID-behörighet — unlike {@link #assignNewTask}, there is no "next uppgift" to
+    * fall back to, so the attempt is rejected outright and the uppgift is left untouched.
     * Publishes a Kafka status-update notification after a successful reassignment.
     *
     * @param uppgiftId         the uppgift to reassign
@@ -188,6 +192,13 @@ public class OperativtUppgiftslagerService
       if (current.handlaggarId() == null || !teamService.isSameTeam(callerHandlaggare, current.handlaggarId()))
       {
          throw new NotTeamMemberException(uppgiftId);
+      }
+
+      // Same SID-authorization rule as PanacheOulDataStorage.assignNewUppgift — kept in sync by
+      // hand since that layer can't depend on TeamService; update both on any change.
+      if (!resolveSidBehorighet(callerHandlaggare) && resolveContainsSid(current.handlaggningId(), uppgiftId))
+      {
+         throw new SidNotAuthorizedException(uppgiftId);
       }
 
       var updated = storage.updateUppgift(uppgiftId, callerHandlaggare);
@@ -242,12 +253,12 @@ public class OperativtUppgiftslagerService
    }
 
    /**
-    * Resolves whether {@code handlaggare} has SID-behörighet, once per {@link #assignNewTask}
-    * call rather than once per retry. Fails open (treats as {@code false}, i.e. skip SID
-    * uppgifter) on any failure beyond a plain "not found" — a Team API outage should degrade
-    * to the old unconditional-skip behaviour for SID uppgifter, not turn "assign me a task"
-    * into a hard failure for every handläggare whose next-in-line uppgift happens to be
-    * SID-marked.
+    * Resolves whether {@code handlaggare} has SID-behörighet. Used by {@link #assignNewTask}
+    * (once per call rather than once per retry) and {@link #reassignUppgift}. Fails open
+    * (treats as {@code false}, i.e. no behörighet) on any failure beyond a plain "not found" —
+    * a Team API outage should degrade to the old unconditional-skip/reject behaviour for SID
+    * uppgifter, not turn assignment or ommarkering into a hard failure whenever the uppgift in
+    * question happens to be SID-marked.
     *
     * @param handlaggare the handläggare identity
     * @return whether the handläggare has SID-behörighet, or {@code false} if that could not
@@ -264,6 +275,33 @@ public class OperativtUppgiftslagerService
          log.warn("Failed to resolve SID-behörighet for handlaggarId: {}; treating as no behörighet",
                handlaggare.varde(), e);
          return false;
+      }
+   }
+
+   /**
+    * Resolves whether the given uppgift's handläggning is SID-märkt, for {@link #reassignUppgift}.
+    * Fails closed (treats as {@code true}, i.e. potentially SID-märkt) on any read failure —
+    * unlike {@link #resolveSidBehorighet}, ommarkering has no "next uppgift" to fall back to
+    * (FKPOC-939), so when SID status can't be confirmed the safe default is to reject the
+    * attempt (→ 403 via {@link SidNotAuthorizedException}) rather than either let the read
+    * failure surface as an uncaught 500, or silently let a possibly SID-märkt uppgift through
+    * to an unconfirmed handläggare.
+    *
+    * @param handlaggningId the uppgift's handläggning id
+    * @param uppgiftId      the uppgift id, used only for logging context
+    * @return whether the handläggning is SID-märkt, or {@code true} if that could not be determined
+    */
+   private boolean resolveContainsSid(UUID handlaggningId, UUID uppgiftId)
+   {
+      try
+      {
+         return storage.containsSid(handlaggningId, uppgiftId);
+      }
+      catch (RuntimeException e)
+      {
+         log.warn("Failed to resolve SID status for handlaggningId: {} and uppgiftId: {}; treating as SID-märkt",
+               handlaggningId, uppgiftId, e);
+         return true;
       }
    }
 

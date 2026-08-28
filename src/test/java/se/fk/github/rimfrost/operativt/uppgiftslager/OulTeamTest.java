@@ -203,4 +203,95 @@ public class OulTeamTest extends OulTestBase
 
       reassignTask(uppgiftId, TEAM_MEMBER_1, 403);
    }
+
+   @Test
+   @DisplayName("FKPOC-939: POST /uppgifter/{id}/handlaggare returns 403 and leaves uppgift untouched when SID-märkt and new handläggare lacks SID-behörighet")
+   public void reassignTask_returns403_andLeavesUppgiftUntouched_whenSidUppgiftAndCallerLacksBehorighet()
+   {
+      sendCreateUppgiftRequest(newCreateUppgiftRequest(UUID.randomUUID()));
+      var original = assignTaskToHandlaggare(TEAM_MEMBER_1);
+      var uppgiftId = original.getOperativUppgift().getUppgiftId();
+
+      // Uppgift becomes SID-märkt after the initial (unrestricted) assignment
+      wireMockServer.stubFor(WireMock.post(WireMock.urlPathEqualTo("/sid/status"))
+            .willReturn(WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json")
+                  .withBody("{\"sid\":true}")));
+
+      // TEAM_MEMBER_2 has no behorigheter stub → treated as lacking SID-behörighet
+      reassignTask(uppgiftId, TEAM_MEMBER_2, 403);
+
+      var stillWithOriginal = getAssignedTasks(TEAM_MEMBER_1).getOperativaUppgifter();
+      assertTrue(stillWithOriginal.stream().anyMatch(t -> t.getUppgiftId().equals(uppgiftId)));
+      assertTrue(getAssignedTasks(TEAM_MEMBER_2).getOperativaUppgifter().stream()
+            .noneMatch(t -> t.getUppgiftId().equals(uppgiftId)));
+   }
+
+   @Test
+   @DisplayName("FKPOC-939: POST /uppgifter/{id}/handlaggare succeeds when uppgift is SID-märkt and new handläggare has SID-behörighet")
+   public void reassignTask_succeeds_whenSidUppgiftAndCallerHasBehorighet()
+   {
+      sendCreateUppgiftRequest(newCreateUppgiftRequest(UUID.randomUUID()));
+      var original = assignTaskToHandlaggare(TEAM_MEMBER_1);
+      var uppgiftId = original.getOperativUppgift().getUppgiftId();
+
+      // Uppgift becomes SID-märkt after the initial (unrestricted) assignment
+      wireMockServer.stubFor(WireMock.post(WireMock.urlPathEqualTo("/sid/status"))
+            .willReturn(WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json")
+                  .withBody("{\"sid\":true}")));
+
+      wireMockServer.stubFor(WireMock.get(WireMock.urlPathEqualTo(
+            "/individ/" + oulHandlaggareTypId + "/" + TEAM_MEMBER_2 + "/behorigheter"))
+            .willReturn(WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json")
+                  .withBody("{\"behorigheter\":[\"SID\"]}")));
+
+      var result = reassignTask(uppgiftId, TEAM_MEMBER_2);
+
+      assertEquals(TEAM_MEMBER_2.toString(), result.getOperativUppgift().getHandlaggarId().getVarde());
+   }
+
+   @Test
+   @DisplayName("FKPOC-939: POST /uppgifter/{id}/handlaggare returns 403 when behörighet check is unavailable for a SID-märkt uppgift")
+   public void reassignTask_returns403_whenBehorighetCheckUnavailable()
+   {
+      sendCreateUppgiftRequest(newCreateUppgiftRequest(UUID.randomUUID()));
+      var original = assignTaskToHandlaggare(TEAM_MEMBER_1);
+      var uppgiftId = original.getOperativUppgift().getUppgiftId();
+
+      wireMockServer.stubFor(WireMock.post(WireMock.urlPathEqualTo("/sid/status"))
+            .willReturn(WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json")
+                  .withBody("{\"sid\":true}")));
+
+      wireMockServer.stubFor(WireMock.get(WireMock.urlPathMatching("/individ/.+/behorigheter"))
+            .willReturn(WireMock.aResponse().withStatus(500)));
+
+      reassignTask(uppgiftId, TEAM_MEMBER_2, 403);
+   }
+
+   @Test
+   @DisplayName("FKPOC-939: POST /uppgifter/{id}/handlaggare returns 403, not 500, when handläggning read fails during the SID check")
+   public void reassignTask_returns403_notServerError_whenHandlaggningReadFails()
+   {
+      sendCreateUppgiftRequest(newCreateUppgiftRequest(UUID.randomUUID()));
+      var original = assignTaskToHandlaggare(TEAM_MEMBER_1);
+      var uppgiftId = original.getOperativUppgift().getUppgiftId();
+
+      wireMockServer.stubFor(WireMock.get(WireMock.urlPathMatching("/handlaggning/.+"))
+            .willReturn(WireMock.aResponse().withStatus(500)));
+
+      reassignTask(uppgiftId, TEAM_MEMBER_2, 403);
+   }
+
+   @Test
+   @DisplayName("FKPOC-939: POST /uppgifter/{id}/handlaggare returns 403, not 500, when SID status read fails during the SID check")
+   public void reassignTask_returns403_notServerError_whenSidStatusReadFails()
+   {
+      sendCreateUppgiftRequest(newCreateUppgiftRequest(UUID.randomUUID()));
+      var original = assignTaskToHandlaggare(TEAM_MEMBER_1);
+      var uppgiftId = original.getOperativUppgift().getUppgiftId();
+
+      wireMockServer.stubFor(WireMock.post(WireMock.urlPathMatching("/sid/status"))
+            .willReturn(WireMock.aResponse().withStatus(500)));
+
+      reassignTask(uppgiftId, TEAM_MEMBER_2, 403);
+   }
 }
