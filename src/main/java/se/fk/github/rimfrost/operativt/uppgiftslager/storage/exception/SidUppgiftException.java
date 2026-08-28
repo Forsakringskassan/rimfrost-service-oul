@@ -2,7 +2,7 @@ package se.fk.github.rimfrost.operativt.uppgiftslager.storage.exception;
 
 import java.util.UUID;
 
-public class SidUppgiftException extends RuntimeException
+public class SidUppgiftException extends RuntimeException implements ExcludableUppgiftException
 {
    private final UUID uppgiftsId;
 
@@ -13,6 +13,7 @@ public class SidUppgiftException extends RuntimeException
       this.uppgiftsId = uppgiftId;
    }
 
+   @Override
    public UUID getUppgiftsId()
    {
       return uppgiftsId;

@@ -217,6 +217,9 @@ public class OperativtUppgiftslagerService
       var harSidBehorighet = resolveSidBehorighet(handlaggare);
 
       UppgiftEntity uppgift;
+      // Scoped to this call: an orphaned uppgift is re-attempted (and re-fails) on every future
+      // assignNewTask call, the same way a SID-blocked uppgift is re-checked every time today.
+      // Mirrors existing behavior rather than adding a persisted skip-list (FKPOC-938 AC1).
       List<UUID> excludedUppgiftIds = new ArrayList<>();
       while (true)
       {
@@ -225,11 +228,7 @@ public class OperativtUppgiftslagerService
             uppgift = storage.assignNewUppgift(handlaggare, sorteringsordning, excludedUppgiftIds, harSidBehorighet);
             break;
          }
-         catch (SidUppgiftException e)
-         {
-            excludedUppgiftIds.add(e.getUppgiftsId());
-         }
-         catch (HandlaggningReadException e)
+         catch (SidUppgiftException | HandlaggningReadException e)
          {
             excludedUppgiftIds.add(e.getUppgiftsId());
          }

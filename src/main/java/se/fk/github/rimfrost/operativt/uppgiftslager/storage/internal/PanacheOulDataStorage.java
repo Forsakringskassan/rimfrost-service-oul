@@ -396,6 +396,9 @@ public class PanacheOulDataStorage implements OulDataStorage
       }
       catch (HandlaggningException e)
       {
+         // WARN, not ERROR: the caller now handles this (see assignNewTask), but it stays the
+         // one durable signal for a permanently orphaned handläggning — worth alerting on this
+         // specific message even though it's below ERROR level.
          LOGGER.warn("Failed to read handlaggning for handlaggning id: {} and uppgift id: {}", uppgift.getHandlaggningId(),
                uppgift.getId(), e);
 
