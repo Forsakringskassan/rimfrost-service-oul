@@ -396,10 +396,10 @@ public class PanacheOulDataStorage implements OulDataStorage
       }
       catch (HandlaggningException e)
       {
-         LOGGER.error("Failed to read handlaggning for handlaggning id: {} and uppgift id: {}", uppgift.getHandlaggningId(),
+         LOGGER.warn("Failed to read handlaggning for handlaggning id: {} and uppgift id: {}", uppgift.getHandlaggningId(),
                uppgift.getId(), e);
 
-         throw new HandlaggningReadException(e);
+         throw new HandlaggningReadException(uppgift.getId(), e);
       }
       catch (SidException e)
       {

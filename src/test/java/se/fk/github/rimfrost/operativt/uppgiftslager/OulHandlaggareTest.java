@@ -291,8 +291,8 @@ public class OulHandlaggareTest extends OulTestBase
    }
 
    @Test
-   @DisplayName("OUL-FR-04.6: Hämta ny uppgift — ger status 500 när läsning av handläggning misslyckas")
-   public void should_return_500_on_assign_uppgift_when_handlaggning_read_fails()
+   @DisplayName("FKPOC-938: Hämta ny uppgift — hoppar över uppgift med saknad/orphaned handläggning och beter sig som tom kö")
+   public void should_skip_assign_of_uppgift_when_handlaggning_read_fails()
    {
       wireMockServer.stubFor(WireMock.get(WireMock.urlPathMatching("/handlaggning/.+"))
             .willReturn(WireMock.aResponse().withStatus(500)));
@@ -300,7 +300,26 @@ public class OulHandlaggareTest extends OulTestBase
       var handlaggareId = UUID.randomUUID();
 
       sendCreateUppgiftRequest(newCreateUppgiftRequest(UUID.randomUUID()));
-      assignTaskToHandlaggare(handlaggareId, 500);
+      var assignResponse = assignTaskToHandlaggare(handlaggareId);
+      assertNull(assignResponse.getOperativUppgift());
+   }
+
+   @Test
+   @DisplayName("FKPOC-938: Hämta ny uppgift — hoppar över första uppgift med saknad handläggning och väljer nästa")
+   public void should_assign_next_uppgift_when_first_has_missing_handlaggning()
+   {
+      var orphanedHandlaggningId = UUID.randomUUID();
+
+      wireMockServer.stubFor(WireMock.get(WireMock.urlPathEqualTo("/handlaggning/" + orphanedHandlaggningId))
+            .willReturn(WireMock.aResponse().withStatus(404)));
+
+      var handlaggareId = UUID.randomUUID();
+
+      sendCreateUppgiftRequest(newCreateUppgiftRequest(orphanedHandlaggningId));
+      var expectedUppgiftResponse = sendCreateUppgiftRequest(newCreateUppgiftRequest(UUID.randomUUID()));
+      var assignResponse = assignTaskToHandlaggare(handlaggareId);
+      assertNotNull(assignResponse.getOperativUppgift());
+      assertEquals(expectedUppgiftResponse.getUppgiftId(), assignResponse.getOperativUppgift().getUppgiftId());
    }
 
    @Test

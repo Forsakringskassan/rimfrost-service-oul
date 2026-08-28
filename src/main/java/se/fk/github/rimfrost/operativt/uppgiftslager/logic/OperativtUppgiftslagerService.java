@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.SorteringsordningEntity;
+import se.fk.github.rimfrost.operativt.uppgiftslager.storage.exception.HandlaggningReadException;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.exception.SidUppgiftException;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.exception.UppgiftNotFoundException;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.SorteringsordningSpec;
@@ -225,6 +226,10 @@ public class OperativtUppgiftslagerService
             break;
          }
          catch (SidUppgiftException e)
+         {
+            excludedUppgiftIds.add(e.getUppgiftsId());
+         }
+         catch (HandlaggningReadException e)
          {
             excludedUppgiftIds.add(e.getUppgiftsId());
          }
