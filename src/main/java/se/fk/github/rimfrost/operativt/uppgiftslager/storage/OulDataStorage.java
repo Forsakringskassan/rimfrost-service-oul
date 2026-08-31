@@ -120,17 +120,6 @@ public interface OulDataStorage
    UppgiftEntity updateUppgift(UUID id, Idtyp handlaggarId);
 
    /**
-    * Returns whether the handläggning behind an uppgift is SID-märkt.
-    *
-    * @param handlaggningId the id of the handläggning to check — determines the result
-    * @param uppgiftId      the id of the uppgift {@code handlaggningId} belongs to; not used to
-    *                       compute the result, only to identify the uppgift in logs/exceptions
-    *                       if the read fails, so a caller must pass the matching pair
-    * @return whether the handläggning is SID-märkt
-    */
-   boolean containsSid(UUID handlaggningId, UUID uppgiftId);
-
-   /**
     * Persists a new sorteringsordning and sets it as the default if none exists yet.
     *
     * @param entity the sorteringsordning to save

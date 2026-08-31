@@ -12,9 +12,8 @@ import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.Idtyp;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.SorteringsordningEntity;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.UppgiftEntity;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.enums.UppgiftStatus;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.sid.SidChecker;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.OulDataStorage;
-import se.fk.github.rimfrost.operativt.uppgiftslager.storage.exception.HandlaggningReadException;
-import se.fk.github.rimfrost.operativt.uppgiftslager.storage.exception.SidStatusException;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.exception.SidUppgiftException;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.entity.DefaultSorteringsordningEntity;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.entity.SorteringsordningPersistenceEntity;
@@ -29,10 +28,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import se.fk.rimfrost.framework.handlaggning.adapter.HandlaggningAdapter;
-import se.fk.rimfrost.framework.handlaggning.exception.HandlaggningException;
-import se.fk.rimfrost.framework.sid.adapter.SidAdapter;
-import se.fk.rimfrost.framework.sid.exception.SidException;
 
 /**
  * JPA/Panache implementation of {@link OulDataStorage}.
@@ -61,10 +56,7 @@ public class PanacheOulDataStorage implements OulDataStorage
    SorteringsordningQueryBuilder queryBuilder;
 
    @Inject
-   HandlaggningAdapter handlaggningAdapter;
-
-   @Inject
-   SidAdapter sidAdapter;
+   SidChecker sidChecker;
 
    @ConfigProperty(name = "oul.uppgift.count-cache-ttl-ms", defaultValue = "5000")
    long countCacheTtlMs;
@@ -199,7 +191,7 @@ public class PanacheOulDataStorage implements OulDataStorage
 
       var uppgift = results.getFirst();
 
-      if (containsSid(uppgift.getHandlaggningId(), uppgift.getId()) && !harSidBehorighet)
+      if (sidChecker.containsSid(uppgift.getHandlaggningId(), uppgift.getId()) && !harSidBehorighet)
       {
          throw new SidUppgiftException(uppgift.getId());
       }
@@ -407,33 +399,4 @@ public class PanacheOulDataStorage implements OulDataStorage
       return total;
    }
 
-   @Override
-   public boolean containsSid(UUID handlaggningId, UUID uppgiftId)
-   {
-      try
-      {
-         var handlaggning = handlaggningAdapter.readHandlaggning(handlaggningId);
-         return sidAdapter.containsSid(handlaggning.yrkande().individYrkandeRoller().stream().map(
-               individYrkandeRoll -> (se.fk.rimfrost.framework.sid.model.Idtyp) se.fk.rimfrost.framework.sid.model.ImmutableIdtyp
-                     .builder()
-                     .typId(individYrkandeRoll.individ().typId())
-                     .varde(individYrkandeRoll.individ().varde())
-                     .build())
-               .toList());
-      }
-      catch (HandlaggningException e)
-      {
-         LOGGER.error("Failed to read handlaggning for handlaggning id: {} and uppgift id: {}", handlaggningId,
-               uppgiftId, e);
-
-         throw new HandlaggningReadException(e);
-      }
-      catch (SidException e)
-      {
-         LOGGER.error("Failed to read SID status for handlaggning id: {} and uppgift id: {}", handlaggningId,
-               uppgiftId, e);
-
-         throw new SidStatusException(e);
-      }
-   }
 }

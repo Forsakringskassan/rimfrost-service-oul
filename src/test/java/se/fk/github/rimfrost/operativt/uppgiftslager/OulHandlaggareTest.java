@@ -217,23 +217,35 @@ public class OulHandlaggareTest extends OulTestBase
    }
 
    @Test
-   @DisplayName("FKPOC-940: Lista egna uppgifter — lämnar uppgift orörd (fail-safe) när SID-kontrollen är otillgänglig")
-   public void should_leave_uppgift_in_list_when_sid_check_unavailable()
+   @DisplayName("FKPOC-940: Lista egna uppgifter — ger status 500 när läsning av handläggning misslyckas, istället för att gissa")
+   public void should_return_500_when_handlaggning_read_unavailable()
    {
       var handlaggareId = UUID.randomUUID();
 
       sendCreateUppgiftRequest(newCreateUppgiftRequest(UUID.randomUUID()));
-      var original = assignTaskToHandlaggare(handlaggareId);
-      var uppgiftId = original.getOperativUppgift().getUppgiftId();
+      assignTaskToHandlaggare(handlaggareId);
 
       wireMockServer.stubFor(WireMock.get(WireMock.urlPathMatching("/handlaggning/.+"))
             .willReturn(WireMock.aResponse().withStatus(500)));
 
-      var result = getAssignedTasks(handlaggareId);
+      // FKPOC-940 review #67: OUL can't guess an uppgift's SID status, so a failed check
+      // fails the whole list call (500) instead of guessing either way.
+      getAssignedTasks(handlaggareId, 500);
+   }
 
-      assertEquals(1, result.getOperativaUppgifter().size());
-      assertEquals(uppgiftId, result.getOperativaUppgifter().getFirst().getUppgiftId());
-      assertEquals(0, result.getBorttagnaPgaBehorighet());
+   @Test
+   @DisplayName("FKPOC-940: Lista egna uppgifter — ger status 500 när SID-tjänsten inte svarar, istället för att gissa")
+   public void should_return_500_when_sid_status_check_unavailable()
+   {
+      var handlaggareId = UUID.randomUUID();
+
+      sendCreateUppgiftRequest(newCreateUppgiftRequest(UUID.randomUUID()));
+      assignTaskToHandlaggare(handlaggareId);
+
+      wireMockServer.stubFor(WireMock.post(WireMock.urlPathMatching("/sid/status"))
+            .willReturn(WireMock.aResponse().withStatus(500)));
+
+      getAssignedTasks(handlaggareId, 500);
    }
 
    @Test

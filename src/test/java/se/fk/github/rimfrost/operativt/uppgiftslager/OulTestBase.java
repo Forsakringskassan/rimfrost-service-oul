@@ -200,6 +200,20 @@ public abstract class OulTestBase
    }
 
    /**
+    * Calls GET /uppgifter/handlaggare, expecting the given HTTP status code.
+    *
+    * @param handlaggarId   the handläggare varde
+    * @param expectedStatus expected HTTP response status
+    */
+   public static void getAssignedTasks(UUID handlaggarId, int expectedStatus)
+   {
+      given().contentType(ContentType.JSON)
+            .header("Authorization", bearerToken(handlaggarId))
+            .when().get("/uppgifter/handlaggare")
+            .then().statusCode(expectedStatus);
+   }
+
+   /**
     * Returns all tasks assigned to any team member of the given handläggare via GET /uppgifter/team.
     *
     * @param handlaggarId the caller's handläggare varde

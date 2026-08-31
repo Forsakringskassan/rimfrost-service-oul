@@ -22,6 +22,7 @@ import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.UppgiftEntity;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.enums.UppgiftStatus;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.exception.NotTeamMemberException;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.exception.SorteringsordningNotFoundException;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.sid.SidChecker;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.team.TeamService;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.OulDataStorage;
 
@@ -46,6 +47,9 @@ public class OperativtUppgiftslagerService
 
    @Inject
    TeamService teamService;
+
+   @Inject
+   SidChecker sidChecker;
 
    public UppgiftDto addOperativeTask(OperativtUppgiftslagerAddRequest addRequest, String notificationTopic,
          String replyTopic, Map<String, String> cloudeventAttributes)
@@ -248,12 +252,12 @@ public class OperativtUppgiftslagerService
    }
 
    /**
-    * Resolves whether {@code handlaggare} has SID-behörighet, once per {@link #assignNewTask}
-    * call rather than once per retry. Fails open (treats as {@code false}, i.e. skip SID
-    * uppgifter) on any failure beyond a plain "not found" — a Team API outage should degrade
-    * to the old unconditional-skip behaviour for SID uppgifter, not turn "assign me a task"
-    * into a hard failure for every handläggare whose next-in-line uppgift happens to be
-    * SID-marked.
+    * Resolves whether {@code handlaggare} has SID-behörighet. Used by {@link #assignNewTask}
+    * (once per call rather than once per retry) and {@link #isSidBlocked}. Fails open (treats as
+    * {@code false}, i.e. no behörighet / skip SID uppgifter) on any failure beyond a plain "not
+    * found" — a Team API outage should degrade to the old unconditional-skip behaviour for SID
+    * uppgifter, not turn assignment or listing into a hard failure for every handläggare whose
+    * uppgift happens to be SID-marked.
     *
     * @param handlaggare the handläggare identity
     * @return whether the handläggare has SID-behörighet, or {@code false} if that could not
@@ -304,28 +308,25 @@ public class OperativtUppgiftslagerService
 
    /**
     * Resolves whether {@code uppgift} should be removed from a list: SID-märkt, and its current
-    * assignee lacks SID-behörighet. Fails safe by leaving the uppgift in the list (returns
-    * {@code false}) on any resolution failure, unlike {@link #resolveSidBehorighet}'s per-action
-    * fail-open/fail-closed split — a single list call can touch many uppgifter across many
-    * handläggare, so a transient Team/handläggning/SID adapter outage must not cascade into
-    * mass-unassigning otherwise-valid tasks; it just means that row isn't re-evaluated this time.
+    * assignee lacks SID-behörighet. The behörighet check reuses {@link #resolveSidBehorighet}'s
+    * fail-open behaviour and runs first, so an authorized assignee's uppgift never pays for the
+    * SID-status check at all. Unlike the behörighet check, a failure to determine SID status is
+    * NOT swallowed here (review of FKPOC-940 #67): OUL can't guess whether an uppgift is
+    * SID-märkt, so {@link SidChecker#containsSid} propagates its exception on failure and the
+    * whole list call fails (→ 500) rather than risk returning a list that might wrongly include
+    * or exclude a SID-märkt uppgift.
     *
     * @param uppgift the uppgift to check, with its current assignee
     * @return whether the uppgift should be unassigned and excluded from the list
     */
    private boolean isSidBlocked(UppgiftEntity uppgift)
    {
-      try
+      if (resolveSidBehorighet(uppgift.handlaggarId()))
       {
-         return !teamService.harSidBehorighet(uppgift.handlaggarId())
-               && storage.containsSid(uppgift.handlaggningId(), uppgift.uppgiftId());
-      }
-      catch (RuntimeException e)
-      {
-         log.warn("Failed to resolve SID-authorization for uppgiftId: {}; leaving uppgift in list",
-               uppgift.uppgiftId(), e);
          return false;
       }
+
+      return sidChecker.containsSid(uppgift.handlaggningId(), uppgift.uppgiftId());
    }
 
    /**

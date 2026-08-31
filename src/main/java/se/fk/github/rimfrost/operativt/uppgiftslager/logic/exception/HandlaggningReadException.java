@@ -1,4 +1,4 @@
-package se.fk.github.rimfrost.operativt.uppgiftslager.storage.exception;
+package se.fk.github.rimfrost.operativt.uppgiftslager.logic.exception;
 
 public class HandlaggningReadException extends RuntimeException
 {
