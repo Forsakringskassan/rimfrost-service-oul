@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.SorteringsordningEntity;
+import se.fk.github.rimfrost.operativt.uppgiftslager.storage.exception.HandlaggningReadException;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.exception.SidUppgiftException;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.exception.UppgiftNotFoundException;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.SorteringsordningSpec;
@@ -216,6 +217,9 @@ public class OperativtUppgiftslagerService
       var harSidBehorighet = resolveSidBehorighet(handlaggare);
 
       UppgiftEntity uppgift;
+      // Scoped to this call: an orphaned uppgift is re-attempted (and re-fails) on every future
+      // assignNewTask call, the same way a SID-blocked uppgift is re-checked every time today.
+      // Mirrors existing behavior rather than adding a persisted skip-list (FKPOC-938 AC1).
       List<UUID> excludedUppgiftIds = new ArrayList<>();
       while (true)
       {
@@ -224,7 +228,7 @@ public class OperativtUppgiftslagerService
             uppgift = storage.assignNewUppgift(handlaggare, sorteringsordning, excludedUppgiftIds, harSidBehorighet);
             break;
          }
-         catch (SidUppgiftException e)
+         catch (SidUppgiftException | HandlaggningReadException e)
          {
             excludedUppgiftIds.add(e.getUppgiftsId());
          }
