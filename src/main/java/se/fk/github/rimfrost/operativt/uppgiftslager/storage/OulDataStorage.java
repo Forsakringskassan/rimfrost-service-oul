@@ -96,6 +96,20 @@ public interface OulDataStorage
    UppgiftEntity unassignUppgift(UUID id);
 
    /**
+    * Removes the handläggare assignment from the given uppgift, but only if it is still
+    * assigned to {@code expectedHandlaggarId}. Guards against a race where the uppgift was
+    * reassigned to someone else (or ended/deleted) between the caller reading it and calling
+    * this method — in either case, this is a no-op rather than clobbering whatever the uppgift's
+    * current state actually is.
+    *
+    * @param id                   the uppgift UUID to unassign
+    * @param expectedHandlaggarId the handläggare the caller's removal decision was based on
+    * @return the updated uppgift, or {@code null} if the uppgift no longer exists or is no
+    *         longer assigned to {@code expectedHandlaggarId}
+    */
+   UppgiftEntity unassignUppgiftIfAssignedTo(UUID id, Idtyp expectedHandlaggarId);
+
+   /**
     * Updates the handläggare assignment on an existing uppgift.
     *
     * @param id           the uppgift UUID to update
@@ -104,17 +118,6 @@ public interface OulDataStorage
     * @throws UppgiftNotFoundException if no uppgift with the given id exists
     */
    UppgiftEntity updateUppgift(UUID id, Idtyp handlaggarId);
-
-   /**
-    * Returns whether the handläggning behind an uppgift is SID-märkt.
-    *
-    * @param handlaggningId the id of the handläggning to check — determines the result
-    * @param uppgiftId      the id of the uppgift {@code handlaggningId} belongs to; not used to
-    *                       compute the result, only to identify the uppgift in logs/exceptions
-    *                       if the read fails, so a caller must pass the matching pair
-    * @return whether the handläggning is SID-märkt
-    */
-   boolean containsSid(UUID handlaggningId, UUID uppgiftId);
 
    /**
     * Persists a new sorteringsordning and sets it as the default if none exists yet.

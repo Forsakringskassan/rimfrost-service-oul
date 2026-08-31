@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.SorteringsordningEntity;
-import se.fk.github.rimfrost.operativt.uppgiftslager.storage.exception.HandlaggningReadException;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.exception.HandlaggningReadException;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.exception.SidUppgiftException;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.exception.UppgiftNotFoundException;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.SorteringsordningSpec;
@@ -24,6 +24,7 @@ import se.fk.github.rimfrost.operativt.uppgiftslager.logic.enums.UppgiftStatus;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.exception.NotTeamMemberException;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.exception.SidNotAuthorizedException;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.exception.SorteringsordningNotFoundException;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.sid.SidChecker;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.team.TeamService;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.OulDataStorage;
 
@@ -48,6 +49,9 @@ public class OperativtUppgiftslagerService
 
    @Inject
    TeamService teamService;
+
+   @Inject
+   SidChecker sidChecker;
 
    public UppgiftDto addOperativeTask(OperativtUppgiftslagerAddRequest addRequest, String notificationTopic,
          String replyTopic, Map<String, String> cloudeventAttributes)
@@ -130,12 +134,15 @@ public class OperativtUppgiftslagerService
    /**
     * Returns all uppgifter assigned to the given handläggare, sorted according to the
     * default sorteringsordning. If no sorteringsordning is configured the order is unspecified.
+    * Any uppgift that has become SID-märkt since assignment, where the assigned handläggare
+    * lacks SID-behörighet, is unassigned back into OUL's pool and excluded (FKPOC-940) — see
+    * {@link #filterSidBlocked}.
     *
     * @param idTyp        the handläggare identity type id
     * @param handlaggarId the handläggare identity value
-    * @return ordered collection of assigned uppgifter
+    * @return the uppgifter still visible to the caller, plus how many were removed
     */
-   public Collection<UppgiftDto> getUppgifterHandlaggare(String idTyp, String handlaggarId)
+   public UppgiftListResult getUppgifterHandlaggare(String idTyp, String handlaggarId)
    {
       log.info("Getting all tasks for handlaggarId: {}", handlaggarId);
       var handlaggare = ImmutableIdtyp.builder()
@@ -145,31 +152,34 @@ public class OperativtUppgiftslagerService
       var sorteringsordning = storage.getDefaultSorteringsordning()
             .orElse(new SorteringsordningEntity(null, null, null, List.of()));
       var uppgifter = storage.findAllUppgifterByHandlaggarId(handlaggare, sorteringsordning);
-      return uppgifter.stream().map(logicMapper::toUppgiftDto).toList();
+      return filterSidBlocked(uppgifter);
    }
 
    /**
     * Returns all uppgifter assigned to any member of the caller's team, sorted according to the
     * default sorteringsordning.
     * Throws {@link NotTeamMemberException} (→ HTTP 403) if the caller belongs to no known team (OUL-FR-17.4).
-    * Returns an empty list if the caller's team(s) have no members.
+    * Returns an empty result if the caller's team(s) have no members.
+    * Any uppgift that has become SID-märkt since assignment, where its assigned handläggare
+    * lacks SID-behörighet, is unassigned back into OUL's pool and excluded (FKPOC-940) — see
+    * {@link #filterSidBlocked}.
     *
     * @param callerHandlaggare the calling handläggare's identity (used to determine team)
-    * @return ordered collection of team uppgifter
+    * @return the uppgifter still visible to the caller, plus how many were removed
     */
-   public Collection<UppgiftDto> getUppgifterTeam(Idtyp callerHandlaggare)
+   public UppgiftListResult getUppgifterTeam(Idtyp callerHandlaggare)
    {
       log.info("Getting all team tasks for handlaggarId: {}", callerHandlaggare.varde());
       // throws NotTeamMemberException (→ 403) if the caller belongs to no known team
       var teamMembers = teamService.teamMembers(callerHandlaggare);
       if (teamMembers.isEmpty())
       {
-         return List.of();
+         return new UppgiftListResult(List.of(), 0);
       }
       var sorteringsordning = storage.getDefaultSorteringsordning()
             .orElse(new SorteringsordningEntity(null, null, null, List.of()));
       var uppgifter = storage.findAllUppgifterByTeam(teamMembers, sorteringsordning);
-      return uppgifter.stream().map(logicMapper::toUppgiftDto).toList();
+      return filterSidBlocked(uppgifter);
    }
 
    /**
@@ -258,11 +268,11 @@ public class OperativtUppgiftslagerService
 
    /**
     * Resolves whether {@code handlaggare} has SID-behörighet. Used by {@link #assignNewTask}
-    * (once per call rather than once per retry) and {@link #reassignUppgift}. Fails open
-    * (treats as {@code false}, i.e. no behörighet) on any failure beyond a plain "not found" —
-    * a Team API outage should degrade to the old unconditional-skip/reject behaviour for SID
-    * uppgifter, not turn assignment or ommarkering into a hard failure whenever the uppgift in
-    * question happens to be SID-marked.
+    * (once per call rather than once per retry), {@link #reassignUppgift}, and
+    * {@link #isSidBlocked}. Fails open (treats as {@code false}, i.e. no behörighet) on any
+    * failure beyond a plain "not found" — a Team API outage should degrade to the old
+    * unconditional-skip/reject behaviour for SID uppgifter, not turn assignment, ommarkering, or
+    * listing into a hard failure whenever the uppgift in question happens to be SID-marked.
     *
     * @param handlaggare the handläggare identity
     * @return whether the handläggare has SID-behörighet, or {@code false} if that could not
@@ -283,13 +293,97 @@ public class OperativtUppgiftslagerService
    }
 
    /**
+    * Filters an already-assigned uppgift list, removing (and unassigning) any uppgift whose
+    * current assignee lacks SID-behörighet for a now SID-märkt uppgift (FKPOC-940). Checked per
+    * row rather than once, since a team's uppgifter can each have a different assignee.
+    *
+    * @param uppgifter the already-assigned uppgifter to filter
+    * @return the uppgifter still visible to the caller, plus how many were removed
+    */
+   private UppgiftListResult filterSidBlocked(List<UppgiftEntity> uppgifter)
+   {
+      var kept = new ArrayList<UppgiftDto>();
+      var removed = 0;
+      for (var uppgift : uppgifter)
+      {
+         if (isSidBlocked(uppgift))
+         {
+            if (unassignIfStillAssignedTo(uppgift.uppgiftId(), uppgift.handlaggarId()))
+            {
+               removed++;
+            }
+         }
+         else
+         {
+            kept.add(logicMapper.toUppgiftDto(uppgift));
+         }
+      }
+      return new UppgiftListResult(kept, removed);
+   }
+
+   /**
+    * Resolves whether {@code uppgift} should be removed from a list: SID-märkt, and its current
+    * assignee lacks SID-behörighet. The behörighet check reuses {@link #resolveSidBehorighet}'s
+    * fail-open behaviour and runs first, so an authorized assignee's uppgift never pays for the
+    * SID-status check at all. Unlike the behörighet check, a failure to determine SID status is
+    * NOT swallowed here (review of FKPOC-940 #67): OUL can't guess whether an uppgift is
+    * SID-märkt, so {@link SidChecker#containsSid} propagates its exception on failure and the
+    * whole list call fails (→ 500) rather than risk returning a list that might wrongly include
+    * or exclude a SID-märkt uppgift.
+    *
+    * @param uppgift the uppgift to check, with its current assignee
+    * @return whether the uppgift should be unassigned and excluded from the list
+    */
+   private boolean isSidBlocked(UppgiftEntity uppgift)
+   {
+      if (resolveSidBehorighet(uppgift.handlaggarId()))
+      {
+         return false;
+      }
+
+      return sidChecker.containsSid(uppgift.handlaggningId(), uppgift.uppgiftId());
+   }
+
+   /**
+    * Unassigns an uppgift flagged by {@link #isSidBlocked}, but only if it is still assigned to
+    * {@code expectedHandlaggare} — the identity the removal decision in {@link #filterSidBlocked}
+    * was based on. Tolerates two races found in review: the uppgift no longer existing (ended/
+    * deleted between the list query and this call), and the uppgift having been reassigned to
+    * someone else in the meantime. Both are silent no-ops rather than an uncaught exception or a
+    * clobbered reassignment — the row has already left {@code expectedHandlaggare}'s list for a
+    * reason unrelated to SID-behörighet, so it is correctly excluded from the list either way, just
+    * not counted as a behörighet-driven removal.
+    *
+    * @param uppgiftId          the uppgift to unassign
+    * @param expectedHandlaggare the handläggare the removal decision was based on
+    * @return whether the uppgift was actually unassigned
+    */
+   private boolean unassignIfStillAssignedTo(UUID uppgiftId, Idtyp expectedHandlaggare)
+   {
+      var updated = storage.unassignUppgiftIfAssignedTo(uppgiftId, expectedHandlaggare);
+
+      if (updated == null)
+      {
+         log.warn("Uppgift {} no longer assigned to handlaggarId: {} when attempting SID-driven unassign; skipping",
+               uppgiftId, expectedHandlaggare.varde());
+         return false;
+      }
+
+      notifyStatusUpdate(updated);
+      return true;
+   }
+
+   /**
     * Resolves whether the given uppgift's handläggning is SID-märkt, for {@link #reassignUppgift}.
     * Fails closed (treats as {@code true}, i.e. potentially SID-märkt) on any read failure —
     * unlike {@link #resolveSidBehorighet}, ommarkering has no "next uppgift" to fall back to
     * (FKPOC-939), so when SID status can't be confirmed the safe default is to reject the
     * attempt (→ 403 via {@link SidNotAuthorizedException}) rather than either let the read
     * failure surface as an uncaught 500, or silently let a possibly SID-märkt uppgift through
-    * to an unconfirmed handläggare.
+    * to an unconfirmed handläggare. Unlike {@link #isSidBlocked}'s fail-loud choice for listing
+    * (FKPOC-940 review), a single ommarkering is one explicit action on one uppgift, not a call
+    * that can touch many uppgifter across many handläggare — fail-closed-and-reject is the
+    * narrower blast radius here.
     *
     * @param handlaggningId the uppgift's handläggning id
     * @param uppgiftId      the uppgift id, used only for logging context
@@ -299,7 +393,7 @@ public class OperativtUppgiftslagerService
    {
       try
       {
-         return storage.containsSid(handlaggningId, uppgiftId);
+         return sidChecker.containsSid(handlaggningId, uppgiftId);
       }
       catch (RuntimeException e)
       {

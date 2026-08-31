@@ -1,6 +1,7 @@
-package se.fk.github.rimfrost.operativt.uppgiftslager.storage.exception;
+package se.fk.github.rimfrost.operativt.uppgiftslager.logic.exception;
 
 import java.util.UUID;
+import se.fk.github.rimfrost.operativt.uppgiftslager.storage.exception.ExcludableUppgiftException;
 
 /**                                                                                                                                                                                                                                                                                                          
   * Thrown when the handläggning for an uppgift cannot be read, allowing the caller

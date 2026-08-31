@@ -1,19 +1,20 @@
 package se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.util;
 
-import java.util.Collection;
 import jakarta.enterprise.context.ApplicationScoped;
-import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.UppgiftDto;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.UppgiftListResult;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.enums.UppgiftStatus;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.UppgiftDto;
 import se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.*;
 import se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.OperativUppgift.StatusEnum;
 
 @ApplicationScoped
 public class PresentationRestMapper
 {
-   public GetUppgifterHandlaggareResponse toGetUppgifterHandlaggareResponse(Collection<UppgiftDto> uppgifter)
+   public GetUppgifterHandlaggareResponse toGetUppgifterHandlaggareResponse(UppgiftListResult result)
    {
       GetUppgifterHandlaggareResponse response = new GetUppgifterHandlaggareResponse();
-      response.setOperativaUppgifter(uppgifter.stream().map(this::toUppgift).toList());
+      response.setOperativaUppgifter(result.uppgifter().stream().map(this::toUppgift).toList());
+      response.setBorttagnaPgaBehorighet(result.borttagnaPgaBehorighet());
       return response;
    }
 

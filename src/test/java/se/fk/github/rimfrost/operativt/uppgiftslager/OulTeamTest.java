@@ -205,6 +205,34 @@ public class OulTeamTest extends OulTestBase
    }
 
    @Test
+   @DisplayName("FKPOC-940: GET /uppgifter/team tar bort endast den obehöriga medlemmens sid-märkta uppgift, behåller den andra")
+   public void getTeamTasks_removesOnlyBlockedMembersUppgift()
+   {
+      sendCreateUppgiftRequest(newCreateUppgiftRequest(UUID.randomUUID()));
+      assignTaskToHandlaggare(TEAM_MEMBER_1);
+
+      sendCreateUppgiftRequest(newCreateUppgiftRequest(UUID.randomUUID()));
+      var keptResponse = assignTaskToHandlaggare(TEAM_MEMBER_2);
+      var keptUppgiftId = keptResponse.getOperativUppgift().getUppgiftId();
+
+      // Båda uppgifterna blir sid-märkta; TEAM_MEMBER_1 saknar behorigheter-stubb (ingen behörighet),
+      // TEAM_MEMBER_2 har en (SID-behörighet) → endast TEAM_MEMBER_1:s uppgift tas bort
+      wireMockServer.stubFor(WireMock.post(WireMock.urlPathEqualTo("/sid/status"))
+            .willReturn(WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json")
+                  .withBody("{\"sid\":true}")));
+      wireMockServer.stubFor(WireMock.get(WireMock.urlPathEqualTo(
+            "/individ/" + oulHandlaggareTypId + "/" + TEAM_MEMBER_2 + "/behorigheter"))
+            .willReturn(WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json")
+                  .withBody("{\"behorigheter\":[\"SID\"]}")));
+
+      var result = getTeamTasks(TEAM_MEMBER_3);
+
+      assertEquals(1, result.getOperativaUppgifter().size());
+      assertEquals(keptUppgiftId, result.getOperativaUppgifter().getFirst().getUppgiftId());
+      assertEquals(1, result.getBorttagnaPgaBehorighet());
+   }
+
+   @Test
    @DisplayName("FKPOC-939: POST /uppgifter/{id}/handlaggare returns 403 and leaves uppgift untouched when SID-märkt and new handläggare lacks SID-behörighet")
    public void reassignTask_returns403_andLeavesUppgiftUntouched_whenSidUppgiftAndCallerLacksBehorighet()
    {
@@ -216,6 +244,15 @@ public class OulTeamTest extends OulTestBase
       wireMockServer.stubFor(WireMock.post(WireMock.urlPathEqualTo("/sid/status"))
             .willReturn(WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json")
                   .withBody("{\"sid\":true}")));
+
+      // TEAM_MEMBER_1 (the original/current owner) keeps SID-behörighet, so the getAssignedTasks
+      // call below verifies the rejected reassignment alone left the uppgift untouched — not
+      // conflated with FKPOC-940's own list-time SID-recheck, which would otherwise also remove
+      // it from TEAM_MEMBER_1's list if they too lacked behörighet.
+      wireMockServer.stubFor(WireMock.get(WireMock.urlPathEqualTo(
+            "/individ/" + oulHandlaggareTypId + "/" + TEAM_MEMBER_1 + "/behorigheter"))
+            .willReturn(WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json")
+                  .withBody("{\"behorigheter\":[\"SID\"]}")));
 
       // TEAM_MEMBER_2 has no behorigheter stub → treated as lacking SID-behörighet
       reassignTask(uppgiftId, TEAM_MEMBER_2, 403);

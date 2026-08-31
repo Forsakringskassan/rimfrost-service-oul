@@ -3,6 +3,7 @@ package se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal;
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.persistence.LockModeType;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,9 +13,8 @@ import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.Idtyp;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.SorteringsordningEntity;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.UppgiftEntity;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.enums.UppgiftStatus;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.sid.SidChecker;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.OulDataStorage;
-import se.fk.github.rimfrost.operativt.uppgiftslager.storage.exception.HandlaggningReadException;
-import se.fk.github.rimfrost.operativt.uppgiftslager.storage.exception.SidStatusException;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.exception.SidUppgiftException;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.entity.DefaultSorteringsordningEntity;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.entity.SorteringsordningPersistenceEntity;
@@ -25,13 +25,10 @@ import se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.repository
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.repository.SorteringsordningRepository;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.repository.UppgiftRepository;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import se.fk.rimfrost.framework.handlaggning.adapter.HandlaggningAdapter;
-import se.fk.rimfrost.framework.handlaggning.exception.HandlaggningException;
-import se.fk.rimfrost.framework.sid.adapter.SidAdapter;
-import se.fk.rimfrost.framework.sid.exception.SidException;
 
 /**
  * JPA/Panache implementation of {@link OulDataStorage}.
@@ -60,10 +57,7 @@ public class PanacheOulDataStorage implements OulDataStorage
    SorteringsordningQueryBuilder queryBuilder;
 
    @Inject
-   HandlaggningAdapter handlaggningAdapter;
-
-   @Inject
-   SidAdapter sidAdapter;
+   SidChecker sidChecker;
 
    @ConfigProperty(name = "oul.uppgift.count-cache-ttl-ms", defaultValue = "5000")
    long countCacheTtlMs;
@@ -201,12 +195,13 @@ public class PanacheOulDataStorage implements OulDataStorage
       // Same SID-authorization rule as OperativtUppgiftslagerService.reassignUppgift — kept in
       // sync by hand since this layer can't depend on TeamService; update both on any change.
       //
-      // Known gap (PR review, FKPOC-939): containsSid can also throw SidStatusException, which
-      // is not caught by assignNewTask's while(true) loop (it only catches SidUppgiftException
-      // and, as of FKPOC-938, HandlaggningReadException), so a SID-service failure still surfaces
-      // as an unhandled 500 during assignment, unlike reassignUppgift's resolveContainsSid
-      // handling of the same failure. Remains an open follow-up.
-      if (containsSid(uppgift.getHandlaggningId(), uppgift.getId()) && !harSidBehorighet)
+      // Known gap (PR review, FKPOC-939): SidChecker.containsSid can also throw
+      // SidStatusException, which is not caught by assignNewTask's while(true) loop (it only
+      // catches SidUppgiftException and, as of FKPOC-938, HandlaggningReadException), so a
+      // SID-service failure still surfaces as an unhandled 500 during assignment, unlike
+      // reassignUppgift's resolveContainsSid handling of the same failure. Remains an open
+      // follow-up.
+      if (sidChecker.containsSid(uppgift.getHandlaggningId(), uppgift.getId()) && !harSidBehorighet)
       {
          throw new SidUppgiftException(uppgift.getId());
       }
@@ -222,13 +217,44 @@ public class PanacheOulDataStorage implements OulDataStorage
    @Override
    public UppgiftEntity unassignUppgift(UUID id)
    {
-      var uppgift = uppgiftRepository.findById(id);
+      // PESSIMISTIC_WRITE (review, FKPOC-940): without a row lock, this read-modify-write can
+      // race with a concurrent updateUppgift/unassignUppgiftIfAssignedTo on the same row — both
+      // read the pre-change state, then both write, and whichever writes last silently wins
+      // regardless of which read was "correct". Locking here makes the second transaction block
+      // until the first commits, so its own findById sees the already-committed result instead.
+      var uppgift = uppgiftRepository.findById(id, LockModeType.PESSIMISTIC_WRITE);
 
       if (uppgift == null)
       {
          throw new UppgiftNotFoundException(id);
       }
 
+      return doUnassign(uppgift);
+   }
+
+   @Override
+   public UppgiftEntity unassignUppgiftIfAssignedTo(UUID id, Idtyp expectedHandlaggarId)
+   {
+      // See the PESSIMISTIC_WRITE note on unassignUppgift — same race, same fix.
+      var uppgift = uppgiftRepository.findById(id, LockModeType.PESSIMISTIC_WRITE);
+
+      if (uppgift == null)
+      {
+         return null;
+      }
+
+      if (!Objects.equals(uppgift.getHandlaggarIdTypId(), expectedHandlaggarId.typId())
+            || !Objects.equals(uppgift.getHandlaggarIdVarde(), expectedHandlaggarId.varde()))
+      {
+         return null;
+      }
+
+      return doUnassign(uppgift);
+   }
+
+   private UppgiftEntity doUnassign(
+         se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.entity.UppgiftEntity uppgift)
+   {
       var status = uppgift.getStatus();
 
       if (status == UppgiftStatus.TILLDELAD)
@@ -247,7 +273,8 @@ public class PanacheOulDataStorage implements OulDataStorage
    @Override
    public UppgiftEntity updateUppgift(UUID id, Idtyp handlaggarId)
    {
-      var uppgift = uppgiftRepository.findById(id);
+      // See the PESSIMISTIC_WRITE note on unassignUppgift — same race, same fix.
+      var uppgift = uppgiftRepository.findById(id, LockModeType.PESSIMISTIC_WRITE);
 
       if (uppgift == null)
       {
@@ -387,38 +414,5 @@ public class PanacheOulDataStorage implements OulDataStorage
       cacheTimestamp = now;
       cachedTotal = total;
       return total;
-   }
-
-   @Override
-   public boolean containsSid(UUID handlaggningId, UUID uppgiftId)
-   {
-      try
-      {
-         var handlaggning = handlaggningAdapter.readHandlaggning(handlaggningId);
-         return sidAdapter.containsSid(handlaggning.yrkande().individYrkandeRoller().stream().map(
-               individYrkandeRoll -> (se.fk.rimfrost.framework.sid.model.Idtyp) se.fk.rimfrost.framework.sid.model.ImmutableIdtyp
-                     .builder()
-                     .typId(individYrkandeRoll.individ().typId())
-                     .varde(individYrkandeRoll.individ().varde())
-                     .build())
-               .toList());
-      }
-      catch (HandlaggningException e)
-      {
-         // WARN, not ERROR: the caller now handles this (see assignNewTask), but it stays the
-         // one durable signal for a permanently orphaned handläggning — worth alerting on this
-         // specific message even though it's below ERROR level.
-         LOGGER.warn("Failed to read handlaggning for handlaggning id: {} and uppgift id: {}", handlaggningId,
-               uppgiftId, e);
-
-         throw new HandlaggningReadException(uppgiftId, e);
-      }
-      catch (SidException e)
-      {
-         LOGGER.error("Failed to read SID status for handlaggning id: {} and uppgift id: {}", handlaggningId,
-               uppgiftId, e);
-
-         throw new SidStatusException(e);
-      }
    }
 }
