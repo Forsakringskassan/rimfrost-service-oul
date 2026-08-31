@@ -155,6 +155,7 @@ via villkor och styra sorteringsriktning inom sin grupp.
 - **OUL-FR-18.3** Omtilldelning är endast tillåten om den nuvarande tilldelade handläggaren tillhör samma team som den anropande handläggaren. Om så inte är fallet ska HTTP 403 returneras.
 - **OUL-FR-18.4** Om angiven uppgift inte finns ska HTTP 404 returneras.
 - **OUL-FR-18.5** Vid omtilldelning ska en statusnotifiering publiceras på Kafka i enlighet med OUL-FR-06.
+- **OUL-FR-18.6** Om uppgiften är SID-märkt och den anropande handläggaren saknar SID-behörighet ska HTTP 403 returneras och uppgiften ska lämnas oförändrad. Om SID-status eller SID-behörighet inte kan avgöras ska 403 returneras (fail-closed).
 
 ### OUL-FR-15 — Villkorsutvärdering
 
