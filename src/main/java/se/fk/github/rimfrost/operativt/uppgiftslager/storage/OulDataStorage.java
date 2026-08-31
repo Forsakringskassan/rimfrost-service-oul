@@ -96,6 +96,20 @@ public interface OulDataStorage
    UppgiftEntity unassignUppgift(UUID id);
 
    /**
+    * Removes the handläggare assignment from the given uppgift, but only if it is still
+    * assigned to {@code expectedHandlaggarId}. Guards against a race where the uppgift was
+    * reassigned to someone else (or ended/deleted) between the caller reading it and calling
+    * this method — in either case, this is a no-op rather than clobbering whatever the uppgift's
+    * current state actually is.
+    *
+    * @param id                   the uppgift UUID to unassign
+    * @param expectedHandlaggarId the handläggare the caller's removal decision was based on
+    * @return the updated uppgift, or {@code null} if the uppgift no longer exists or is no
+    *         longer assigned to {@code expectedHandlaggarId}
+    */
+   UppgiftEntity unassignUppgiftIfAssignedTo(UUID id, Idtyp expectedHandlaggarId);
+
+   /**
     * Updates the handläggare assignment on an existing uppgift.
     *
     * @param id           the uppgift UUID to update

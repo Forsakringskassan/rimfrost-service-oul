@@ -289,8 +289,10 @@ public class OperativtUppgiftslagerService
       {
          if (isSidBlocked(uppgift))
          {
-            unassignTask(uppgift.uppgiftId());
-            removed++;
+            if (unassignIfStillAssignedTo(uppgift.uppgiftId(), uppgift.handlaggarId()))
+            {
+               removed++;
+            }
          }
          else
          {
@@ -324,6 +326,35 @@ public class OperativtUppgiftslagerService
                uppgift.uppgiftId(), e);
          return false;
       }
+   }
+
+   /**
+    * Unassigns an uppgift flagged by {@link #isSidBlocked}, but only if it is still assigned to
+    * {@code expectedHandlaggare} — the identity the removal decision in {@link #filterSidBlocked}
+    * was based on. Tolerates two races found in review: the uppgift no longer existing (ended/
+    * deleted between the list query and this call), and the uppgift having been reassigned to
+    * someone else in the meantime. Both are silent no-ops rather than an uncaught exception or a
+    * clobbered reassignment — the row has already left {@code expectedHandlaggare}'s list for a
+    * reason unrelated to SID-behörighet, so it is correctly excluded from the list either way, just
+    * not counted as a behörighet-driven removal.
+    *
+    * @param uppgiftId          the uppgift to unassign
+    * @param expectedHandlaggare the handläggare the removal decision was based on
+    * @return whether the uppgift was actually unassigned
+    */
+   private boolean unassignIfStillAssignedTo(UUID uppgiftId, Idtyp expectedHandlaggare)
+   {
+      var updated = storage.unassignUppgiftIfAssignedTo(uppgiftId, expectedHandlaggare);
+
+      if (updated == null)
+      {
+         log.warn("Uppgift {} no longer assigned to handlaggarId: {} when attempting SID-driven unassign; skipping",
+               uppgiftId, expectedHandlaggare.varde());
+         return false;
+      }
+
+      notifyStatusUpdate(updated);
+      return true;
    }
 
    /**

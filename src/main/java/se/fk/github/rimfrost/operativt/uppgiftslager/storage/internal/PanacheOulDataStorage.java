@@ -25,6 +25,7 @@ import se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.repository
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.repository.SorteringsordningRepository;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.repository.UppgiftRepository;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -221,6 +222,31 @@ public class PanacheOulDataStorage implements OulDataStorage
          throw new UppgiftNotFoundException(id);
       }
 
+      return doUnassign(uppgift);
+   }
+
+   @Override
+   public UppgiftEntity unassignUppgiftIfAssignedTo(UUID id, Idtyp expectedHandlaggarId)
+   {
+      var uppgift = uppgiftRepository.findById(id);
+
+      if (uppgift == null)
+      {
+         return null;
+      }
+
+      if (!Objects.equals(uppgift.getHandlaggarIdTypId(), expectedHandlaggarId.typId())
+            || !Objects.equals(uppgift.getHandlaggarIdVarde(), expectedHandlaggarId.varde()))
+      {
+         return null;
+      }
+
+      return doUnassign(uppgift);
+   }
+
+   private UppgiftEntity doUnassign(
+         se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.entity.UppgiftEntity uppgift)
+   {
       var status = uppgift.getStatus();
 
       if (status == UppgiftStatus.TILLDELAD)
