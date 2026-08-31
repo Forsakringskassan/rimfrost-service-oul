@@ -291,7 +291,7 @@ public class OulHandlaggareTest extends OulTestBase
    }
 
    @Test
-   @DisplayName("FKPOC-938: Hämta ny uppgift — hoppar över uppgift med saknad/orphaned handläggning och beter sig som tom kö")
+   @DisplayName("OUL-FR-04.7: Hämta ny uppgift — hoppar över uppgift med saknad/orphaned handläggning och beter sig som tom kö")
    public void should_skip_assign_of_uppgift_when_handlaggning_read_fails()
    {
       wireMockServer.stubFor(WireMock.get(WireMock.urlPathMatching("/handlaggning/.+"))
@@ -305,7 +305,7 @@ public class OulHandlaggareTest extends OulTestBase
    }
 
    @Test
-   @DisplayName("FKPOC-938: Hämta ny uppgift — hoppar över första uppgift med saknad handläggning och väljer nästa")
+   @DisplayName("OUL-FR-04.7: Hämta ny uppgift — hoppar över första uppgift med saknad handläggning och väljer nästa")
    public void should_assign_next_uppgift_when_first_has_missing_handlaggning()
    {
       var orphanedHandlaggningId = UUID.randomUUID();

@@ -69,6 +69,7 @@ via villkor och styra sorteringsriktning inom sin grupp.
 - **OUL-FR-04.4** Om ingen icke tilldelad uppgift finns ska ett tomt svar returneras utan felkod.
 - **OUL-FR-04.5** Vid tilldelning ska en statusnotifiering publiceras på Kafka.
 - **OUL-FR-04.6** Vid tilldelning av uppgift så ska SID status tas hänsyn till. Om en uppgift är SID markerad och handläggaren inte har SID roll så ska uppgiften hoppas över och nästa uppgift utvärderas.
+- **OUL-FR-04.7** Om handläggningsinformationen för en uppgift inte kan läsas ska uppgiften hoppas över och nästa utvärderas (jfr OUL-FR-04.6). Felet loggas på WARN-nivå. Överhoppningen gäller endast det aktuella anropet.
 
 ### OUL-FR-05 — Lista tilldelade uppgifter (handläggare)
 
