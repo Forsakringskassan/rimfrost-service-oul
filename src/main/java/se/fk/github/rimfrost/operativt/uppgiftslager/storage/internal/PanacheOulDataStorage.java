@@ -3,6 +3,7 @@ package se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal;
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.persistence.LockModeType;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -216,7 +217,12 @@ public class PanacheOulDataStorage implements OulDataStorage
    @Override
    public UppgiftEntity unassignUppgift(UUID id)
    {
-      var uppgift = uppgiftRepository.findById(id);
+      // PESSIMISTIC_WRITE (review, FKPOC-940): without a row lock, this read-modify-write can
+      // race with a concurrent updateUppgift/unassignUppgiftIfAssignedTo on the same row — both
+      // read the pre-change state, then both write, and whichever writes last silently wins
+      // regardless of which read was "correct". Locking here makes the second transaction block
+      // until the first commits, so its own findById sees the already-committed result instead.
+      var uppgift = uppgiftRepository.findById(id, LockModeType.PESSIMISTIC_WRITE);
 
       if (uppgift == null)
       {
@@ -229,7 +235,8 @@ public class PanacheOulDataStorage implements OulDataStorage
    @Override
    public UppgiftEntity unassignUppgiftIfAssignedTo(UUID id, Idtyp expectedHandlaggarId)
    {
-      var uppgift = uppgiftRepository.findById(id);
+      // See the PESSIMISTIC_WRITE note on unassignUppgift — same race, same fix.
+      var uppgift = uppgiftRepository.findById(id, LockModeType.PESSIMISTIC_WRITE);
 
       if (uppgift == null)
       {
@@ -266,7 +273,8 @@ public class PanacheOulDataStorage implements OulDataStorage
    @Override
    public UppgiftEntity updateUppgift(UUID id, Idtyp handlaggarId)
    {
-      var uppgift = uppgiftRepository.findById(id);
+      // See the PESSIMISTIC_WRITE note on unassignUppgift — same race, same fix.
+      var uppgift = uppgiftRepository.findById(id, LockModeType.PESSIMISTIC_WRITE);
 
       if (uppgift == null)
       {
