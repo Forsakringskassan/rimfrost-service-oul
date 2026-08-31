@@ -198,7 +198,15 @@ public class PanacheOulDataStorage implements OulDataStorage
 
       var uppgift = results.getFirst();
 
-      if (containsSid(uppgift) && !harSidBehorighet)
+      // Same SID-authorization rule as OperativtUppgiftslagerService.reassignUppgift — kept in
+      // sync by hand since this layer can't depend on TeamService; update both on any change.
+      //
+      // Known gap (PR review, FKPOC-939): containsSid can also throw SidStatusException, which
+      // is not caught by assignNewTask's while(true) loop (it only catches SidUppgiftException
+      // and, as of FKPOC-938, HandlaggningReadException), so a SID-service failure still surfaces
+      // as an unhandled 500 during assignment, unlike reassignUppgift's resolveContainsSid
+      // handling of the same failure. Remains an open follow-up.
+      if (containsSid(uppgift.getHandlaggningId(), uppgift.getId()) && !harSidBehorighet)
       {
          throw new SidUppgiftException(uppgift.getId());
       }
@@ -381,11 +389,12 @@ public class PanacheOulDataStorage implements OulDataStorage
       return total;
    }
 
-   private boolean containsSid(se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.entity.UppgiftEntity uppgift)
+   @Override
+   public boolean containsSid(UUID handlaggningId, UUID uppgiftId)
    {
       try
       {
-         var handlaggning = handlaggningAdapter.readHandlaggning(uppgift.getHandlaggningId());
+         var handlaggning = handlaggningAdapter.readHandlaggning(handlaggningId);
          return sidAdapter.containsSid(handlaggning.yrkande().individYrkandeRoller().stream().map(
                individYrkandeRoll -> (se.fk.rimfrost.framework.sid.model.Idtyp) se.fk.rimfrost.framework.sid.model.ImmutableIdtyp
                      .builder()
@@ -399,15 +408,15 @@ public class PanacheOulDataStorage implements OulDataStorage
          // WARN, not ERROR: the caller now handles this (see assignNewTask), but it stays the
          // one durable signal for a permanently orphaned handläggning — worth alerting on this
          // specific message even though it's below ERROR level.
-         LOGGER.warn("Failed to read handlaggning for handlaggning id: {} and uppgift id: {}", uppgift.getHandlaggningId(),
-               uppgift.getId(), e);
+         LOGGER.warn("Failed to read handlaggning for handlaggning id: {} and uppgift id: {}", handlaggningId,
+               uppgiftId, e);
 
-         throw new HandlaggningReadException(uppgift.getId(), e);
+         throw new HandlaggningReadException(uppgiftId, e);
       }
       catch (SidException e)
       {
-         LOGGER.error("Failed to read SID status for handlaggning id: {} and uppgift id: {}", uppgift.getHandlaggningId(),
-               uppgift.getId(), e);
+         LOGGER.error("Failed to read SID status for handlaggning id: {} and uppgift id: {}", handlaggningId,
+               uppgiftId, e);
 
          throw new SidStatusException(e);
       }
