@@ -191,6 +191,15 @@ public class PanacheOulDataStorage implements OulDataStorage
 
       var uppgift = results.getFirst();
 
+      // Same SID-authorization rule as OperativtUppgiftslagerService.reassignUppgift — kept in
+      // sync by hand since this layer can't depend on TeamService; update both on any change.
+      //
+      // Known gap (PR review, FKPOC-939): SidChecker.containsSid can also throw
+      // SidStatusException, which is not caught by assignNewTask's while(true) loop (it only
+      // catches SidUppgiftException and, as of FKPOC-938, HandlaggningReadException), so a
+      // SID-service failure still surfaces as an unhandled 500 during assignment, unlike
+      // reassignUppgift's resolveContainsSid handling of the same failure. Remains an open
+      // follow-up.
       if (sidChecker.containsSid(uppgift.getHandlaggningId(), uppgift.getId()) && !harSidBehorighet)
       {
          throw new SidUppgiftException(uppgift.getId());
@@ -398,5 +407,4 @@ public class PanacheOulDataStorage implements OulDataStorage
       cachedTotal = total;
       return total;
    }
-
 }

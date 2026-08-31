@@ -39,10 +39,13 @@ public class SidCheckerService implements SidChecker
       }
       catch (HandlaggningException e)
       {
-         LOGGER.error("Failed to read handlaggning for handlaggning id: {} and uppgift id: {}", handlaggningId,
+         // WARN, not ERROR: the caller now handles this (see assignNewTask), but it stays the
+         // one durable signal for a permanently orphaned handläggning — worth alerting on this
+         // specific message even though it's below ERROR level.
+         LOGGER.warn("Failed to read handlaggning for handlaggning id: {} and uppgift id: {}", handlaggningId,
                uppgiftId, e);
 
-         throw new HandlaggningReadException(e);
+         throw new HandlaggningReadException(uppgiftId, e);
       }
       catch (SidException e)
       {
