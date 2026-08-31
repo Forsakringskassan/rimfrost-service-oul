@@ -201,13 +201,11 @@ public class PanacheOulDataStorage implements OulDataStorage
       // Same SID-authorization rule as OperativtUppgiftslagerService.reassignUppgift — kept in
       // sync by hand since this layer can't depend on TeamService; update both on any change.
       //
-      // Known gap (PR review, FKPOC-939): containsSid can throw HandlaggningReadException or
-      // SidStatusException, neither of which is caught by assignNewTask's while(true) loop (it
-      // only catches SidUppgiftException below), so either surfaces as an unhandled 500 instead
-      // of the skip-and-retry that reassignUppgift's resolveContainsSid gets for the same failure.
-      // FKPOC-938 (separate PR) fixes the HandlaggningReadException half by giving it a uppgiftId
-      // and catching it in assignNewTask; SidStatusException is not covered by either PR and
-      // remains an open follow-up.
+      // Known gap (PR review, FKPOC-939): containsSid can also throw SidStatusException, which
+      // is not caught by assignNewTask's while(true) loop (it only catches SidUppgiftException
+      // and, as of FKPOC-938, HandlaggningReadException), so a SID-service failure still surfaces
+      // as an unhandled 500 during assignment, unlike reassignUppgift's resolveContainsSid
+      // handling of the same failure. Remains an open follow-up.
       if (containsSid(uppgift.getHandlaggningId(), uppgift.getId()) && !harSidBehorighet)
       {
          throw new SidUppgiftException(uppgift.getId());
@@ -407,10 +405,13 @@ public class PanacheOulDataStorage implements OulDataStorage
       }
       catch (HandlaggningException e)
       {
-         LOGGER.error("Failed to read handlaggning for handlaggning id: {} and uppgift id: {}", handlaggningId,
+         // WARN, not ERROR: the caller now handles this (see assignNewTask), but it stays the
+         // one durable signal for a permanently orphaned handläggning — worth alerting on this
+         // specific message even though it's below ERROR level.
+         LOGGER.warn("Failed to read handlaggning for handlaggning id: {} and uppgift id: {}", handlaggningId,
                uppgiftId, e);
 
-         throw new HandlaggningReadException(e);
+         throw new HandlaggningReadException(uppgiftId, e);
       }
       catch (SidException e)
       {
