@@ -131,6 +131,112 @@ public class OulHandlaggareTest extends OulTestBase
    }
 
    @Test
+   @DisplayName("FKPOC-940: Lista egna uppgifter — inkluderar alltid borttagna_pga_behorighet, 0 när inget togs bort")
+   public void should_return_zero_borttagna_when_nothing_removed()
+   {
+      var handlaggareId = UUID.randomUUID();
+
+      sendCreateUppgiftRequest(newCreateUppgiftRequest(UUID.randomUUID()));
+      assignTaskToHandlaggare(handlaggareId);
+
+      var result = getAssignedTasks(handlaggareId);
+
+      assertEquals(0, result.getBorttagnaPgaBehorighet());
+   }
+
+   @Test
+   @DisplayName("FKPOC-940: Lista egna uppgifter — tar bort uppgift som blivit sid-märkt och signalerar borttagningen")
+   public void should_remove_and_signal_sid_blocked_uppgift_from_own_list()
+   {
+      var handlaggareId = UUID.randomUUID();
+
+      sendCreateUppgiftRequest(newCreateUppgiftRequest(UUID.randomUUID()));
+      assignTaskToHandlaggare(handlaggareId);
+
+      // Uppgiften blir sid-märkt efter tilldelning; handläggareId har inget behorigheter-stubb → ingen behörighet
+      wireMockServer.stubFor(WireMock.post(WireMock.urlPathEqualTo("/sid/status"))
+            .willReturn(WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json")
+                  .withBody("{\"sid\":true}")));
+
+      var result = getAssignedTasks(handlaggareId);
+
+      assertEquals(0, result.getOperativaUppgifter().size());
+      assertEquals(1, result.getBorttagnaPgaBehorighet());
+   }
+
+   @Test
+   @DisplayName("FKPOC-940: Uppgift borttagen via lista blir tilldelningsbar igen för en behörig handläggare")
+   public void should_make_removed_uppgift_assignable_again()
+   {
+      var originalHandlaggare = UUID.randomUUID();
+      var newHandlaggare = UUID.randomUUID();
+
+      sendCreateUppgiftRequest(newCreateUppgiftRequest(UUID.randomUUID()));
+      var original = assignTaskToHandlaggare(originalHandlaggare);
+      var uppgiftId = original.getOperativUppgift().getUppgiftId();
+
+      wireMockServer.stubFor(WireMock.post(WireMock.urlPathEqualTo("/sid/status"))
+            .willReturn(WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json")
+                  .withBody("{\"sid\":true}")));
+      wireMockServer.stubFor(WireMock.get(WireMock.urlPathEqualTo(
+            "/individ/" + oulHandlaggareTypId + "/" + newHandlaggare + "/behorigheter"))
+            .willReturn(WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json")
+                  .withBody("{\"behorigheter\":[\"SID\"]}")));
+
+      getAssignedTasks(originalHandlaggare);
+
+      var reassigned = assignTaskToHandlaggare(newHandlaggare);
+
+      assertNotNull(reassigned.getOperativUppgift());
+      assertEquals(uppgiftId, reassigned.getOperativUppgift().getUppgiftId());
+   }
+
+   @Test
+   @DisplayName("FKPOC-940: Lista egna uppgifter — lämnar sid-märkt uppgift orörd när handläggaren har sid-behörighet")
+   public void should_leave_sid_uppgift_untouched_when_assignee_has_behorighet()
+   {
+      var handlaggareId = UUID.randomUUID();
+
+      sendCreateUppgiftRequest(newCreateUppgiftRequest(UUID.randomUUID()));
+      var original = assignTaskToHandlaggare(handlaggareId);
+      var uppgiftId = original.getOperativUppgift().getUppgiftId();
+
+      wireMockServer.stubFor(WireMock.post(WireMock.urlPathEqualTo("/sid/status"))
+            .willReturn(WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json")
+                  .withBody("{\"sid\":true}")));
+      wireMockServer.stubFor(WireMock.get(WireMock.urlPathEqualTo(
+            "/individ/" + oulHandlaggareTypId + "/" + handlaggareId + "/behorigheter"))
+            .willReturn(WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json")
+                  .withBody("{\"behorigheter\":[\"SID\"]}")));
+
+      var result = getAssignedTasks(handlaggareId);
+
+      assertEquals(1, result.getOperativaUppgifter().size());
+      assertEquals(uppgiftId, result.getOperativaUppgifter().getFirst().getUppgiftId());
+      assertEquals(0, result.getBorttagnaPgaBehorighet());
+   }
+
+   @Test
+   @DisplayName("FKPOC-940: Lista egna uppgifter — lämnar uppgift orörd (fail-safe) när SID-kontrollen är otillgänglig")
+   public void should_leave_uppgift_in_list_when_sid_check_unavailable()
+   {
+      var handlaggareId = UUID.randomUUID();
+
+      sendCreateUppgiftRequest(newCreateUppgiftRequest(UUID.randomUUID()));
+      var original = assignTaskToHandlaggare(handlaggareId);
+      var uppgiftId = original.getOperativUppgift().getUppgiftId();
+
+      wireMockServer.stubFor(WireMock.get(WireMock.urlPathMatching("/handlaggning/.+"))
+            .willReturn(WireMock.aResponse().withStatus(500)));
+
+      var result = getAssignedTasks(handlaggareId);
+
+      assertEquals(1, result.getOperativaUppgifter().size());
+      assertEquals(uppgiftId, result.getOperativaUppgifter().getFirst().getUppgiftId());
+      assertEquals(0, result.getBorttagnaPgaBehorighet());
+   }
+
+   @Test
    @DisplayName("OUL-FR-05.2: Lista tilldelade uppgifter — filtreras på handläggarens identitet, en annan handläggares uppgifter syns inte")
    public void should_not_return_other_handlaggares_tasks()
    {

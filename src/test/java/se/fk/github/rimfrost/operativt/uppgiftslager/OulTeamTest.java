@@ -203,4 +203,32 @@ public class OulTeamTest extends OulTestBase
 
       reassignTask(uppgiftId, TEAM_MEMBER_1, 403);
    }
+
+   @Test
+   @DisplayName("FKPOC-940: GET /uppgifter/team tar bort endast den obehöriga medlemmens sid-märkta uppgift, behåller den andra")
+   public void getTeamTasks_removesOnlyBlockedMembersUppgift()
+   {
+      sendCreateUppgiftRequest(newCreateUppgiftRequest(UUID.randomUUID()));
+      assignTaskToHandlaggare(TEAM_MEMBER_1);
+
+      sendCreateUppgiftRequest(newCreateUppgiftRequest(UUID.randomUUID()));
+      var keptResponse = assignTaskToHandlaggare(TEAM_MEMBER_2);
+      var keptUppgiftId = keptResponse.getOperativUppgift().getUppgiftId();
+
+      // Båda uppgifterna blir sid-märkta; TEAM_MEMBER_1 saknar behorigheter-stubb (ingen behörighet),
+      // TEAM_MEMBER_2 har en (SID-behörighet) → endast TEAM_MEMBER_1:s uppgift tas bort
+      wireMockServer.stubFor(WireMock.post(WireMock.urlPathEqualTo("/sid/status"))
+            .willReturn(WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json")
+                  .withBody("{\"sid\":true}")));
+      wireMockServer.stubFor(WireMock.get(WireMock.urlPathEqualTo(
+            "/individ/" + oulHandlaggareTypId + "/" + TEAM_MEMBER_2 + "/behorigheter"))
+            .willReturn(WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json")
+                  .withBody("{\"behorigheter\":[\"SID\"]}")));
+
+      var result = getTeamTasks(TEAM_MEMBER_3);
+
+      assertEquals(1, result.getOperativaUppgifter().size());
+      assertEquals(keptUppgiftId, result.getOperativaUppgifter().getFirst().getUppgiftId());
+      assertEquals(1, result.getBorttagnaPgaBehorighet());
+   }
 }

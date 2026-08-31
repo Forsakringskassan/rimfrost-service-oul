@@ -198,7 +198,7 @@ public class PanacheOulDataStorage implements OulDataStorage
 
       var uppgift = results.getFirst();
 
-      if (containsSid(uppgift) && !harSidBehorighet)
+      if (containsSid(uppgift.getHandlaggningId(), uppgift.getId()) && !harSidBehorighet)
       {
          throw new SidUppgiftException(uppgift.getId());
       }
@@ -381,11 +381,12 @@ public class PanacheOulDataStorage implements OulDataStorage
       return total;
    }
 
-   private boolean containsSid(se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.entity.UppgiftEntity uppgift)
+   @Override
+   public boolean containsSid(UUID handlaggningId, UUID uppgiftId)
    {
       try
       {
-         var handlaggning = handlaggningAdapter.readHandlaggning(uppgift.getHandlaggningId());
+         var handlaggning = handlaggningAdapter.readHandlaggning(handlaggningId);
          return sidAdapter.containsSid(handlaggning.yrkande().individYrkandeRoller().stream().map(
                individYrkandeRoll -> (se.fk.rimfrost.framework.sid.model.Idtyp) se.fk.rimfrost.framework.sid.model.ImmutableIdtyp
                      .builder()
@@ -396,15 +397,15 @@ public class PanacheOulDataStorage implements OulDataStorage
       }
       catch (HandlaggningException e)
       {
-         LOGGER.error("Failed to read handlaggning for handlaggning id: {} and uppgift id: {}", uppgift.getHandlaggningId(),
-               uppgift.getId(), e);
+         LOGGER.error("Failed to read handlaggning for handlaggning id: {} and uppgift id: {}", handlaggningId,
+               uppgiftId, e);
 
          throw new HandlaggningReadException(e);
       }
       catch (SidException e)
       {
-         LOGGER.error("Failed to read SID status for handlaggning id: {} and uppgift id: {}", uppgift.getHandlaggningId(),
-               uppgift.getId(), e);
+         LOGGER.error("Failed to read SID status for handlaggning id: {} and uppgift id: {}", handlaggningId,
+               uppgiftId, e);
 
          throw new SidStatusException(e);
       }

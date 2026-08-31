@@ -128,12 +128,15 @@ public class OperativtUppgiftslagerService
    /**
     * Returns all uppgifter assigned to the given handläggare, sorted according to the
     * default sorteringsordning. If no sorteringsordning is configured the order is unspecified.
+    * Any uppgift that has become SID-märkt since assignment, where the assigned handläggare
+    * lacks SID-behörighet, is unassigned back into OUL's pool and excluded (FKPOC-940) — see
+    * {@link #filterSidBlocked}.
     *
     * @param idTyp        the handläggare identity type id
     * @param handlaggarId the handläggare identity value
-    * @return ordered collection of assigned uppgifter
+    * @return the uppgifter still visible to the caller, plus how many were removed
     */
-   public Collection<UppgiftDto> getUppgifterHandlaggare(String idTyp, String handlaggarId)
+   public UppgiftListResult getUppgifterHandlaggare(String idTyp, String handlaggarId)
    {
       log.info("Getting all tasks for handlaggarId: {}", handlaggarId);
       var handlaggare = ImmutableIdtyp.builder()
@@ -143,31 +146,34 @@ public class OperativtUppgiftslagerService
       var sorteringsordning = storage.getDefaultSorteringsordning()
             .orElse(new SorteringsordningEntity(null, null, null, List.of()));
       var uppgifter = storage.findAllUppgifterByHandlaggarId(handlaggare, sorteringsordning);
-      return uppgifter.stream().map(logicMapper::toUppgiftDto).toList();
+      return filterSidBlocked(uppgifter);
    }
 
    /**
     * Returns all uppgifter assigned to any member of the caller's team, sorted according to the
     * default sorteringsordning.
     * Throws {@link NotTeamMemberException} (→ HTTP 403) if the caller belongs to no known team (OUL-FR-17.4).
-    * Returns an empty list if the caller's team(s) have no members.
+    * Returns an empty result if the caller's team(s) have no members.
+    * Any uppgift that has become SID-märkt since assignment, where its assigned handläggare
+    * lacks SID-behörighet, is unassigned back into OUL's pool and excluded (FKPOC-940) — see
+    * {@link #filterSidBlocked}.
     *
     * @param callerHandlaggare the calling handläggare's identity (used to determine team)
-    * @return ordered collection of team uppgifter
+    * @return the uppgifter still visible to the caller, plus how many were removed
     */
-   public Collection<UppgiftDto> getUppgifterTeam(Idtyp callerHandlaggare)
+   public UppgiftListResult getUppgifterTeam(Idtyp callerHandlaggare)
    {
       log.info("Getting all team tasks for handlaggarId: {}", callerHandlaggare.varde());
       // throws NotTeamMemberException (→ 403) if the caller belongs to no known team
       var teamMembers = teamService.teamMembers(callerHandlaggare);
       if (teamMembers.isEmpty())
       {
-         return List.of();
+         return new UppgiftListResult(List.of(), 0);
       }
       var sorteringsordning = storage.getDefaultSorteringsordning()
             .orElse(new SorteringsordningEntity(null, null, null, List.of()));
       var uppgifter = storage.findAllUppgifterByTeam(teamMembers, sorteringsordning);
-      return uppgifter.stream().map(logicMapper::toUppgiftDto).toList();
+      return filterSidBlocked(uppgifter);
    }
 
    /**
@@ -263,6 +269,59 @@ public class OperativtUppgiftslagerService
       {
          log.warn("Failed to resolve SID-behörighet for handlaggarId: {}; treating as no behörighet",
                handlaggare.varde(), e);
+         return false;
+      }
+   }
+
+   /**
+    * Filters an already-assigned uppgift list, removing (and unassigning) any uppgift whose
+    * current assignee lacks SID-behörighet for a now SID-märkt uppgift (FKPOC-940). Checked per
+    * row rather than once, since a team's uppgifter can each have a different assignee.
+    *
+    * @param uppgifter the already-assigned uppgifter to filter
+    * @return the uppgifter still visible to the caller, plus how many were removed
+    */
+   private UppgiftListResult filterSidBlocked(List<UppgiftEntity> uppgifter)
+   {
+      var kept = new ArrayList<UppgiftDto>();
+      var removed = 0;
+      for (var uppgift : uppgifter)
+      {
+         if (isSidBlocked(uppgift))
+         {
+            unassignTask(uppgift.uppgiftId());
+            removed++;
+         }
+         else
+         {
+            kept.add(logicMapper.toUppgiftDto(uppgift));
+         }
+      }
+      return new UppgiftListResult(kept, removed);
+   }
+
+   /**
+    * Resolves whether {@code uppgift} should be removed from a list: SID-märkt, and its current
+    * assignee lacks SID-behörighet. Fails safe by leaving the uppgift in the list (returns
+    * {@code false}) on any resolution failure, unlike {@link #resolveSidBehorighet}'s per-action
+    * fail-open/fail-closed split — a single list call can touch many uppgifter across many
+    * handläggare, so a transient Team/handläggning/SID adapter outage must not cascade into
+    * mass-unassigning otherwise-valid tasks; it just means that row isn't re-evaluated this time.
+    *
+    * @param uppgift the uppgift to check, with its current assignee
+    * @return whether the uppgift should be unassigned and excluded from the list
+    */
+   private boolean isSidBlocked(UppgiftEntity uppgift)
+   {
+      try
+      {
+         return !teamService.harSidBehorighet(uppgift.handlaggarId())
+               && storage.containsSid(uppgift.handlaggningId(), uppgift.uppgiftId());
+      }
+      catch (RuntimeException e)
+      {
+         log.warn("Failed to resolve SID-authorization for uppgiftId: {}; leaving uppgift in list",
+               uppgift.uppgiftId(), e);
          return false;
       }
    }

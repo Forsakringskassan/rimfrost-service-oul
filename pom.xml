@@ -55,7 +55,10 @@
     <dependency>
       <groupId>se.fk.rimfrost.oul.handlaggning</groupId>
       <artifactId>rimfrost-service-oul-openapi-jaxrs-spec</artifactId>
-      <version>2.1.0</version>
+      <!-- TODO(FKPOC-940): 2.2.0-SNAPSHOT is a local-only build of the openapi.yaml change in the
+           companion rimfrost-service-oul-openapi PR. Bump to the real released version once that
+           PR is merged and its release workflow has run. -->
+      <version>2.2.0-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>se.fk.rimfrost</groupId>
