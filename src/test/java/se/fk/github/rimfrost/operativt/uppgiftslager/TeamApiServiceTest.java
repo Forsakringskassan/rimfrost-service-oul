@@ -48,14 +48,14 @@ class TeamApiServiceTest
    }
 
    @Test
-   void harSidBehorighet_returnsTrue_whenBehorigheterContainsSid()
+   void harSidBehorighet_returnsTrue_whenHasSidPermissionReturnsTrue()
    {
       var varde = "a1a1a1a1-0000-0000-0000-000000000010";
       wireMockServer.stubFor(WireMock.get(WireMock.urlPathEqualTo(
-            "/individ/" + oulHandlaggareTypId + "/" + varde + "/behorigheter"))
+            "/individ/" + oulHandlaggareTypId + "/" + varde + "/hasSidPermission"))
             .willReturn(WireMock.aResponse().withStatus(200)
                   .withHeader("Content-Type", "application/json")
-                  .withBody("{\"behorigheter\":[\"SID\"]}")));
+                  .withBody("true")));
 
       var handlaggare = ImmutableIdtyp.builder().typId(oulHandlaggareTypId).varde(varde).build();
 
@@ -63,30 +63,15 @@ class TeamApiServiceTest
    }
 
    @Test
-   @DisplayName("OUL-FR-04.6: returns false when behörigheter list is empty")
-   void harSidBehorighet_returnsFalse_whenBehorigheterIsEmpty()
+   @DisplayName("OUL-FR-04.6: returns false when hasSidPermission returns false")
+   void harSidBehorighet_returnsFalse_whenHasSidPermissionReturnsFalse()
    {
       var varde = "a1a1a1a1-0000-0000-0000-000000000011";
       wireMockServer.stubFor(WireMock.get(WireMock.urlPathEqualTo(
-            "/individ/" + oulHandlaggareTypId + "/" + varde + "/behorigheter"))
+            "/individ/" + oulHandlaggareTypId + "/" + varde + "/hasSidPermission"))
             .willReturn(WireMock.aResponse().withStatus(200)
                   .withHeader("Content-Type", "application/json")
-                  .withBody("{\"behorigheter\":[]}")));
-
-      var handlaggare = ImmutableIdtyp.builder().typId(oulHandlaggareTypId).varde(varde).build();
-
-      assertFalse(teamService.harSidBehorighet(handlaggare));
-   }
-
-   @Test
-   void harSidBehorighet_returnsFalse_whenBehorigheterFieldIsNull()
-   {
-      var varde = "a1a1a1a1-0000-0000-0000-000000000014";
-      wireMockServer.stubFor(WireMock.get(WireMock.urlPathEqualTo(
-            "/individ/" + oulHandlaggareTypId + "/" + varde + "/behorigheter"))
-            .willReturn(WireMock.aResponse().withStatus(200)
-                  .withHeader("Content-Type", "application/json")
-                  .withBody("{\"behorigheter\":null}")));
+                  .withBody("false")));
 
       var handlaggare = ImmutableIdtyp.builder().typId(oulHandlaggareTypId).varde(varde).build();
 
@@ -99,7 +84,7 @@ class TeamApiServiceTest
    {
       var varde = "a1a1a1a1-0000-0000-0000-000000000012";
       wireMockServer.stubFor(WireMock.get(WireMock.urlPathEqualTo(
-            "/individ/" + oulHandlaggareTypId + "/" + varde + "/behorigheter"))
+            "/individ/" + oulHandlaggareTypId + "/" + varde + "/hasSidPermission"))
             .willReturn(WireMock.aResponse().withStatus(404)));
 
       var handlaggare = ImmutableIdtyp.builder().typId(oulHandlaggareTypId).varde(varde).build();
@@ -113,7 +98,7 @@ class TeamApiServiceTest
    {
       var varde = "a1a1a1a1-0000-0000-0000-000000000013";
       wireMockServer.stubFor(WireMock.get(WireMock.urlPathEqualTo(
-            "/individ/" + oulHandlaggareTypId + "/" + varde + "/behorigheter"))
+            "/individ/" + oulHandlaggareTypId + "/" + varde + "/hasSidPermission"))
             .willReturn(WireMock.aResponse().withStatus(500)));
 
       var handlaggare = ImmutableIdtyp.builder().typId(oulHandlaggareTypId).varde(varde).build();
