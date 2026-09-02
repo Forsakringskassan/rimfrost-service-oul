@@ -2,6 +2,83 @@
 
 Changelog of rimfrost-service-oul.
 
+## 1.6.0 (2026-09-02)
+
+### Features
+
+-  remove sid-blocked uppgifter from list endpoints and signal it ([65c76](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/65c76263cb22b59) LisaWedin_Ductus)  
+-  reject ommarkering of SID-märkt uppgift to unauthorized handläggare ([b0a65](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/b0a655a5a5a55cc) LisaWedin_Ductus)  
+-  Make SID check behörighetsmedveten in assignNewUppgift ([60057](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/60057dfe9009ea2) LisaWedin_Ductus)  
+-  Add harSidBehorighet to team client ([cbe38](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/cbe38a6c7e5df6b) LisaWedin_Ductus)  
+
+### Bug Fixes
+
+-  use new adapater with the hasSidPermission endpoint ([45daf](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/45dafccceb3eff2) Nils Elveros)  
+-  take a pessimistic write lock on single-row uppgift mutations ([8e513](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/8e513949a867235) LisaWedin_Ductus)  
+-  spotless ([7f58a](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/7f58a67a032c1d7) LisaWedin_Ductus)  
+-  point at the released rimfrost-service-oul-openapi-jaxrs-spec 2.2.0 ([6b6d5](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/6b6d597520dd343) LisaWedin_Ductus)  
+-  guard SID-driven unassign against stale-read races ([612ca](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/612ca21cf916056) LisaWedin_Ductus)  
+-  skip uppgift with missing handläggning instead of 500 at assignment ([58427](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/58427358bca4a45) LisaWedin_Ductus)  
+-  Resolve SID-behörighet once and fail open on Team API outage ([b0748](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/b074847c90c1610) LisaWedin_Ductus)  
+-  applies spotless ([90a91](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/90a918237585a9c) LisaWedin_Ductus)  
+-  Add missing DisplayName import in TeamApiServiceTest ([04433](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/04433d3ac2404e7) LisaWedin_Ductus)  
+-  Handle null behorigheter and add missing not-found log ([6257c](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/6257c3a6e504203) LisaWedin_Ductus)  
+
+### Other changes
+
+**Merge remote-tracking branch 'origin/main' into feat/FKPOC-940-kontroll-av-uppgifter-vid-sidladdning**
+
+* # Conflicts: 
+* #	src/main/java/se/fk/github/rimfrost/operativt/uppgiftslager/logic/OperativtUppgiftslagerService.java 
+* #	src/main/java/se/fk/github/rimfrost/operativt/uppgiftslager/storage/internal/PanacheOulDataStorage.java 
+* #	src/test/java/se/fk/github/rimfrost/operativt/uppgiftslager/OulTeamTest.java 
+
+[6b7e7](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/6b7e73e3c93ca72) LisaWedin_Ductus *2026-08-31 12:47:40*
+
+**Merge remote-tracking branch 'origin/main' into feat/FKPOC-939-avvisa-ommarkering-sid-markt-uppgift**
+
+* # Conflicts: 
+* #	src/main/java/se/fk/github/rimfrost/operativt/uppgiftslager/storage/internal/PanacheOulDataStorage.java 
+
+[1f16c](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/1f16cf59e3aed23) LisaWedin_Ductus *2026-08-31 12:32:55*
+
+**Update src/main/java/se/fk/github/rimfrost/operativt/uppgiftslager/storage/exception/SidUppgiftException.java**
+
+* Co-authored-by: Ulf Slunga &lt;98820233+UlfSlunga-Sinetiq@users.noreply.github.com&gt; 
+
+[a6750](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/a67507be102c177) LisaWedin-Ductus *2026-08-31 10:45:31*
+
+**Update src/main/java/se/fk/github/rimfrost/operativt/uppgiftslager/storage/exception/HandlaggningReadException.java**
+
+* Co-authored-by: Ulf Slunga &lt;98820233+UlfSlunga-Sinetiq@users.noreply.github.com&gt; 
+
+[f9229](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/f9229d437723165) LisaWedin-Ductus *2026-08-31 10:45:24*
+
+**Update src/test/java/se/fk/github/rimfrost/operativt/uppgiftslager/TeamApiServiceTest.java**
+
+* Co-authored-by: Ulf Slunga &lt;98820233+UlfSlunga-Sinetiq@users.noreply.github.com&gt; 
+
+[a8227](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/a8227189a1070fe) LisaWedin-Ductus *2026-08-26 12:04:10*
+
+**Update src/test/java/se/fk/github/rimfrost/operativt/uppgiftslager/TeamApiServiceTest.java**
+
+* Co-authored-by: Ulf Slunga &lt;98820233+UlfSlunga-Sinetiq@users.noreply.github.com&gt; 
+
+[d164f](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/d164f5e9a0c8daf) LisaWedin-Ductus *2026-08-26 12:04:02*
+
+**Update src/test/java/se/fk/github/rimfrost/operativt/uppgiftslager/TeamApiServiceTest.java**
+
+* Co-authored-by: Ulf Slunga &lt;98820233+UlfSlunga-Sinetiq@users.noreply.github.com&gt; 
+
+[dfc2a](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/dfc2a7c16273f99) LisaWedin-Ductus *2026-08-26 12:02:40*
+
+**Update src/main/java/se/fk/github/rimfrost/operativt/uppgiftslager/logic/team/TeamApiService.java**
+
+* Co-authored-by: Ulf Slunga &lt;98820233+UlfSlunga-Sinetiq@users.noreply.github.com&gt; 
+
+[c267b](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/c267b52472dfba7) LisaWedin-Ductus *2026-08-26 11:54:01*
+
+
 ## 1.5.2 (2026-08-19)
 
 ### Bug Fixes
