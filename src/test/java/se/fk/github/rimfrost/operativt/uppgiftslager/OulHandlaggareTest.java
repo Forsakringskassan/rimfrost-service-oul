@@ -179,9 +179,9 @@ public class OulHandlaggareTest extends OulTestBase
             .willReturn(WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json")
                   .withBody("{\"sid\":true}")));
       wireMockServer.stubFor(WireMock.get(WireMock.urlPathEqualTo(
-            "/individ/" + oulHandlaggareTypId + "/" + newHandlaggare + "/behorigheter"))
+            "/individ/" + oulHandlaggareTypId + "/" + newHandlaggare + "/hasSidPermission"))
             .willReturn(WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json")
-                  .withBody("{\"behorigheter\":[\"SID\"]}")));
+                  .withBody("true")));
 
       getAssignedTasks(originalHandlaggare);
 
@@ -205,9 +205,9 @@ public class OulHandlaggareTest extends OulTestBase
             .willReturn(WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json")
                   .withBody("{\"sid\":true}")));
       wireMockServer.stubFor(WireMock.get(WireMock.urlPathEqualTo(
-            "/individ/" + oulHandlaggareTypId + "/" + handlaggareId + "/behorigheter"))
+            "/individ/" + oulHandlaggareTypId + "/" + handlaggareId + "/hasSidPermission"))
             .willReturn(WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json")
-                  .withBody("{\"behorigheter\":[\"SID\"]}")));
+                  .withBody("true")));
 
       var result = getAssignedTasks(handlaggareId);
 
@@ -379,9 +379,9 @@ public class OulHandlaggareTest extends OulTestBase
       var handlaggareId = UUID.randomUUID();
 
       wireMockServer.stubFor(WireMock.get(WireMock.urlPathEqualTo(
-            "/individ/" + oulHandlaggareTypId + "/" + handlaggareId + "/behorigheter"))
+            "/individ/" + oulHandlaggareTypId + "/" + handlaggareId + "/hasSidPermission"))
             .willReturn(WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json")
-                  .withBody("{\"behorigheter\":[\"SID\"]}")));
+                  .withBody("true")));
 
       var expectedUppgiftResponse = sendCreateUppgiftRequest(newCreateUppgiftRequest(UUID.randomUUID()));
       var assignResponse = assignTaskToHandlaggare(handlaggareId);
@@ -398,7 +398,7 @@ public class OulHandlaggareTest extends OulTestBase
             .willReturn(WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json")
                   .withBody("{\"sid\":true}")));
 
-      wireMockServer.stubFor(WireMock.get(WireMock.urlPathMatching("/individ/.+/behorigheter"))
+      wireMockServer.stubFor(WireMock.get(WireMock.urlPathMatching("/individ/.+/hasSidPermission"))
             .willReturn(WireMock.aResponse().withStatus(500)));
 
       var handlaggareId = UUID.randomUUID();

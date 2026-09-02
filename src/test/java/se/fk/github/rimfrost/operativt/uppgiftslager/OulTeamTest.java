@@ -215,15 +215,15 @@ public class OulTeamTest extends OulTestBase
       var keptResponse = assignTaskToHandlaggare(TEAM_MEMBER_2);
       var keptUppgiftId = keptResponse.getOperativUppgift().getUppgiftId();
 
-      // Båda uppgifterna blir sid-märkta; TEAM_MEMBER_1 saknar behorigheter-stubb (ingen behörighet),
+      // Båda uppgifterna blir sid-märkta; TEAM_MEMBER_1 saknar hasSidPermission-stubb (ingen behörighet),
       // TEAM_MEMBER_2 har en (SID-behörighet) → endast TEAM_MEMBER_1:s uppgift tas bort
       wireMockServer.stubFor(WireMock.post(WireMock.urlPathEqualTo("/sid/status"))
             .willReturn(WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json")
                   .withBody("{\"sid\":true}")));
       wireMockServer.stubFor(WireMock.get(WireMock.urlPathEqualTo(
-            "/individ/" + oulHandlaggareTypId + "/" + TEAM_MEMBER_2 + "/behorigheter"))
+            "/individ/" + oulHandlaggareTypId + "/" + TEAM_MEMBER_2 + "/hasSidPermission"))
             .willReturn(WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json")
-                  .withBody("{\"behorigheter\":[\"SID\"]}")));
+                  .withBody("true")));
 
       var result = getTeamTasks(TEAM_MEMBER_3);
 
@@ -250,11 +250,11 @@ public class OulTeamTest extends OulTestBase
       // conflated with FKPOC-940's own list-time SID-recheck, which would otherwise also remove
       // it from TEAM_MEMBER_1's list if they too lacked behörighet.
       wireMockServer.stubFor(WireMock.get(WireMock.urlPathEqualTo(
-            "/individ/" + oulHandlaggareTypId + "/" + TEAM_MEMBER_1 + "/behorigheter"))
+            "/individ/" + oulHandlaggareTypId + "/" + TEAM_MEMBER_1 + "/hasSidPermission"))
             .willReturn(WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json")
-                  .withBody("{\"behorigheter\":[\"SID\"]}")));
+                  .withBody("true")));
 
-      // TEAM_MEMBER_2 has no behorigheter stub → treated as lacking SID-behörighet
+      // TEAM_MEMBER_2 has no hasSidPermission stub → treated as lacking SID-behörighet
       reassignTask(uppgiftId, TEAM_MEMBER_2, 403);
 
       var stillWithOriginal = getAssignedTasks(TEAM_MEMBER_1).getOperativaUppgifter();
@@ -277,9 +277,9 @@ public class OulTeamTest extends OulTestBase
                   .withBody("{\"sid\":true}")));
 
       wireMockServer.stubFor(WireMock.get(WireMock.urlPathEqualTo(
-            "/individ/" + oulHandlaggareTypId + "/" + TEAM_MEMBER_2 + "/behorigheter"))
+            "/individ/" + oulHandlaggareTypId + "/" + TEAM_MEMBER_2 + "/hasSidPermission"))
             .willReturn(WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json")
-                  .withBody("{\"behorigheter\":[\"SID\"]}")));
+                  .withBody("true")));
 
       var result = reassignTask(uppgiftId, TEAM_MEMBER_2);
 
@@ -298,7 +298,7 @@ public class OulTeamTest extends OulTestBase
             .willReturn(WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json")
                   .withBody("{\"sid\":true}")));
 
-      wireMockServer.stubFor(WireMock.get(WireMock.urlPathMatching("/individ/.+/behorigheter"))
+      wireMockServer.stubFor(WireMock.get(WireMock.urlPathMatching("/individ/.+/hasSidPermission"))
             .willReturn(WireMock.aResponse().withStatus(500)));
 
       reassignTask(uppgiftId, TEAM_MEMBER_2, 403);

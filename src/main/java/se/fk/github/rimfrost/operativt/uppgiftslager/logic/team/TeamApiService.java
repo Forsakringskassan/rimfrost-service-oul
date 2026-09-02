@@ -5,11 +5,10 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import se.fk.github.rimfrost.operativt.uppgiftslager.integration.team.TeamAdapter;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.Idtyp;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.ImmutableIdtyp;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.exception.NotTeamMemberException;
-import se.fk.rimfrost.team.jaxrsspec.controllers.generatedsource.model.Behorighet;
+import se.fk.rimfrost.adapter.team.adapter.TeamAdapter;
 import se.fk.rimfrost.team.jaxrsspec.controllers.generatedsource.model.Team;
 import java.util.List;
 import java.util.Set;
@@ -76,12 +75,11 @@ public class TeamApiService implements TeamService
    @Override
    public boolean harSidBehorighet(Idtyp handlaggare)
    {
-      List<Behorighet> behorigheter = callOrNotFound(
-            () -> teamAdapter.getBehorigheter(handlaggare.typId(), handlaggare.varde()).getBehorigheter(),
-            List.of(),
-            "Handläggare {} not found when fetching behörigheter; treating as no behörigheter",
+      return callOrNotFound(
+            () -> teamAdapter.hasSidPermission(handlaggare.typId(), handlaggare.varde()),
+            false,
+            "Handläggare {} not found when checking SID-behörighet; treating as no behörighet",
             handlaggare.varde());
-      return behorigheter != null && behorigheter.contains(Behorighet.SID);
    }
 
    /**
