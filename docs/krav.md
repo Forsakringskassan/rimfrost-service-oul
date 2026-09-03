@@ -158,6 +158,23 @@ via villkor och styra sorteringsriktning inom sin grupp.
 - **OUL-FR-18.5** Vid omtilldelning ska en statusnotifiering publiceras på Kafka i enlighet med OUL-FR-06.
 - **OUL-FR-18.6** Om uppgiften är SID-märkt och den anropande handläggaren saknar SID-behörighet ska HTTP 403 returneras och uppgiften ska lämnas oförändrad. Om SID-status eller SID-behörighet inte kan avgöras ska 403 returneras (fail-closed).
 
+### OUL-FR-19 — Lämna tillbaka uppgift (handläggare)
+
+- **OUL-FR-19.1** En handläggare ska kunna lämna tillbaka (unassigna) en uppgift som är tilldelad honom/henne via `POST /uppgifter/{uppgift_id}/unassign`.
+- **OUL-FR-19.2** Handläggarens identitet fastställs från bearer-token.
+- **OUL-FR-19.3** Endast den handläggare uppgiften faktiskt är tilldelad får lämna tillbaka den. Om den anropande handläggaren inte är den tilldelade ska HTTP 403 returneras och uppgiften lämnas oförändrad.
+- **OUL-FR-19.4** Om angiven uppgift inte finns ska HTTP 404 returneras.
+- **OUL-FR-19.5** En unassign enligt denna endpoint innebär att uppgiften återgår till status `NY` och blir tillgänglig för ny tilldelning (jfr OUL-FR-08.2).
+- **OUL-FR-19.6** Den avtilldelande handläggaren läggs till i uppgiftens lista över tidigare avvisande handläggare (se OUL-FR-20).
+
+### OUL-FR-20 — Spärr mot återtilldelning till avvisande handläggare
+
+- **OUL-FR-20.1** OUL ska för varje uppgift kunna hålla en lista av handläggare som tidigare lämnat tillbaka just den uppgiften via OUL-FR-19.
+- **OUL-FR-20.2** Vid tilldelning av ny uppgift (OUL-FR-04) ska en uppgift vars avvisandelista innehåller den anropande handläggaren hoppas över, på samma sätt som en SID-blockerad uppgift hoppas över idag (jfr OUL-FR-04.6).
+- **OUL-FR-20.3** Listan är en permanent egenskap hos uppgiften — den rensas inte när uppgiften tilldelas någon annan handläggare.
+- **OUL-FR-20.4** En handläggare som inte finns i listan påverkas inte av denna spärr.
+- **OUL-FR-20.5** Endast unassignade via OUL-FR-19 (handläggarens egen, självbetjänade avtilldelning) lägger till i listan. Administratörens unassign (OUL-FR-08), administratörens uppdatering (OUL-FR-07) och omtilldelning till en annan handläggare (OUL-FR-18) påverkar inte listan.
+
 ### OUL-FR-15 — Villkorsutvärdering
 
 - **OUL-FR-15.1** Villkorstypen `eq` innebär att ett fält ska vara exakt lika med angivet värde.
