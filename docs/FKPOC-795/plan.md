@@ -1,5 +1,8 @@
 # Plan: FKPOC-795 — Sorteringsordning utan persistence
 
+> **Not:** begreppet `default` döptes om till `aktiv` i FKPOC-957. Detta dokument
+> beskriver arbetet som det såg ut då och använder de dåvarande namnen.
+
 ## Requirements Summary
 
 - **In-memory only** — sort order does NOT need to survive restarts (REQ-OUL-SORT-005 relaxed)
@@ -15,10 +18,10 @@
 |----------|--------|----------|-------|
 | `POST /sorteringsordning` | POST | ✅ Required | Creates/replaces, always default |
 | `GET /sorteringsordning` | GET | Optional | Returns 0 or 1 item |
-| `GET /sorteringsordning/default` | GET | ✅ Required | 404 if none exists |
+| `GET /sorteringsordning/aktiv` | GET | ✅ Required | 404 if none exists |
 | `GET /sorteringsordning/{id}` | GET | Optional | 404 if ID doesn't match current |
 | `POST /sorteringsordning/preview` | POST | Optional | Useful for testing |
-| `PUT /sorteringsordning/{id}/default` | PUT | ❌ Not needed | Can return 204 no-op |
+| `PUT /sorteringsordning/{id}/aktiv` | PUT | ❌ Not needed | Can return 204 no-op |
 | `DELETE /sorteringsordning/{id}` | DELETE | ❌ Not needed | Can return 405 |
 | `GET /uppgifter` | GET | ✅ Updated | New signature (see below) |
 | `PATCH /uppgifter/{id}` | PATCH | ⚠️ New in 1.2.0 | `updateUppgift` — not in original plan |

@@ -1,0 +1,1 @@
+ALTER TABLE default_sorteringsordning RENAME TO aktiv_sorteringsordning;

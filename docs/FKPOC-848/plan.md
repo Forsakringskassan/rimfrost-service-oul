@@ -1,5 +1,8 @@
 # Plan: FKPOC-848 — DB persistence for SorteringsordningEntity
 
+> **Not:** begreppet `default` döptes om till `aktiv` i FKPOC-957. Detta dokument
+> beskriver arbetet som det såg ut då och använder de dåvarande namnen.
+
 Follow-up to FKPOC-795. Replaces the `AtomicReference` in-memory storage with
 PostgreSQL persistence so sorteringsordningar survive restarts.
 
@@ -20,20 +23,20 @@ All four steps delivered. See commit history on `fix/FKPOC-848-sortorder-db`.
 |------|-------|-----------|
 | OUL-FR-09.2 — default vid skapelse | Ej implementerat | Automatisk default om ingen finns sedan tidigare |
 | OUL-FR-13 — Ta bort sorteringsordning | Ej implementerat (stub: 405) | DELETE med 409-skydd på default |
-| OUL-FR-14 — Ange default sorteringsordning | Ej implementerat (stub: no-op) | PUT anger ny default |
+| OUL-FR-14 — Ange aktiv sorteringsordning | Ej implementerat (stub: no-op) | PUT anger ny default |
 | OUL-NFR-04.1 — persistens | In-memory, överlever inte omstart | Persistent i PostgreSQL |
 | OUL-NFR-05.1 — flera sorteringsordningar | En åt gången (in-memory) | Flera sparas; exakt en är default åt gången |
 | OUL-NFR-05.2 — hämtning via ID | Ej tillämpbart | `findByIdOptional(id)` direkt mot posten |
-| OUL-NFR-05.3 — byte av default | Ej tillämpbart | Single-row UPDATE på `default_sorteringsordning`; berör inga andra poster |
+| OUL-NFR-05.3 — byte av default | Ej tillämpbart | Single-row UPDATE på `aktiv_sorteringsordning`; berör inga andra poster |
 
 ---
 
 ## Schema design
 
-Two tables: `sorteringsordning` holds all stored orders; `default_sorteringsordning`
+Two tables: `sorteringsordning` holds all stored orders; `aktiv_sorteringsordning`
 holds exactly one row — the ID of the current default.
 
-The `lock = TRUE` primary key on `default_sorteringsordning` ensures only one row can ever
+The `lock = TRUE` primary key on `aktiv_sorteringsordning` ensures only one row can ever
 be inserted. The FK to `sorteringsordning` acts as a second line of defence: the DB rejects
 deleting the current default even if the application-level 409 check is bypassed.
 
@@ -46,7 +49,7 @@ CREATE TABLE sorteringsordning (
     entries     TEXT        NOT NULL
 );
 
-CREATE TABLE default_sorteringsordning (
+CREATE TABLE aktiv_sorteringsordning (
     lock                 BOOLEAN NOT NULL DEFAULT TRUE PRIMARY KEY,
     sorteringsordning_id UUID    NOT NULL REFERENCES sorteringsordning(id),
     CONSTRAINT one_row CHECK (lock = TRUE)
@@ -100,7 +103,7 @@ table and both attempt an insert, with the second failing on the PK constraint.
 Fixed with `DefaultSorteringsordningRepository.insertIfAbsent(UUID)`:
 
 ```sql
-INSERT INTO {h-schema}default_sorteringsordning (lock, sorteringsordning_id)
+INSERT INTO {h-schema}aktiv_sorteringsordning (lock, sorteringsordning_id)
 VALUES (TRUE, :id) ON CONFLICT DO NOTHING
 ```
 

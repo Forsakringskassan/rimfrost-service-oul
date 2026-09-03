@@ -1,11 +1,14 @@
 # Plan: OUL-FR-04.2 & OUL-FR-05.3 — Sorteringsordning för handläggar-endpoints
 
+> **Not:** begreppet `default` döptes om till `aktiv` i FKPOC-957. Detta dokument
+> beskriver arbetet som det såg ut då och använder de dåvarande namnen.
+
 ## Requirements
 
 - **OUL-FR-04.2** `POST /uppgifter/handlaggare/…` ska välja den högst prioriterade icke tilldelade
-  uppgiften enligt default sorteringsordning. Utan konfigurerad sorteringsordning väljs godtycklig uppgift.
+  uppgiften enligt aktiv sorteringsordning. Utan konfigurerad sorteringsordning väljs godtycklig uppgift.
 - **OUL-FR-05.3** `GET /uppgifter/handlaggare/…` ska returnera tilldelade uppgifter sorterade
-  enligt default sorteringsordning. Utan konfigurerad sorteringsordning är ordningen odefinierad.
+  enligt aktiv sorteringsordning. Utan konfigurerad sorteringsordning är ordningen odefinierad.
 
 ---
 
@@ -122,10 +125,10 @@ Replace the existing `PESSIMISTIC_WRITE` Panache approach.
 
 ## Step 7 — Update `OperativtUppgiftslagerService`
 
-**`assignNewTask`**: resolve default sorteringsordning from storage, pass to `storage.assignNewUppgift(handlaggare, sorteringsordning)`.
+**`assignNewTask`**: resolve aktiv sorteringsordning from storage, pass to `storage.assignNewUppgift(handlaggare, sorteringsordning)`.
 If no default, pass `new SorteringsordningEntity(null, null, List.of())` (empty = no priority order).
 
-**`getUppgifterHandlaggare`**: resolve default sorteringsordning from storage, pass to
+**`getUppgifterHandlaggare`**: resolve aktiv sorteringsordning from storage, pass to
 `storage.findAllUppgifterByHandlaggarId(handlaggare, sorteringsordning)`.
 
 ---

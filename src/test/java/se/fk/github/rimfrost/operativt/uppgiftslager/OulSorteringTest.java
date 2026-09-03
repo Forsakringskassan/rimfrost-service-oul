@@ -83,14 +83,14 @@ public class OulSorteringTest extends OulTestBase
    }
 
    @Test
-   @DisplayName("OUL-FR-09.2: Skapa sorteringsordning två gånger — första blir default, andra ändrar inte default")
-   public void should_keep_first_as_default_on_second_create()
+   @DisplayName("OUL-FR-09.2: Skapa sorteringsordning två gånger — första blir aktiv, andra ändrar inte aktiv")
+   public void should_keep_first_as_aktiv_on_second_create()
    {
       var first = sendCreateSorteringsordningRequest(newSorteringsordningSpec());
       sendCreateSorteringsordningRequest(newSorteringsordningSpec());
 
-      var defaultResponse = getDefaultSorteringsordning();
-      assertEquals(first.getId(), defaultResponse.getId());
+      var aktivResponse = getAktivSorteringsordning();
+      assertEquals(first.getId(), aktivResponse.getId());
    }
 
    @Test
@@ -110,20 +110,20 @@ public class OulSorteringTest extends OulTestBase
    }
 
    @Test
-   @DisplayName("OUL-FR-10.2: Hämta default sorteringsordning — HTTP 404 när ingen finns")
-   public void should_return_404_for_default_when_none_exists()
+   @DisplayName("OUL-FR-10.2: Hämta aktiv sorteringsordning — HTTP 404 när ingen finns")
+   public void should_return_404_for_aktiv_when_none_exists()
    {
-      getDefaultSorteringsordning(404);
+      getAktivSorteringsordning(404);
    }
 
    @Test
-   @DisplayName("OUL-FR-10.1, OUL-FR-09.3: Hämta default sorteringsordning — returnerar aktiv sorteringsordning efter skapelse")
-   public void should_get_default_sorteringsordning_after_create()
+   @DisplayName("OUL-FR-10.1, OUL-FR-09.3: Hämta aktiv sorteringsordning — returnerar aktiv sorteringsordning efter skapelse")
+   public void should_get_aktiv_sorteringsordning_after_create()
    {
       var created = sendCreateSorteringsordningRequest(newSorteringsordningSpec());
-      var defaultResponse = getDefaultSorteringsordning();
+      var aktivResponse = getAktivSorteringsordning();
 
-      assertEquals(created.getId(), defaultResponse.getId());
+      assertEquals(created.getId(), aktivResponse.getId());
    }
 
    @Test
@@ -168,12 +168,12 @@ public class OulSorteringTest extends OulTestBase
    }
 
    @Test
-   @DisplayName("OUL-FR-13.1: Ta bort sorteringsordning — lyckas med 204 efter att ny default satts")
-   public void should_delete_non_default_sorteringsordning()
+   @DisplayName("OUL-FR-13.1: Ta bort sorteringsordning — lyckas med 204 efter att ny aktiv satts")
+   public void should_delete_non_aktiv_sorteringsordning()
    {
       var first = sendCreateSorteringsordningRequest(newSorteringsordningSpec());
       var second = sendCreateSorteringsordningRequest(newSorteringsordningSpec());
-      setDefaultSorteringsordning(second.getId());
+      setAktivSorteringsordning(second.getId());
 
       deleteSorteringsordning(first.getId());
 
@@ -181,8 +181,8 @@ public class OulSorteringTest extends OulTestBase
    }
 
    @Test
-   @DisplayName("OUL-FR-13.2: Ta bort sorteringsordning — HTTP 409 om det är default")
-   public void should_return_409_when_deleting_default_sorteringsordning()
+   @DisplayName("OUL-FR-13.2: Ta bort sorteringsordning — HTTP 409 om det är aktiv")
+   public void should_return_409_when_deleting_aktiv_sorteringsordning()
    {
       var created = sendCreateSorteringsordningRequest(newSorteringsordningSpec());
 
@@ -197,23 +197,23 @@ public class OulSorteringTest extends OulTestBase
    }
 
    @Test
-   @DisplayName("OUL-FR-14.1: Ange default — getDefault returnerar ny default")
-   public void should_update_default_sorteringsordning()
+   @DisplayName("OUL-FR-14.1: Ange aktiv — getAktiv returnerar ny aktiv")
+   public void should_update_aktiv_sorteringsordning()
    {
       sendCreateSorteringsordningRequest(newSorteringsordningSpec());
       var second = sendCreateSorteringsordningRequest(newSorteringsordningSpec());
 
-      setDefaultSorteringsordning(second.getId());
+      setAktivSorteringsordning(second.getId());
 
-      var defaultResponse = getDefaultSorteringsordning();
-      assertEquals(second.getId(), defaultResponse.getId());
+      var aktivResponse = getAktivSorteringsordning();
+      assertEquals(second.getId(), aktivResponse.getId());
    }
 
    @Test
-   @DisplayName("OUL-FR-14.2: Ange default — HTTP 404 om id inte finns")
-   public void should_return_404_when_setting_unknown_default()
+   @DisplayName("OUL-FR-14.2: Ange aktiv — HTTP 404 om id inte finns")
+   public void should_return_404_when_setting_unknown_aktiv()
    {
-      setDefaultSorteringsordning(UUID.randomUUID(), 404);
+      setAktivSorteringsordning(UUID.randomUUID(), 404);
    }
 
    @Test

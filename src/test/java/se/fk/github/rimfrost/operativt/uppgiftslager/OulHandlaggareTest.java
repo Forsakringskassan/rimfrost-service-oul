@@ -283,7 +283,7 @@ public class OulHandlaggareTest extends OulTestBase
    }
 
    @Test
-   @DisplayName("OUL-FR-05.3: Lista tilldelade uppgifter — sorterade enligt default sorteringsordning")
+   @DisplayName("OUL-FR-05.3: Lista tilldelade uppgifter — sorterade enligt aktiv sorteringsordning")
    public void should_return_assigned_tasks_sorted_by_sorteringsordning()
    {
       var handlaggareId = UUID.randomUUID();
@@ -308,7 +308,7 @@ public class OulHandlaggareTest extends OulTestBase
    }
 
    @Test
-   @DisplayName("OUL-FR-04.2: Hämta ny uppgift — väljer högst prioriterad otilldelad uppgift per default sorteringsordning")
+   @DisplayName("OUL-FR-04.2: Hämta ny uppgift — väljer högst prioriterad otilldelad uppgift per aktiv sorteringsordning")
    public void should_assign_highest_priority_unassigned_task_per_sorteringsordning()
    {
       sendCreateSorteringsordningRequest(newSorteringsordningSpecWithEqConstraint(SorteringsordningFieldEq.ROLL, "PRIO"));

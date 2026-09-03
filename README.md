@@ -57,10 +57,10 @@ Handläggarens identitet hämtas från `Authorization: Bearer <typId>:<varde>`-h
 | `GET` | `/uppgifter` | Lista uppgifter (paginerat, med sortering)          |
 | `POST` | `/sorteringsordning` | Skapa sorteringsordning                             |
 | `GET` | `/sorteringsordning` | Lista sorteringsordningar (paginerat)               |
-| `GET` | `/sorteringsordning/default` | Hämta aktiv standardsortering (404 om ingen finns)  |
+| `GET` | `/sorteringsordning/aktiv` | Hämta aktiv sorteringsordning (404 om ingen finns)  |
 | `GET` | `/sorteringsordning/{id}` | Hämta specifik sorteringsordning                    |
 | `DELETE` | `/sorteringsordning/{id}` | Ta bort sorteringsordning (409 om den är standard)  |
-| `PUT` | `/sorteringsordning/{id}/default` | Sätt som ny default                                 |
+| `PUT` | `/sorteringsordning/{id}/aktiv` | Sätt som ny aktiv                                 |
 | `POST` | `/sorteringsordning/preview` | Förhandsgranska en sorteringsordning utan att spara |
 
 `GET /uppgifter` tar parametrarna `limit` (obligatorisk), `offset` (standard 0) och `sorteringsordningId` (valfri — standardsorteringen används om den saknas).
@@ -152,7 +152,7 @@ Paginering sker via JPA:s `setFirstResult`/`setMaxResults` — SQL-frågorna inn
 | `uppgift_individ` | Kopplade individer (en uppgift → många individer) |
 | `uppgift_cloud_event_attribute` | CloudEvents-metadata per uppgift |
 | `sorteringsordning` | Sparade sorteringsordningar (entries lagras som JSON) |
-| `default_sorteringsordning` | En-rads-tabell som pekar ut aktiv standardsortering |
+| `aktiv_sorteringsordning` | En-rads-tabell som pekar ut aktiv sorteringsordning |
 
 ## Kafka
 
