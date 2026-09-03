@@ -6,9 +6,9 @@
 ## Requirements
 
 - **OUL-FR-04.2** `POST /uppgifter/handlaggare/…` ska välja den högst prioriterade icke tilldelade
-  uppgiften enligt aktiv sorteringsordning. Utan konfigurerad sorteringsordning väljs godtycklig uppgift.
+  uppgiften enligt default sorteringsordning. Utan konfigurerad sorteringsordning väljs godtycklig uppgift.
 - **OUL-FR-05.3** `GET /uppgifter/handlaggare/…` ska returnera tilldelade uppgifter sorterade
-  enligt aktiv sorteringsordning. Utan konfigurerad sorteringsordning är ordningen odefinierad.
+  enligt default sorteringsordning. Utan konfigurerad sorteringsordning är ordningen odefinierad.
 
 ---
 
@@ -125,10 +125,10 @@ Replace the existing `PESSIMISTIC_WRITE` Panache approach.
 
 ## Step 7 — Update `OperativtUppgiftslagerService`
 
-**`assignNewTask`**: resolve aktiv sorteringsordning from storage, pass to `storage.assignNewUppgift(handlaggare, sorteringsordning)`.
+**`assignNewTask`**: resolve default sorteringsordning from storage, pass to `storage.assignNewUppgift(handlaggare, sorteringsordning)`.
 If no default, pass `new SorteringsordningEntity(null, null, List.of())` (empty = no priority order).
 
-**`getUppgifterHandlaggare`**: resolve aktiv sorteringsordning from storage, pass to
+**`getUppgifterHandlaggare`**: resolve default sorteringsordning from storage, pass to
 `storage.findAllUppgifterByHandlaggarId(handlaggare, sorteringsordning)`.
 
 ---
