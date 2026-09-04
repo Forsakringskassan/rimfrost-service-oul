@@ -76,6 +76,9 @@ via villkor och styra sorteringsriktning inom sin grupp.
 - **OUL-FR-05.1** En handläggare ska kunna lista alla uppgifter som är tilldelade till honom/henne.
 - **OUL-FR-05.2** Listan filtreras på handläggarens identitet.
 - **OUL-FR-05.3** Uppgifterna ska returneras sorterade enligt default sorteringsordning. Om ingen sorteringsordning är konfigurerad är ordningen i resultatet odefinierat.
+- **OUL-FR-05.4** Vid varje listning kontrolleras på nytt, för varje redan tilldelad uppgift, om den är SID-märkt och om den tilldelade handläggaren har SID-behörighet — på samma sätt som vid tilldelning (OUL-FR-04.6). En uppgift som är SID-märkt och vars handläggare saknar SID-behörighet tas bort ur tilldelningen (återgår till status `NY`, tillgänglig för ny tilldelning) och exkluderas ur svaret.
+- **OUL-FR-05.5** Svaret ska alltid innehålla fältet `borttagna_pga_behorighet` (antal), som anger hur många uppgifter som togs bort enligt OUL-FR-05.4 under det aktuella anropet. 0 om inga togs bort.
+- **OUL-FR-05.6** Om en uppgifts SID-status inte kan avgöras (t.ex. avbrott mot handläggnings- eller SID-tjänsten) ska hela listanropet ge HTTP 500, istället för att gissa och riskera att returnera en lista som felaktigt inkluderar eller exkluderar en SID-märkt uppgift. Om enbart handläggarens SID-behörighet inte kan avgöras (avbrott mot Team-tjänsten) behandlas det som att behörighet saknas.
 
 ### OUL-FR-06 — Statusnotifiering via Kafka
 
