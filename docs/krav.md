@@ -167,7 +167,7 @@ via villkor och styra sorteringsriktning inom sin grupp.
 
 ### OUL-FR-19 — Lämna tillbaka uppgift (handläggare)
 
-- **OUL-FR-19.1** En handläggare ska kunna lämna tillbaka (unassigna) en uppgift som är tilldelad honom/henne via `DELETE /uppgifter/{uppgift_id}/handlaggare` — symmetrisk med `POST /uppgifter/{uppgift_id}/handlaggare` (OUL-FR-18). Medvetet inte samma sökväg som management-API:ets `POST /uppgifter/{id}/unassign` (OUL-FR-08.1), för att undvika en oentydig route på delad `@Path("/uppgifter")`.
+- **OUL-FR-19.1** En handläggare ska kunna lämna tillbaka (unassigna) en uppgift som är tilldelad honom/henne via `DELETE /uppgifter/{uppgift_id}/handlaggare` — symmetrisk med `POST /uppgifter/{uppgift_id}/handlaggare` (OUL-FR-18). Medvetet inte samma sökväg som management-API:ets `POST /uppgifter/{id}/unassign` (OUL-FR-08.1), för att undvika en otydlig route på delad `@Path("/uppgifter")`.
 - **OUL-FR-19.2** Handläggarens identitet fastställs från bearer-token.
 - **OUL-FR-19.3** Endast den handläggare uppgiften faktiskt är tilldelad får lämna tillbaka den. Om den anropande handläggaren inte är den tilldelade ska HTTP 403 returneras och uppgiften lämnas oförändrad.
 - **OUL-FR-19.4** Om angiven uppgift inte finns ska HTTP 404 returneras.
