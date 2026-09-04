@@ -67,10 +67,10 @@ public class SorteringController implements SorteringsordningApi
 
    @Override
    @GET
-   @Path("/default")
-   public SorteringsordningResponse getDefaultSorteringsordning()
+   @Path("/aktiv")
+   public SorteringsordningResponse getAktivSorteringsordning()
    {
-      return operativtUppgiftslagerService.getDefaultSorteringsordning()
+      return operativtUppgiftslagerService.getAktivSorteringsordning()
             .map(managementMapper::toSorteringsordningResponse)
             .orElseThrow(() -> new WebApplicationException(Response.Status.NOT_FOUND));
    }
@@ -100,7 +100,7 @@ public class SorteringController implements SorteringsordningApi
    /**
     * Deletes the sorteringsordning with the given id.
     * Exceptions mapped by {@link se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.exception.SorteringsordningNotFoundExceptionMapper}
-    * and {@link se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.exception.SorteringsordningIsDefaultExceptionMapper}.
+    * and {@link se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.exception.SorteringsordningIsAktivExceptionMapper}.
     *
     * @param sorteringsordningId the UUID of the sorteringsordning to delete
     */
@@ -114,17 +114,17 @@ public class SorteringController implements SorteringsordningApi
    }
 
    /**
-    * Sets the given sorteringsordning as the system default.
+    * Sets the given sorteringsordning as aktiv.
     * Exceptions mapped by {@link se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.exception.SorteringsordningNotFoundExceptionMapper}.
     *
-    * @param sorteringsordningId the UUID of the sorteringsordning to set as default
+    * @param sorteringsordningId the UUID of the sorteringsordning to set as aktiv
     */
    @Override
    @PUT
-   @Path("/{sorteringsordningId}/default")
+   @Path("/{sorteringsordningId}/aktiv")
    @ResponseStatus(204)
-   public void setDefaultSorteringsordning(@PathParam("sorteringsordningId") UUID sorteringsordningId)
+   public void setAktivSorteringsordning(@PathParam("sorteringsordningId") UUID sorteringsordningId)
    {
-      operativtUppgiftslagerService.setDefaultSorteringsordning(sorteringsordningId);
+      operativtUppgiftslagerService.setAktivSorteringsordning(sorteringsordningId);
    }
 }

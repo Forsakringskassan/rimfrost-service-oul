@@ -5,7 +5,7 @@ import se.fk.github.rimfrost.operativt.uppgiftslager.logic.UppgiftEntityPage;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.Idtyp;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.SorteringsordningEntity;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.UppgiftEntity;
-import se.fk.github.rimfrost.operativt.uppgiftslager.storage.exception.SorteringsordningIsDefaultException;
+import se.fk.github.rimfrost.operativt.uppgiftslager.storage.exception.SorteringsordningIsAktivException;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.exception.SorteringsordningNotFoundException;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.exception.UppgiftNotFoundException;
 
@@ -120,18 +120,18 @@ public interface OulDataStorage
    UppgiftEntity updateUppgift(UUID id, Idtyp handlaggarId);
 
    /**
-    * Persists a new sorteringsordning and sets it as the default if none exists yet.
+    * Persists a new sorteringsordning and sets it as aktiv if none exists yet.
     *
     * @param entity the sorteringsordning to save
     */
    void saveSorteringsordning(SorteringsordningEntity entity);
 
    /**
-    * Returns the currently designated default sorteringsordning, if one has been set.
+    * Returns the currently designated aktiv sorteringsordning, if one has been set.
     *
-    * @return the default sorteringsordning, or empty if none is configured
+    * @return the aktiv sorteringsordning, or empty if none is configured
     */
-   Optional<SorteringsordningEntity> getDefaultSorteringsordning();
+   Optional<SorteringsordningEntity> getAktivSorteringsordning();
 
    /**
     * Looks up a sorteringsordning by its UUID.
@@ -156,15 +156,15 @@ public interface OulDataStorage
     *
     * @param id the sorteringsordning UUID to delete
     * @throws SorteringsordningNotFoundException if no sorteringsordning with the given id exists
-    * @throws SorteringsordningIsDefaultException if the sorteringsordning is currently the default
+    * @throws SorteringsordningIsAktivException if the sorteringsordning is currently aktiv
     */
    void deleteSorteringsordning(UUID id);
 
    /**
-    * Sets the sorteringsordning with the given id as the system default.
+    * Sets the sorteringsordning with the given id as aktiv.
     *
-    * @param id the sorteringsordning UUID to promote to default
+    * @param id the sorteringsordning UUID to promote to aktiv
     * @throws SorteringsordningNotFoundException if no sorteringsordning with the given id exists
     */
-   void setDefaultSorteringsordning(UUID id);
+   void setAktivSorteringsordning(UUID id);
 }

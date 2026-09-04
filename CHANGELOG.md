@@ -2,6 +2,16 @@
 
 Changelog of rimfrost-service-oul.
 
+## 1.6.1 (2026-09-04)
+
+### Bug Fixes
+
+-  FKPOC957 default to aktiv renaming (B) ([8b998](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/8b998a5af7ffbbc) julolsso)  
+-  FKPOC957 default to aktiv renaming ([1b5bb](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/1b5bbabef91ee53) julolsso)  
+
+### Other changes
+
+
 ## 1.6.0 (2026-09-02)
 
 ### Features

@@ -7,15 +7,15 @@ import jakarta.persistence.Table;
 import java.util.UUID;
 
 /**
- * JPA entity for the {@code default_sorteringsordning} table.
+ * JPA entity for the {@code aktiv_sorteringsordning} table.
  * <p>
  * The table intentionally holds at most one row: the primary key column {@code lock} is
  * constrained to {@code TRUE}, so only a single record can ever be inserted.
  * This design avoids a separate sequence or application-level singleton guard.
  */
 @Entity
-@Table(name = "default_sorteringsordning")
-public class DefaultSorteringsordningEntity
+@Table(name = "aktiv_sorteringsordning")
+public class AktivSorteringsordningEntity
 {
    @Id
    @Column(nullable = false)
@@ -33,7 +33,7 @@ public class DefaultSorteringsordningEntity
    }
 
    /**
-    * @return the UUID of the currently active default sorteringsordning
+    * @return the UUID of the currently aktiv sorteringsordning
     */
    public UUID getSorteringsordningId()
    {
@@ -41,7 +41,7 @@ public class DefaultSorteringsordningEntity
    }
 
    /**
-    * @param sorteringsordningId the UUID of the sorteringsordning to designate as default
+    * @param sorteringsordningId the UUID of the sorteringsordning to designate as aktiv
     */
    public void setSorteringsordningId(UUID sorteringsordningId)
    {

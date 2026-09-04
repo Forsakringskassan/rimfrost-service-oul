@@ -286,18 +286,18 @@ public abstract class OulTestBase
             .then().statusCode(expectedStatus);
    }
 
-   public static SorteringsordningResponse getDefaultSorteringsordning()
+   public static SorteringsordningResponse getAktivSorteringsordning()
    {
       return given().contentType(ContentType.JSON)
-            .when().get("/sorteringsordning/default")
+            .when().get("/sorteringsordning/aktiv")
             .then().statusCode(200)
             .extract().as(SorteringsordningResponse.class);
    }
 
-   public static void getDefaultSorteringsordning(int expectedStatus)
+   public static void getAktivSorteringsordning(int expectedStatus)
    {
       given().contentType(ContentType.JSON)
-            .when().get("/sorteringsordning/default")
+            .when().get("/sorteringsordning/aktiv")
             .then().statusCode(expectedStatus);
    }
 
@@ -359,17 +359,17 @@ public abstract class OulTestBase
             .then().statusCode(expectedStatus);
    }
 
-   public static void setDefaultSorteringsordning(UUID id)
+   public static void setAktivSorteringsordning(UUID id)
    {
       given().contentType(ContentType.JSON)
-            .when().put("/sorteringsordning/{id}/default", id)
+            .when().put("/sorteringsordning/{id}/aktiv", id)
             .then().statusCode(204);
    }
 
-   public static void setDefaultSorteringsordning(UUID id, int expectedStatus)
+   public static void setAktivSorteringsordning(UUID id, int expectedStatus)
    {
       given().contentType(ContentType.JSON)
-            .when().put("/sorteringsordning/{id}/default", id)
+            .when().put("/sorteringsordning/{id}/aktiv", id)
             .then().statusCode(expectedStatus);
    }
 
