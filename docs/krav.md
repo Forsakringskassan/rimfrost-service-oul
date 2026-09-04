@@ -151,12 +151,7 @@ via villkor och styra sorteringsriktning inom sin grupp.
 - **OUL-FR-17.2** Handläggarens identitet fastställs från bearer-token.
 - **OUL-FR-17.3** OUL avgör handläggarens teamtillhörighet via team-API:et (se OUL-FR-16).
 - **OUL-FR-17.4** Om handläggaren inte tillhör ett känt team ska HTTP 403 returneras.
-- **OUL-FR-17.5** Utöver kontrollen i OUL-FR-05.4 (som fortfarande gäller oförändrad — en
-  uppgift vars ägare saknar SID-behörighet för en SID-märkt uppgift avtilldelas och exkluderas)
-  ska varje rad även kontrolleras mot den ANROPANDE handläggarens egen SID-behörighet. En
-  SID-märkt uppgift vars ägare har giltig SID-behörighet, men där den anropande handläggaren
-  saknar SID-behörighet, ska exkluderas ur svaret till just den anroparen — utan att uppgiftens
-  tilldelning påverkas.
+- **OUL-FR-17.5** SID-märkta uppgifter skall endast visas för handläggare med SID-behörighet
 - **OUL-FR-17.6** En uppgift som exkluderas enligt OUL-FR-17.5 ska inte räknas i
   `borttagna_pga_behorighet` (OUL-FR-05.5) — ingen avtilldelning sker, uppgiften är bara dold
   för denna anropare.
