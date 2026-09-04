@@ -1,5 +1,8 @@
 # Plan: OUL-FR-04.2 & OUL-FR-05.3 — Sorteringsordning för handläggar-endpoints
 
+> **Not:** begreppet `default` döptes om till `aktiv` i FKPOC-957. Detta dokument
+> beskriver arbetet som det såg ut då och använder de dåvarande namnen.
+
 ## Requirements
 
 - **OUL-FR-04.2** `POST /uppgifter/handlaggare/…` ska välja den högst prioriterade icke tilldelade

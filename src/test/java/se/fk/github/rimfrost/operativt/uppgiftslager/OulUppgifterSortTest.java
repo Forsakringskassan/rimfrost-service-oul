@@ -108,10 +108,10 @@ public class OulUppgifterSortTest extends OulTestBase
    }
 
    @Test
-   @DisplayName("OUL-FR-03.6: Default sorteringsordning tillämpas automatiskt vid listning utan sorteringsordningId")
-   public void should_apply_default_sorteringsordning_automatically()
+   @DisplayName("OUL-FR-03.6: Aktiv sorteringsordning tillämpas automatiskt vid listning utan sorteringsordningId")
+   public void should_apply_aktiv_sorteringsordning_automatically()
    {
-      // Default: STATUS=NY matched tasks sort before unmatched (TILLDELAD)
+      // Aktiv: STATUS=NY matched tasks sort before unmatched (TILLDELAD)
       sendCreateSorteringsordningRequest(newStatusConstraintSpec("NY"));
 
       var task1 = sendCreateUppgiftRequest(newCreateUppgiftRequest(UUID.randomUUID()));
@@ -130,14 +130,14 @@ public class OulUppgifterSortTest extends OulTestBase
    }
 
    @Test
-   @DisplayName("OUL-FR-03.6, OUL-FR-14: Ny default tillämpas automatiskt vid listning efter byte")
-   public void should_apply_new_default_after_set_default()
+   @DisplayName("OUL-FR-03.6, OUL-FR-14: Ny aktiv tillämpas automatiskt vid listning efter byte")
+   public void should_apply_new_aktiv_after_set_aktiv()
    {
-      // First default: STATUS=NY matched first
+      // First aktiv: STATUS=NY matched first
       sendCreateSorteringsordningRequest(newStatusConstraintSpec("NY"));
-      // New default: STATUS=TILLDELAD matched first
+      // New aktiv: STATUS=TILLDELAD matched first
       var second = sendCreateSorteringsordningRequest(newStatusConstraintSpec("TILLDELAD"));
-      setDefaultSorteringsordning(second.getId());
+      setAktivSorteringsordning(second.getId());
 
       var task1 = sendCreateUppgiftRequest(newCreateUppgiftRequest(UUID.randomUUID()));
       var task2 = sendCreateUppgiftRequest(newCreateUppgiftRequest(UUID.randomUUID()));

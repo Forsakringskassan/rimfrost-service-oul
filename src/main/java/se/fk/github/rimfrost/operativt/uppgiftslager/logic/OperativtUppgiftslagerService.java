@@ -109,7 +109,7 @@ public class OperativtUppgiftslagerService
     *
     * @param limit               maximum items per page
     * @param offset              zero-based start index
-    * @param sorteringsordningId specific sorteringsordning to use, or {@code null} for the default
+    * @param sorteringsordningId specific sorteringsordning to use, or {@code null} for the aktiv one
     * @return the sorted page
     */
    public SortedUppgiftPage getUppgifterPage(int limit, int offset, UUID sorteringsordningId)
@@ -122,7 +122,7 @@ public class OperativtUppgiftslagerService
       }
       else
       {
-         sorteringsordning = storage.getDefaultSorteringsordning()
+         sorteringsordning = storage.getAktivSorteringsordning()
                .orElse(new SorteringsordningEntity(null, null, null, List.of()));
       }
 
@@ -133,7 +133,7 @@ public class OperativtUppgiftslagerService
 
    /**
     * Returns all uppgifter assigned to the given handläggare, sorted according to the
-    * default sorteringsordning. If no sorteringsordning is configured the order is unspecified.
+    * aktiv sorteringsordning. If no sorteringsordning is configured the order is unspecified.
     * Any uppgift that has become SID-märkt since assignment, where the assigned handläggare
     * lacks SID-behörighet, is unassigned back into OUL's pool and excluded (FKPOC-940) — see
     * {@link #filterSidBlocked}.
@@ -149,7 +149,7 @@ public class OperativtUppgiftslagerService
             .typId(idTyp)
             .varde(handlaggarId)
             .build();
-      var sorteringsordning = storage.getDefaultSorteringsordning()
+      var sorteringsordning = storage.getAktivSorteringsordning()
             .orElse(new SorteringsordningEntity(null, null, null, List.of()));
       var uppgifter = storage.findAllUppgifterByHandlaggarId(handlaggare, sorteringsordning);
       return filterSidBlocked(uppgifter);
@@ -157,7 +157,7 @@ public class OperativtUppgiftslagerService
 
    /**
     * Returns all uppgifter assigned to any member of the caller's team, sorted according to the
-    * default sorteringsordning.
+    * aktiv sorteringsordning.
     * Throws {@link NotTeamMemberException} (→ HTTP 403) if the caller belongs to no known team (OUL-FR-17.4).
     * Returns an empty result if the caller's team(s) have no members.
     * Any uppgift that has become SID-märkt since assignment, where its assigned handläggare
@@ -176,7 +176,7 @@ public class OperativtUppgiftslagerService
       {
          return new UppgiftListResult(List.of(), 0);
       }
-      var sorteringsordning = storage.getDefaultSorteringsordning()
+      var sorteringsordning = storage.getAktivSorteringsordning()
             .orElse(new SorteringsordningEntity(null, null, null, List.of()));
       var uppgifter = storage.findAllUppgifterByTeam(teamMembers, sorteringsordning);
       return filterSidBlocked(uppgifter);
@@ -220,7 +220,7 @@ public class OperativtUppgiftslagerService
 
    /**
     * Assigns the highest-priority unassigned uppgift to the given handläggare according to the
-    * default sorteringsordning. Returns {@code null} when no unassigned uppgift is available.
+    * aktiv sorteringsordning. Returns {@code null} when no unassigned uppgift is available.
     *
     * @param idTyp        the handläggare identity type id
     * @param handlaggarId the handläggare identity value
@@ -233,7 +233,7 @@ public class OperativtUppgiftslagerService
             .typId(idTyp)
             .varde(handlaggarId)
             .build();
-      var sorteringsordning = storage.getDefaultSorteringsordning()
+      var sorteringsordning = storage.getAktivSorteringsordning()
             .orElse(new SorteringsordningEntity(null, null, null, List.of()));
       var harSidBehorighet = resolveSidBehorighet(handlaggare);
 
@@ -457,9 +457,9 @@ public class OperativtUppgiftslagerService
       return entity;
    }
 
-   public Optional<SorteringsordningEntity> getDefaultSorteringsordning()
+   public Optional<SorteringsordningEntity> getAktivSorteringsordning()
    {
-      return storage.getDefaultSorteringsordning();
+      return storage.getAktivSorteringsordning();
    }
 
    public Optional<SorteringsordningEntity> getSorteringsordningById(UUID id)
@@ -490,13 +490,13 @@ public class OperativtUppgiftslagerService
    }
 
    /**
-    * Promotes the sorteringsordning with the given id to the system default.
+    * Promotes the sorteringsordning with the given id to aktiv.
     *
-    * @param id the UUID of the sorteringsordning to set as default
+    * @param id the UUID of the sorteringsordning to set as aktiv
     */
-   public void setDefaultSorteringsordning(UUID id)
+   public void setAktivSorteringsordning(UUID id)
    {
-      storage.setDefaultSorteringsordning(id);
+      storage.setAktivSorteringsordning(id);
    }
 
    private void notifyStatusUpdate(UppgiftEntity uppgift)

@@ -1,5 +1,8 @@
 # Plan: FKPOC-795 — Sorteringsordning utan persistence
 
+> **Not:** begreppet `default` döptes om till `aktiv` i FKPOC-957. Detta dokument
+> beskriver arbetet som det såg ut då och använder de dåvarande namnen.
+
 ## Requirements Summary
 
 - **In-memory only** — sort order does NOT need to survive restarts (REQ-OUL-SORT-005 relaxed)

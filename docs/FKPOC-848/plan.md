@@ -1,5 +1,8 @@
 # Plan: FKPOC-848 — DB persistence for SorteringsordningEntity
 
+> **Not:** begreppet `default` döptes om till `aktiv` i FKPOC-957. Detta dokument
+> beskriver arbetet som det såg ut då och använder de dåvarande namnen.
+
 Follow-up to FKPOC-795. Replaces the `AtomicReference` in-memory storage with
 PostgreSQL persistence so sorteringsordningar survive restarts.
 

@@ -64,7 +64,7 @@ via villkor och styra sorteringsriktning inom sin grupp.
 ### OUL-FR-04 — Hämta ny uppgift (handläggare)
 
 - **OUL-FR-04.1** En handläggare ska kunna begära en ny icke tilldelad uppgift och automatiskt bli tilldelad den.
-- **OUL-FR-04.2** OUL väljer den högst prioriterade tillgängliga icke tilldelade uppgiften enligt default sorteringsordning och sätter status till `TILLDELAD`. Om ingen sorteringsordning är konfigurerad väljs en godtycklig tillgänglig uppgift.
+- **OUL-FR-04.2** OUL väljer den högst prioriterade tillgängliga icke tilldelade uppgiften enligt aktiv sorteringsordning och sätter status till `TILLDELAD`. Om ingen sorteringsordning är konfigurerad väljs en godtycklig tillgänglig uppgift.
 - **OUL-FR-04.3** Handläggarens identitet fastställs från bearer-token.
 - **OUL-FR-04.4** Om ingen icke tilldelad uppgift finns ska ett tomt svar returneras utan felkod.
 - **OUL-FR-04.5** Vid tilldelning ska en statusnotifiering publiceras på Kafka.
@@ -105,14 +105,14 @@ via villkor och styra sorteringsriktning inom sin grupp.
 ### OUL-FR-09 — Skapa sorteringsordning
 
 - **OUL-FR-09.1** En Administratör ska kunna skapa en ny sorteringsordning via management-API.
-- **OUL-FR-09.2** Om ingen default-sorteringsordning finns sedan tidigare ska den nyskapade automatiskt anges som default. Finns en default sedan tidigare påverkas den inte.
+- **OUL-FR-09.2** Om ingen aktiv-sorteringsordning finns sedan tidigare ska den nyskapade automatiskt anges som aktiv. Finns en aktiv sedan tidigare påverkas den inte.
 - **OUL-FR-09.3** OUL ska tilldela ett nytt unikt UUID för varje ny sorteringsordning och returnera det i svaret.
 - **OUL-FR-09.4** Sorteringsordningen ska innehålla en ordnad lista med minst en post (`SorteringsordningEntry`).
 - **OUL-FR-09.5** Varje post kan innehålla valfria villkor (`constraints`) och en valfri sorteringsangivelse (`sort_by`).
 
 ### OUL-FR-10 — Hämta sorteringsordning
 
-- **OUL-FR-10.1** En Administratör ska kunna hämta den aktiva (default) sorteringsordningen via `GET /sorteringsordning/default`.
+- **OUL-FR-10.1** En Administratör ska kunna hämta den aktiva sorteringsordningen via `GET /sorteringsordning/aktiv`.
 - **OUL-FR-10.2** Om ingen sorteringsordning finns ska HTTP 404 returneras.
 - **OUL-FR-10.3** En Administratör ska kunna hämta en specifik sorteringsordning via dess ID med `GET /sorteringsordning/{id}`.
 - **OUL-FR-10.4** Om angivet ID inte hittas ska HTTP 404 returneras.
@@ -132,12 +132,12 @@ via villkor och styra sorteringsriktning inom sin grupp.
 ### OUL-FR-13 — Ta bort sorteringsordning
 
 - **OUL-FR-13.1** En Administratör ska kunna ta bort en sorteringsordning via `DELETE /sorteringsordning/{id}`.
-- **OUL-FR-13.2** En sorteringsordning som är angiven som default kan inte tas bort. Om ett sådant försök görs ska HTTP 409 returneras.
+- **OUL-FR-13.2** En sorteringsordning som är angiven som aktiv kan inte tas bort. Om ett sådant försök görs ska HTTP 409 returneras.
 - **OUL-FR-13.3** Om angivet ID inte hittas ska HTTP 404 returneras.
 
-### OUL-FR-14 — Ange default sorteringsordning
+### OUL-FR-14 — Ange aktiv sorteringsordning
 
-- **OUL-FR-14.1** En Administratör ska kunna ange en specifik sorteringsordning som default via `PUT /sorteringsordning/{id}/default`.
+- **OUL-FR-14.1** En Administratör ska kunna ange en specifik sorteringsordning som aktiv via `PUT /sorteringsordning/{id}/aktiv`.
 - **OUL-FR-14.2** Om angivet ID inte hittas ska HTTP 404 returneras.
 
 ### OUL-FR-16 — Teammedlemskap via team-API
@@ -225,9 +225,9 @@ via villkor och styra sorteringsriktning inom sin grupp.
 
 ### OUL-NFR-05 — Lagring av sorteringsordningar
 
-- **OUL-NFR-05.1** Flera sorteringsordningar ska kunna lagras simultant och överleva omstart. Exakt en är default åt gången.
+- **OUL-NFR-05.1** Flera sorteringsordningar ska kunna lagras simultant och överleva omstart. Exakt en är aktiv åt gången.
 - **OUL-NFR-05.2** Hämtning av en sorteringsordning via ID ska ske direkt mot den enskilda posten utan att läsa samtliga sorteringsordningar.
-- **OUL-NFR-05.3** Byte av default-sorteringsordning ska inte kräva läsning eller skrivning av övriga sorteringsordningar.
+- **OUL-NFR-05.3** Byte av aktiv-sorteringsordning ska inte kräva läsning eller skrivning av övriga sorteringsordningar.
 
 ---
 
