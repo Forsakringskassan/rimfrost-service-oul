@@ -16,12 +16,12 @@ import se.fk.github.rimfrost.operativt.uppgiftslager.logic.enums.UppgiftStatus;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.sid.SidChecker;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.OulDataStorage;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.exception.SidUppgiftException;
-import se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.entity.DefaultSorteringsordningEntity;
+import se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.entity.AktivSorteringsordningEntity;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.entity.SorteringsordningPersistenceEntity;
-import se.fk.github.rimfrost.operativt.uppgiftslager.storage.exception.SorteringsordningIsDefaultException;
+import se.fk.github.rimfrost.operativt.uppgiftslager.storage.exception.SorteringsordningIsAktivException;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.exception.SorteringsordningNotFoundException;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.exception.UppgiftNotFoundException;
-import se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.repository.DefaultSorteringsordningRepository;
+import se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.repository.AktivSorteringsordningRepository;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.repository.SorteringsordningRepository;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.repository.UppgiftRepository;
 import java.util.List;
@@ -51,7 +51,7 @@ public class PanacheOulDataStorage implements OulDataStorage
    SorteringsordningRepository sorteringsordningRepository;
 
    @Inject
-   DefaultSorteringsordningRepository defaultSorteringsordningRepository;
+   AktivSorteringsordningRepository aktivSorteringsordningRepository;
 
    @Inject
    SorteringsordningQueryBuilder queryBuilder;
@@ -303,13 +303,13 @@ public class PanacheOulDataStorage implements OulDataStorage
       jpaEntity.setEntries(entity.entries());
       sorteringsordningRepository.persist(jpaEntity);
 
-      defaultSorteringsordningRepository.insertIfAbsent(entity.id());
+      aktivSorteringsordningRepository.insertIfAbsent(entity.id());
    }
 
    @Override
-   public Optional<SorteringsordningEntity> getDefaultSorteringsordning()
+   public Optional<SorteringsordningEntity> getAktivSorteringsordning()
    {
-      return defaultSorteringsordningRepository.findByIdOptional(true)
+      return aktivSorteringsordningRepository.findByIdOptional(true)
             .flatMap(d -> sorteringsordningRepository.findByIdOptional(d.getSorteringsordningId()))
             .map(oulDataStorageMapper::toSorteringsordningEntity);
    }
@@ -345,10 +345,10 @@ public class PanacheOulDataStorage implements OulDataStorage
       {
          throw new SorteringsordningNotFoundException(id);
       }
-      defaultSorteringsordningRepository.findForUpdate().ifPresent(d -> {
+      aktivSorteringsordningRepository.findForUpdate().ifPresent(d -> {
          if (id.equals(d.getSorteringsordningId()))
          {
-            throw new SorteringsordningIsDefaultException(id);
+            throw new SorteringsordningIsAktivException(id);
          }
       });
       sorteringsordningRepository.deleteById(id);
@@ -357,27 +357,27 @@ public class PanacheOulDataStorage implements OulDataStorage
    /**
     * {@inheritDoc}
     * <p>
-    * If a default row already exists it is updated via Hibernate dirty checking (no explicit
+    * If an aktiv row already exists it is updated via Hibernate dirty checking (no explicit
     * {@code persist} needed within the active transaction). Otherwise a new row is inserted.
     *
     */
    @Override
-   public void setDefaultSorteringsordning(UUID id)
+   public void setAktivSorteringsordning(UUID id)
    {
       if (sorteringsordningRepository.findByIdOptional(id).isEmpty())
       {
          throw new SorteringsordningNotFoundException(id);
       }
-      var existing = defaultSorteringsordningRepository.findByIdOptional(true);
+      var existing = aktivSorteringsordningRepository.findByIdOptional(true);
       if (existing.isPresent())
       {
          existing.get().setSorteringsordningId(id);
       }
       else
       {
-         var defaultEntity = new DefaultSorteringsordningEntity();
-         defaultEntity.setSorteringsordningId(id);
-         defaultSorteringsordningRepository.persist(defaultEntity);
+         var aktivEntity = new AktivSorteringsordningEntity();
+         aktivEntity.setSorteringsordningId(id);
+         aktivSorteringsordningRepository.persist(aktivEntity);
       }
    }
 

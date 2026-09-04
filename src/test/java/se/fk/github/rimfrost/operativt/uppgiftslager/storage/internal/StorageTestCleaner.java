@@ -26,7 +26,7 @@ public class StorageTestCleaner
    public void clearAll()
    {
       em.createQuery("DELETE FROM UppgiftEntity").executeUpdate();
-      em.createNativeQuery("DELETE FROM {h-schema}default_sorteringsordning").executeUpdate();
+      em.createNativeQuery("DELETE FROM {h-schema}aktiv_sorteringsordning").executeUpdate();
       em.createNativeQuery("DELETE FROM {h-schema}sorteringsordning").executeUpdate();
       panacheOulDataStorage.invalidateCountCache();
    }
