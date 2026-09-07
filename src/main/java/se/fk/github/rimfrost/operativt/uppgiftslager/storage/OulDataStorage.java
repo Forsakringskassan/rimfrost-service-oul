@@ -1,5 +1,6 @@
 package se.fk.github.rimfrost.operativt.uppgiftslager.storage;
 
+import jakarta.persistence.LockModeType;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.SorteringsordningEntityPage;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.UppgiftEntityPage;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.Idtyp;
@@ -45,6 +46,16 @@ public interface OulDataStorage
     * @throws UppgiftNotFoundException if no uppgift with the given id exists
     */
    UppgiftEntity findUppgiftById(UUID id);
+
+   /**
+    * Returns the uppgift with the given id.
+    *
+    * @param id the uppgift UUID
+    * @param lockModeType the lock mode to use for the uppgift during the transaction
+    * @return the matching uppgift
+    * @throws UppgiftNotFoundException if no uppgift with the given id exists
+    */
+   UppgiftEntity findUppgiftById(UUID id, LockModeType lockModeType);
 
    /**
     * Returns all uppgifter assigned to the given handläggare, ordered by the given sorteringsordning.
