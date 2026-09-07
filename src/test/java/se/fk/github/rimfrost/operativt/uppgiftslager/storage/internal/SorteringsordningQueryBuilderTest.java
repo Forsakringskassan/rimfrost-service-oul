@@ -9,6 +9,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.ImmutableIdtyp;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.SorteringsordningEntity;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.Constraint;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.ConstraintBetween;
@@ -496,7 +497,9 @@ public class SorteringsordningQueryBuilderTest
    @DisplayName("buildAssignQuery: filtrerar på handlaggar_id IS NULL")
    public void assign_query_filters_unassigned_rows()
    {
-      var built = builder.buildAssignQuery(entity(List.of()), List.of());
+      var handlaggareId = ImmutableIdtyp.builder().typId(UUID.randomUUID().toString()).varde(UUID.randomUUID().toString())
+            .build();
+      var built = builder.buildAssignQuery(entity(List.of()), List.of(), handlaggareId);
 
       assertTrue(built.pageSql().contains("handlaggar_id_typ_id IS NULL"));
       assertTrue(built.pageSql().contains("handlaggar_id_varde IS NULL"));
@@ -510,7 +513,9 @@ public class SorteringsordningQueryBuilderTest
    @DisplayName("buildAssignQuery: tom entry-lista ger fallback LIMIT 1 FOR UPDATE SKIP LOCKED")
    public void assign_query_empty_entries_falls_back_to_created_at()
    {
-      var built = builder.buildAssignQuery(entity(List.of()), List.of());
+      var handlaggareId = ImmutableIdtyp.builder().typId(UUID.randomUUID().toString()).varde(UUID.randomUUID().toString())
+            .build();
+      var built = builder.buildAssignQuery(entity(List.of()), List.of(), handlaggareId);
 
       assertTrue(built.pageSql().contains("ORDER BY created_at ASC"));
       assertTrue(built.pageSql().contains("LIMIT 1"));
@@ -528,7 +533,9 @@ public class SorteringsordningQueryBuilderTest
    public void assign_query_with_entries_uses_cte_with_locking_inside()
    {
       var entry = entryWithConstraints(eqConstraint(SorteringsordningFieldEq.ROLL, "PRIO"));
-      var built = builder.buildAssignQuery(entity(List.of(entry)), List.of());
+      var handlaggareId = ImmutableIdtyp.builder().typId(UUID.randomUUID().toString()).varde(UUID.randomUUID().toString())
+            .build();
+      var built = builder.buildAssignQuery(entity(List.of(entry)), List.of(), handlaggareId);
 
       assertTrue(built.pageSql().startsWith("WITH candidate AS ("));
       assertTrue(built.pageSql().contains("ranked.sort_group"));
@@ -542,21 +549,25 @@ public class SorteringsordningQueryBuilderTest
    @DisplayName("buildAssignQuery: countSql är null")
    public void assign_query_has_no_count_sql()
    {
-      var built = builder.buildAssignQuery(entity(List.of()), List.of());
+      var handlaggareId = ImmutableIdtyp.builder().typId(UUID.randomUUID().toString()).varde(UUID.randomUUID().toString())
+            .build();
+      var built = builder.buildAssignQuery(entity(List.of()), List.of(), handlaggareId);
 
       assertNull(built.countSql());
    }
 
    /**
-    * {@code buildAssignQuery} must not include id condition on empty exclude list.
+    * {@code buildAssignQuery} must not include exclude list id condition on empty exclude list.
     */
    @Test
    @DisplayName("buildAssignQuery: id exclusion list is not present")
    public void assign_query_has_no_id_exclusion_condition_on_empty_exclude_list()
    {
-      var built = builder.buildAssignQuery(entity(List.of()), List.of());
+      var handlaggareId = ImmutableIdtyp.builder().typId(UUID.randomUUID().toString()).varde(UUID.randomUUID().toString())
+            .build();
+      var built = builder.buildAssignQuery(entity(List.of()), List.of(), handlaggareId);
 
-      assertFalse(built.pageSql().contains("handlaggar_id_varde IS NULL AND id NOT IN ("));
+      assertFalse(built.pageSql().contains(") AND id NOT IN ("));
    }
 
    /**
@@ -566,9 +577,11 @@ public class SorteringsordningQueryBuilderTest
    @DisplayName("buildAssignQuery: id exclusion list is present")
    public void assign_query_has_id_exclusion_condition_on_non_empty_exclude_list()
    {
-      var built = builder.buildAssignQuery(entity(List.of()), List.of(UUID.randomUUID()));
+      var handlaggareId = ImmutableIdtyp.builder().typId(UUID.randomUUID().toString()).varde(UUID.randomUUID().toString())
+            .build();
+      var built = builder.buildAssignQuery(entity(List.of()), List.of(UUID.randomUUID()), handlaggareId);
 
-      assertTrue(built.pageSql().contains("handlaggar_id_varde IS NULL AND id NOT IN ("));
+      assertTrue(built.pageSql().contains(") AND id NOT IN ("));
    }
 
    /**
@@ -579,11 +592,28 @@ public class SorteringsordningQueryBuilderTest
    public void assign_query_has_correct_parameter_count_on_non_empty_exclude_list()
    {
       var excludedId = UUID.randomUUID();
-      var built = builder.buildAssignQuery(entity(List.of()), List.of(excludedId));
+      var handlaggareId = ImmutableIdtyp.builder().typId(UUID.randomUUID().toString()).varde(UUID.randomUUID().toString())
+            .build();
+      var built = builder.buildAssignQuery(entity(List.of()), List.of(excludedId), handlaggareId);
 
-      assertEquals(1, built.params().size());
+      assertEquals(3, built.params().size());
       assertTrue(built.params().containsKey("excl_id_0"));
       assertEquals(excludedId, built.params().get("excl_id_0"));
+   }
+
+   /**
+    * {@code buildAssignQuery} must filter for uppgifter excluded by assignment blocklist.
+    */
+   @Test
+   @DisplayName("buildAssignQuery: filtrerar på uppgift_assign_blocklist")
+   public void assign_query_filters_assign_blocklist_rows()
+   {
+      var handlaggareId = ImmutableIdtyp.builder().typId(UUID.randomUUID().toString()).varde(UUID.randomUUID().toString())
+            .build();
+      var built = builder.buildAssignQuery(entity(List.of()), List.of(), handlaggareId);
+
+      assertTrue(built.pageSql().contains("handlaggar_id_varde IS NULL AND NOT EXISTS ("));
+      assertTrue(built.pageSql().contains("SELECT 1 FROM " + builder.schema + ".uppgift_assign_blocklist"));
    }
 
    // --- builders ---

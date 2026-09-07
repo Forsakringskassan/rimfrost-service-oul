@@ -16,13 +16,16 @@ import se.fk.github.rimfrost.operativt.uppgiftslager.logic.enums.UppgiftStatus;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.sid.SidChecker;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.OulDataStorage;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.exception.SidUppgiftException;
+import se.fk.github.rimfrost.operativt.uppgiftslager.storage.exception.UppgiftNotAssignedException;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.entity.AktivSorteringsordningEntity;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.entity.SorteringsordningPersistenceEntity;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.exception.SorteringsordningIsAktivException;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.exception.SorteringsordningNotFoundException;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.exception.UppgiftNotFoundException;
+import se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.entity.UppgiftAssignBlocklistEntity;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.repository.AktivSorteringsordningRepository;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.repository.SorteringsordningRepository;
+import se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.repository.UppgiftAssignBlocklistRepository;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.repository.UppgiftRepository;
 import java.util.List;
 import java.util.Objects;
@@ -52,6 +55,9 @@ public class PanacheOulDataStorage implements OulDataStorage
 
    @Inject
    AktivSorteringsordningRepository aktivSorteringsordningRepository;
+
+   @Inject
+   UppgiftAssignBlocklistRepository uppgiftAssignBlocklistRepository;
 
    @Inject
    SorteringsordningQueryBuilder queryBuilder;
@@ -188,7 +194,7 @@ public class PanacheOulDataStorage implements OulDataStorage
    public UppgiftEntity assignNewUppgift(Idtyp handlaggarId, SorteringsordningEntity sorteringsordning,
          List<UUID> excludeUppgiftIds, boolean harSidBehorighet)
    {
-      var built = queryBuilder.buildAssignQuery(sorteringsordning, excludeUppgiftIds);
+      var built = queryBuilder.buildAssignQuery(sorteringsordning, excludeUppgiftIds, handlaggarId);
       var em = uppgiftRepository.getEntityManager();
       var selectQuery = em.createNativeQuery(built.pageSql(),
             se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.entity.UppgiftEntity.class);
@@ -241,6 +247,31 @@ public class PanacheOulDataStorage implements OulDataStorage
       {
          throw new UppgiftNotFoundException(id);
       }
+
+      return doUnassign(uppgift);
+   }
+
+   @Override
+   public UppgiftEntity unassignAndBlockUppgift(UUID id)
+   {
+      var uppgift = uppgiftRepository.findById(id, LockModeType.PESSIMISTIC_WRITE);
+
+      if (uppgift == null)
+      {
+         throw new UppgiftNotFoundException(id);
+      }
+
+      if (uppgift.getHandlaggarIdTypId() == null || uppgift.getHandlaggarIdVarde() == null)
+      {
+         throw new UppgiftNotAssignedException(id);
+      }
+
+      UppgiftAssignBlocklistEntity blocklistEntry = new UppgiftAssignBlocklistEntity();
+      blocklistEntry.setUppgift(uppgift);
+      blocklistEntry.setHandlaggareIdTypId(uppgift.getHandlaggarIdTypId());
+      blocklistEntry.setHandlaggareIdVarde(uppgift.getHandlaggarIdVarde());
+
+      uppgiftAssignBlocklistRepository.persist(blocklistEntry);
 
       return doUnassign(uppgift);
    }

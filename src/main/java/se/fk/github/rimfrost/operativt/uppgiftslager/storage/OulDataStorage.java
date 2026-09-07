@@ -121,6 +121,17 @@ public interface OulDataStorage
    UppgiftEntity unassignUppgiftIfAssignedTo(UUID id, Idtyp expectedHandlaggarId);
 
    /**
+    * Removes the handläggare assignment from the given uppgift and marks the uppgift for exclusion
+    * when new uppgifter is considered for the assigned handläggare.
+    *
+    * @param id the uppgift UUID to unassign and block
+    * @return the updated uppgift
+    * @throws UppgiftNotFoundException if no uppgift with the given id exists
+    * @throws UppgiftNotAssignedException if the specified uppgift is not assigned to a handläggare.
+    */
+   UppgiftEntity unassignAndBlockUppgift(UUID id);
+
+   /**
     * Updates the handläggare assignment on an existing uppgift.
     *
     * @param id           the uppgift UUID to update

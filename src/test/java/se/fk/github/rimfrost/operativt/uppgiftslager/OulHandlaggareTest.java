@@ -524,6 +524,58 @@ public class OulHandlaggareTest extends OulTestBase
       assertEquals(assignResponse.getOperativUppgift().getUppgiftId(), newAssignResponse.getOperativUppgift().getUppgiftId());
    }
 
+   @Test
+   @DisplayName("OUL-FR-20.1,OUL-FR-20.2: Tillbakalämnad uppgift väljs inte på nytt")
+   public void should_not_select_assign_blocked_uppgift()
+   {
+      var handlaggareId = UUID.randomUUID();
+
+      sendCreateUppgiftRequest(newCreateUppgiftRequest(UUID.randomUUID()));
+      var assignResponse = assignTaskToHandlaggare(handlaggareId);
+      assertNotNull(assignResponse.getOperativUppgift());
+      unassignHandlaggareTask(assignResponse.getOperativUppgift().getUppgiftId(), handlaggareId);
+
+      var newAssignResponse = assignTaskToHandlaggare(handlaggareId);
+      assertNull(newAssignResponse.getOperativUppgift());
+   }
+
+   @Test
+   @DisplayName("OUL-FR-20.3, OUL-FR-20.4: Blocklista för tilldelning rensas inte efter ny tilldelning")
+   public void should_not_clear_assign_block_list_on_new_assign()
+   {
+      var handlaggareId1 = UUID.randomUUID();
+      var handlaggareId2 = UUID.randomUUID();
+
+      sendCreateUppgiftRequest(newCreateUppgiftRequest(UUID.randomUUID()));
+      var assignResponse = assignTaskToHandlaggare(handlaggareId1);
+      assertNotNull(assignResponse.getOperativUppgift());
+      unassignHandlaggareTask(assignResponse.getOperativUppgift().getUppgiftId(), handlaggareId1);
+
+      var secondAssignResponse = assignTaskToHandlaggare(handlaggareId2);
+      assertNotNull(secondAssignResponse.getOperativUppgift());
+      assertEquals(assignResponse.getOperativUppgift().getUppgiftId(), secondAssignResponse.getOperativUppgift().getUppgiftId());
+      unassignHandlaggareTask(secondAssignResponse.getOperativUppgift().getUppgiftId(), handlaggareId2);
+
+      var reAssignResponse = assignTaskToHandlaggare(handlaggareId1);
+      assertNull(reAssignResponse.getOperativUppgift());
+   }
+
+   @Test
+   @DisplayName("OUL-FR-20.5: Administrators unassign blockerar inte uppgift")
+   public void should_not_update_assign_blocked_list_on_administrator_unassign()
+   {
+      var handlaggareId = UUID.randomUUID();
+
+      sendCreateUppgiftRequest(newCreateUppgiftRequest(UUID.randomUUID()));
+      var assignResponse = assignTaskToHandlaggare(handlaggareId);
+      assertNotNull(assignResponse.getOperativUppgift());
+      unassignTask(assignResponse.getOperativUppgift().getUppgiftId());
+
+      var newAssignResponse = assignTaskToHandlaggare(handlaggareId);
+      assertNotNull(newAssignResponse.getOperativUppgift());
+      assertEquals(assignResponse.getOperativUppgift().getUppgiftId(), newAssignResponse.getOperativUppgift().getUppgiftId());
+   }
+
    private se.fk.rimfrost.Idtyp createKafkaIdTyp(UUID handlaggareId)
    {
       se.fk.rimfrost.Idtyp idtyp = new se.fk.rimfrost.Idtyp();

@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -231,15 +232,26 @@ public class SorteringsordningQueryBuilder
     * has no entries.
     *
     * @param sorteringsordning the sort specification that determines task priority
+    * @param excludeUppgiftIds ids for uppgifter to exclude from consideration
+    * @param targetHandlaggareId id of the handläggare which the uppgift should be assigned to
     * @return a {@link BuiltQuery} with {@code pageSql} ready to be executed (no {@code countSql})
     */
-   public BuiltQuery buildAssignQuery(SorteringsordningEntity sorteringsordning, List<UUID> excludeUppgiftIds)
+   public BuiltQuery buildAssignQuery(SorteringsordningEntity sorteringsordning, List<UUID> excludeUppgiftIds,
+         Idtyp targetHandlaggareId)
    {
       var entries = sorteringsordning.entries();
       Map<String, Object> params = new HashMap<>();
 
+      Objects.requireNonNull(targetHandlaggareId, "targetHandlaggareId is null");
+
       var table = schema + ".uppgift";
       StringBuilder unassignedFilter = new StringBuilder("handlaggar_id_typ_id IS NULL AND handlaggar_id_varde IS NULL");
+
+      unassignedFilter.append(" AND NOT EXISTS (SELECT 1 FROM " + schema
+            + ".uppgift_assign_blocklist WHERE handlaggare_id_typ_id=:handlaggare_id_typ_id AND handlaggare_id_varde=:handlaggare_id_varde AND uppgift_id="
+            + table + ".id)");
+      params.put("handlaggare_id_typ_id", targetHandlaggareId.typId());
+      params.put("handlaggare_id_varde", targetHandlaggareId.varde());
 
       if (excludeUppgiftIds != null && !excludeUppgiftIds.isEmpty())
       {
