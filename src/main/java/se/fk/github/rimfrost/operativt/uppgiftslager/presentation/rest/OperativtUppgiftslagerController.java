@@ -102,4 +102,18 @@ public class OperativtUppgiftslagerController implements OperativtUppgiftslagerC
       var uppgift = operativtUppgiftslagerService.reassignUppgift(uppgiftId, handlaggare);
       return presentationRestMapper.toPostUppgiftHandlaggareResponse(uppgift);
    }
+
+   /**
+    * Unassigns the given uppgift from the calling handläggare (identity from bearer token).
+    *
+    * @param uppgiftId the ID of the uppgift to unassign
+    */
+   @DELETE
+   @Path("/{uppgift_id}/handlaggare")
+   @Override
+   public void deleteUppgiftHandlaggare(@PathParam("uppgift_id") UUID uppgiftId)
+   {
+      var handlaggare = bearerTokenExtractor.extract(routingContext.request().getHeader("Authorization"));
+      operativtUppgiftslagerService.unassignHandlaggareUppgift(uppgiftId, handlaggare);
+   }
 }

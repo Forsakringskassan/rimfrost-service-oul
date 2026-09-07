@@ -1,7 +1,5 @@
 package se.fk.github.rimfrost.operativt.uppgiftslager;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.TextNode;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.stubbing.Scenario;
@@ -451,6 +449,79 @@ public class OulHandlaggareTest extends OulTestBase
 
       sendCreateUppgiftRequest(newCreateUppgiftRequest(UUID.randomUUID()));
       assignTaskToHandlaggare(handlaggareId, 500);
+   }
+
+   @Test
+   @DisplayName("OUL-FR-19.1: Lämna tillbaka uppgift ger status 204 när borttagning av handläggare lyckas")
+   public void should_return_204_on_self_unassign_uppgift_assigned_handlaggare()
+   {
+      var handlaggareId = UUID.randomUUID();
+
+      sendCreateUppgiftRequest(newCreateUppgiftRequest(UUID.randomUUID()));
+      var assignResponse = assignTaskToHandlaggare(handlaggareId);
+      assertNotNull(assignResponse.getOperativUppgift());
+      oulKafkaConnector.clear();
+
+      unassignHandlaggareTask(assignResponse.getOperativUppgift().getUppgiftId(), handlaggareId);
+
+      var statusMessage = oulKafkaConnector.waitForOulStatusMessage();
+      assertEquals("NY", statusMessage.getStatus());
+      assertNull(statusMessage.getUtforarId());
+
+      var assignedTasks = getAssignedTasks(handlaggareId);
+      assertEquals(0, assignedTasks.getOperativaUppgifter().size());
+
+      var uppgifter = getUppgifter(1000);
+      var uppgift = uppgifter.getItems().stream()
+            .filter(u -> u.getUppgiftId().equals(assignResponse.getOperativUppgift().getUppgiftId())).findFirst().orElseThrow();
+      assertEquals("NY", uppgift.getStatus());
+      assertNull(uppgift.getHandlaggarId());
+   }
+
+   @Test
+   @DisplayName("OUL-FR-19.3: Lämna tillbaka uppgift ger status 403 när tilldelad handläggare inte är samma som anropande")
+   public void should_return_403_on_self_unassign_uppgift_wrong_calling_handlaggare()
+   {
+      var handlaggareId = UUID.randomUUID();
+
+      sendCreateUppgiftRequest(newCreateUppgiftRequest(UUID.randomUUID()));
+      var assignResponse = assignTaskToHandlaggare(handlaggareId);
+      assertNotNull(assignResponse.getOperativUppgift());
+      unassignHandlaggareTask(assignResponse.getOperativUppgift().getUppgiftId(), UUID.randomUUID(), 403);
+
+      var assignedTasks = getAssignedTasks(handlaggareId);
+      assertEquals(1, assignedTasks.getOperativaUppgifter().size());
+      assertEquals(assignResponse.getOperativUppgift().getUppgiftId(),
+            assignedTasks.getOperativaUppgifter().getFirst().getUppgiftId());
+   }
+
+   @Test
+   @DisplayName("OUL-FR-19.4: Lämna tillbaka uppgift ger status 404 när uppgift inte hittas")
+   public void should_return_404_on_self_unassign_uppgift_wrong_uppgift_id()
+   {
+      var handlaggareId = UUID.randomUUID();
+
+      sendCreateUppgiftRequest(newCreateUppgiftRequest(UUID.randomUUID()));
+      var assignResponse = assignTaskToHandlaggare(handlaggareId);
+      assertNotNull(assignResponse.getOperativUppgift());
+      unassignHandlaggareTask(UUID.randomUUID(), handlaggareId, 404);
+   }
+
+   @Test
+   @DisplayName("OUL-FR-19.5: Tillbakalämnad uppgift kan tilldelas till ny handläggare")
+   public void should_return_allow_new_assign_after_self_unassign_uppgift()
+   {
+      var handlaggareId = UUID.randomUUID();
+
+      sendCreateUppgiftRequest(newCreateUppgiftRequest(UUID.randomUUID()));
+      var assignResponse = assignTaskToHandlaggare(handlaggareId);
+      assertNotNull(assignResponse.getOperativUppgift());
+      unassignHandlaggareTask(assignResponse.getOperativUppgift().getUppgiftId(), handlaggareId);
+
+      var newHandlaggareId = UUID.randomUUID();
+      var newAssignResponse = assignTaskToHandlaggare(newHandlaggareId);
+      assertNotNull(newAssignResponse.getOperativUppgift());
+      assertEquals(assignResponse.getOperativUppgift().getUppgiftId(), newAssignResponse.getOperativUppgift().getUppgiftId());
    }
 
    private se.fk.rimfrost.Idtyp createKafkaIdTyp(UUID handlaggareId)

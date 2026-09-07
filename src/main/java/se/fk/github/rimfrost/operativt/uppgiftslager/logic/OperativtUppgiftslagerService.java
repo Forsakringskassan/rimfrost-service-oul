@@ -8,8 +8,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.persistence.LockModeType;
+import jakarta.transaction.Transactional;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.SorteringsordningEntity;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.exception.HandlaggningReadException;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.exception.NotAssignedHandlaggareException;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.exception.SidUppgiftException;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.exception.UppgiftNotFoundException;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.SorteringsordningSpec;
@@ -219,6 +222,29 @@ public class OperativtUppgiftslagerService
       notifyStatusUpdate(updated);
       log.info("Reassigned uppgift {} to handlaggarId: {}", uppgiftId, callerHandlaggare.varde());
       return logicMapper.toUppgiftDto(updated);
+   }
+
+   /**
+    * Unassigns a given uppgift from the calling handläggare.
+    * @throws NotAssignedHandlaggareException Thrown if the calling handläggare is not the same as the assigned handläggare.
+    * @throws UppgiftNotFoundException Thrown if the uppgift does not exist.
+    * @param uppgiftId           the uppgift to unassign
+    * @param callerHandlaggare   the identity of the calling handläggare
+    */
+   @Transactional
+   public void unassignHandlaggareUppgift(UUID uppgiftId, Idtyp callerHandlaggare)
+   {
+      log.info("Unassigning uppgift: {} from handlaggarId: {}", uppgiftId, callerHandlaggare.varde());
+      var current = storage.findUppgiftById(uppgiftId, LockModeType.PESSIMISTIC_WRITE);
+
+      if (!Objects.equals(current.handlaggarId(), callerHandlaggare))
+      {
+         throw new NotAssignedHandlaggareException(uppgiftId);
+      }
+
+      var updated = storage.unassignUppgift(uppgiftId); // TODO: Replace with different call when uppgift handlaggare blocklist is implemented
+      notifyStatusUpdate(updated);
+      log.info("Unassigned uppgift: {} from handlaggarId: {}", uppgiftId, callerHandlaggare.varde());
    }
 
    /**

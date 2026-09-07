@@ -157,6 +157,19 @@ public class PanacheOulDataStorage implements OulDataStorage
    }
 
    @Override
+   public UppgiftEntity findUppgiftById(UUID id, LockModeType lockModeType)
+   {
+      var entity = uppgiftRepository.findById(id, lockModeType);
+
+      if (entity == null)
+      {
+         throw new UppgiftNotFoundException(id);
+      }
+
+      return oulDataStorageMapper.toUppgiftEntity(entity);
+   }
+
+   @Override
    public void deleteUppgift(UUID id)
    {
       uppgiftRepository.deleteById(id);

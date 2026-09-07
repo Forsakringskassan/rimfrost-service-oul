@@ -173,6 +173,18 @@ public abstract class OulTestBase
             .statusCode(expectedStatus);
    }
 
+   public static void unassignHandlaggareTask(UUID uppgiftId, UUID handlaggarId)
+   {
+      given().contentType(ContentType.JSON).header("Authorization", bearerToken(handlaggarId)).when()
+            .delete("/uppgifter/" + uppgiftId + "/handlaggare").then().statusCode(204);
+   }
+
+   public static void unassignHandlaggareTask(UUID uppgiftId, UUID handlaggarId, int expectedStatus)
+   {
+      given().contentType(ContentType.JSON).header("Authorization", bearerToken(handlaggarId)).when()
+            .delete("/uppgifter/" + uppgiftId + "/handlaggare").then().statusCode(expectedStatus);
+   }
+
    public static OperativUppgift updateTask(UUID uppgiftId, UpdateUppgiftRequest updateUppgiftRequest)
    {
       return given().contentType(ContentType.JSON).body(updateUppgiftRequest)
