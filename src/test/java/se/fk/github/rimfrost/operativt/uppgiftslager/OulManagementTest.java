@@ -108,6 +108,20 @@ public class OulManagementTest extends OulTestBase
       updateTask(UUID.randomUUID(), new UpdateUppgiftRequest(), 404);
    }
 
+   @Test
+   @DisplayName("OUL-FR-07.2: Uppdatera uppgift med angiven handläggare — HTTP 404 returneras när uppgifts-ID inte finns")
+   public void should_return_404_on_update_with_handlaggarId_set_when_uppgift_not_found()
+   {
+      Idtyp newHandlaggare = new Idtyp();
+      newHandlaggare.setTypId(oulHandlaggareTypId);
+      newHandlaggare.setVarde(UUID.randomUUID().toString());
+
+      UpdateUppgiftRequest updateUppgiftRequest = new UpdateUppgiftRequest();
+      updateUppgiftRequest.setHandlaggarId(newHandlaggare);
+
+      updateTask(UUID.randomUUID(), updateUppgiftRequest, 404);
+   }
+
    @ParameterizedTest
    @CsvSource(
    {
@@ -232,7 +246,7 @@ public class OulManagementTest extends OulTestBase
 
    @Test
    @DisplayName("OUL-FR-07 (SID-spärr): PATCH /uppgifter/{id} returns 403 and leaves uppgift unchanged when moving a SID-märkt uppgift to a handläggare without SID-behörighet")
-   public void should_return_403_and_leaveUppgiftUnchanged_whenMovingSidUppgiftToUnauthorizedHandlaggare()
+   public void should_return_403_and_leave_uppgift_unchanged_when_moving_sid_uppgift_to_unauthorized_handlaggare()
    {
       var handlaggningId = UUID.randomUUID();
       var createUppgiftRequest = newCreateUppgiftRequest(handlaggningId);
@@ -275,7 +289,7 @@ public class OulManagementTest extends OulTestBase
 
    @Test
    @DisplayName("OUL-FR-07 (SID-spärr): PATCH /uppgifter/{id} succeeds when moving a SID-märkt uppgift to a handläggare with SID-behörighet")
-   public void should_moveSidUppgift_whenTargetHasSidBehorighet()
+   public void should_move_sid_uppgift_when_target_has_sid_behorighet()
    {
       var handlaggningId = UUID.randomUUID();
       var createUppgiftRequest = newCreateUppgiftRequest(handlaggningId);
@@ -310,7 +324,7 @@ public class OulManagementTest extends OulTestBase
 
    @Test
    @DisplayName("OUL-FR-07 (SID-spärr): avtilldelning av en SID-märkt uppgift spärras inte, även utan SID-behörighet någonstans")
-   public void should_allowUnassign_ofSidUppgift_regardlessOfSidBehorighet()
+   public void should_allow_unassign_of_sid_uppgift_regardless_of_sid_behorighet()
    {
       var handlaggningId = UUID.randomUUID();
       var createUppgiftRequest = newCreateUppgiftRequest(handlaggningId);
