@@ -162,9 +162,12 @@ public class OperativtUppgiftslagerService
     * Returns an empty result if the caller's team(s) have no members.
     * Any uppgift that has become SID-märkt since assignment, where its assigned handläggare
     * lacks SID-behörighet, is unassigned back into OUL's pool and excluded (FKPOC-940) — see
-    * {@link #filterSidBlocked}.
+    * {@link #filterSidBlockedForTeam}. A SID-märkt uppgift that IS correctly assigned to an
+    * authorized team member is additionally hidden (not unassigned) from a caller who lacks
+    * SID-behörighet themselves (OUL-FR-17.5/17.6) — see {@link #filterSidBlockedForTeam}.
     *
-    * @param callerHandlaggare the calling handläggare's identity (used to determine team)
+    * @param callerHandlaggare the calling handläggare's identity (used to determine team, and to
+    *                          decide which SID-märkta uppgifter are visible to THIS caller)
     * @return the uppgifter still visible to the caller, plus how many were removed
     */
    public UppgiftListResult getUppgifterTeam(Idtyp callerHandlaggare)
@@ -179,7 +182,7 @@ public class OperativtUppgiftslagerService
       var sorteringsordning = storage.getAktivSorteringsordning()
             .orElse(new SorteringsordningEntity(null, null, null, List.of()));
       var uppgifter = storage.findAllUppgifterByTeam(teamMembers, sorteringsordning);
-      return filterSidBlocked(uppgifter);
+      return filterSidBlockedForTeam(uppgifter, callerHandlaggare);
    }
 
    /**
@@ -317,6 +320,67 @@ public class OperativtUppgiftslagerService
          {
             kept.add(logicMapper.toUppgiftDto(uppgift));
          }
+      }
+      return new UppgiftListResult(kept, removed);
+   }
+
+   /**
+    * Like {@link #filterSidBlocked}, but for a team listing where the caller viewing the list is
+    * NOT necessarily the same handläggare each row is assigned to (OUL-FR-17.5/17.6). A row can
+    * therefore land in one of three states:
+    * <ol>
+    *   <li>the ASSIGNEE lacks SID-behörighet → the uppgift is genuinely mis-assigned, same as
+    *       {@link #filterSidBlocked}: unassigned back into OUL's pool and counted as removed,
+    *       regardless of who is calling (FKPOC-940, unchanged)</li>
+    *   <li>the assignee is properly authorized, but the CALLER lacks SID-behörighet → the
+    *       assignment is correct and left untouched; the row is just hidden from this caller's
+    *       response and NOT counted as removed, since nothing was actually unassigned</li>
+    *   <li>both are authorized → kept, same as today</li>
+    * </ol>
+    * The caller's own SID-behörighet is resolved once, up front — it is the same identity for
+    * every row, so re-resolving it per row (review of FKPOC-1012 code review) would mean a single
+    * transient failure partway through the loop could inconsistently hide a row whose visibility
+    * an earlier row's check had already confirmed. When both the caller and a row's assignee are
+    * authorized, {@link SidChecker#containsSid} is skipped entirely for that row — same
+    * short-circuit spirit as {@link #isSidBlocked}, just requiring both identities to be cleared
+    * instead of one, since the caller-visibility question genuinely cannot be answered without
+    * knowing SID-status whenever the caller alone lacks behörighet.
+    *
+    * @param uppgifter         the already-assigned uppgifter to filter
+    * @param callerHandlaggare the handläggare viewing the list (used only for the visibility
+    *                          check in case 2 above — team membership is resolved by the caller
+    *                          of this method)
+    * @return the uppgifter visible to this particular caller, plus how many were actually removed
+    */
+   private UppgiftListResult filterSidBlockedForTeam(List<UppgiftEntity> uppgifter, Idtyp callerHandlaggare)
+   {
+      var callerHasBehorighet = resolveSidBehorighet(callerHandlaggare);
+      var kept = new ArrayList<UppgiftDto>();
+      var removed = 0;
+      for (var uppgift : uppgifter)
+      {
+         var assigneeHasBehorighet = resolveSidBehorighet(uppgift.handlaggarId());
+         if (assigneeHasBehorighet && callerHasBehorighet)
+         {
+            kept.add(logicMapper.toUppgiftDto(uppgift));
+            continue;
+         }
+         if (!sidChecker.containsSid(uppgift.handlaggningId(), uppgift.uppgiftId()))
+         {
+            kept.add(logicMapper.toUppgiftDto(uppgift));
+            continue;
+         }
+         if (!assigneeHasBehorighet)
+         {
+            if (unassignIfStillAssignedTo(uppgift.uppgiftId(), uppgift.handlaggarId()))
+            {
+               removed++;
+            }
+            continue;
+         }
+         // Assignee is authorized here; reaching this line means callerHasBehorighet is false —
+         // correctly assigned, just hidden from this particular caller.
+         continue;
       }
       return new UppgiftListResult(kept, removed);
    }
