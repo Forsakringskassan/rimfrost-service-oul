@@ -327,7 +327,7 @@ public class OperativtUppgiftslagerService
    /**
     * Like {@link #filterSidBlocked}, but for a team listing where the caller viewing the list is
     * NOT necessarily the same handläggare each row is assigned to (OUL-FR-17.5/17.6). A row can
-    * therefore land in one of three states, checked in order once the row is confirmed SID-märkt:
+    * therefore land in one of three states:
     * <ol>
     *   <li>the ASSIGNEE lacks SID-behörighet → the uppgift is genuinely mis-assigned, same as
     *       {@link #filterSidBlocked}: unassigned back into OUL's pool and counted as removed,
@@ -337,9 +337,14 @@ public class OperativtUppgiftslagerService
     *       response and NOT counted as removed, since nothing was actually unassigned</li>
     *   <li>both are authorized → kept, same as today</li>
     * </ol>
-    * Unlike {@link #isSidBlocked}, this cannot short-circuit on the assignee's behörighet alone —
-    * whether the row is SID-märkt at all must be known before the caller-specific case above can
-    * be decided, so {@link SidChecker#containsSid} is checked first for every row here.
+    * The caller's own SID-behörighet is resolved once, up front — it is the same identity for
+    * every row, so re-resolving it per row (review of FKPOC-1012 code review) would mean a single
+    * transient failure partway through the loop could inconsistently hide a row whose visibility
+    * an earlier row's check had already confirmed. When both the caller and a row's assignee are
+    * authorized, {@link SidChecker#containsSid} is skipped entirely for that row — same
+    * short-circuit spirit as {@link #isSidBlocked}, just requiring both identities to be cleared
+    * instead of one, since the caller-visibility question genuinely cannot be answered without
+    * knowing SID-status whenever the caller alone lacks behörighet.
     *
     * @param uppgifter         the already-assigned uppgifter to filter
     * @param callerHandlaggare the handläggare viewing the list (used only for the visibility
@@ -349,16 +354,23 @@ public class OperativtUppgiftslagerService
     */
    private UppgiftListResult filterSidBlockedForTeam(List<UppgiftEntity> uppgifter, Idtyp callerHandlaggare)
    {
+      var callerHasBehorighet = resolveSidBehorighet(callerHandlaggare);
       var kept = new ArrayList<UppgiftDto>();
       var removed = 0;
       for (var uppgift : uppgifter)
       {
+         var assigneeHasBehorighet = resolveSidBehorighet(uppgift.handlaggarId());
+         if (assigneeHasBehorighet && callerHasBehorighet)
+         {
+            kept.add(logicMapper.toUppgiftDto(uppgift));
+            continue;
+         }
          if (!sidChecker.containsSid(uppgift.handlaggningId(), uppgift.uppgiftId()))
          {
             kept.add(logicMapper.toUppgiftDto(uppgift));
             continue;
          }
-         if (!resolveSidBehorighet(uppgift.handlaggarId()))
+         if (!assigneeHasBehorighet)
          {
             if (unassignIfStillAssignedTo(uppgift.uppgiftId(), uppgift.handlaggarId()))
             {
@@ -366,11 +378,9 @@ public class OperativtUppgiftslagerService
             }
             continue;
          }
-         if (!resolveSidBehorighet(callerHandlaggare))
-         {
-            continue;
-         }
-         kept.add(logicMapper.toUppgiftDto(uppgift));
+         // Assignee is authorized here; reaching this line means callerHasBehorighet is false —
+         // correctly assigned, just hidden from this particular caller.
+         continue;
       }
       return new UppgiftListResult(kept, removed);
    }
