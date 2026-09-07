@@ -140,6 +140,14 @@ via villkor och styra sorteringsriktning inom sin grupp.
 - **OUL-FR-14.1** En Administratör ska kunna ange en specifik sorteringsordning som aktiv via `PUT /sorteringsordning/{id}/aktiv`.
 - **OUL-FR-14.2** Om angivet ID inte hittas ska HTTP 404 returneras.
 
+### OUL-FR-15 — Villkorsutvärdering
+
+- **OUL-FR-15.1** Villkorstypen `eq` innebär att ett fält ska vara exakt lika med angivet värde.
+- **OUL-FR-15.2** Villkorstypen `contains` innebär att ett textfält ska innehålla angiven delsträng.
+- **OUL-FR-15.3** Villkorstypen `between` innebär att ett datumfält ska ligga inom ett angivet intervall (inklusive).
+- **OUL-FR-15.4** Villkorstypen `offset_to_now` innebär att ett datumfält ska ligga inom ett relativt intervall från nu, uttryckt som en offset (t.ex. `-7d` för de senaste 7 dagarna).
+- **OUL-FR-15.5** Alla villkor inom en post utvärderas med AND-semantik — samtliga måste vara uppfyllda för att uppgiften ska matcha posten.
+
 ### OUL-FR-16 — Teammedlemskap via team-API
 
 - **OUL-FR-16.1** Vid behov av att avgöra om en handläggare tillhör ett visst team ska OUL anropa team-tjänstens OpenAPI för att hämta aktuellt teammedlemskap.
@@ -181,14 +189,6 @@ via villkor och styra sorteringsriktning inom sin grupp.
 - **OUL-FR-20.3** Listan är en permanent egenskap hos uppgiften — den rensas inte när uppgiften tilldelas någon annan handläggare.
 - **OUL-FR-20.4** En handläggare som inte finns i listan påverkas inte av denna spärr.
 - **OUL-FR-20.5** Endast unassignade via OUL-FR-19 (handläggarens egen, självbetjänade avtilldelning) lägger till i listan. Administratörens unassign (OUL-FR-08), administratörens uppdatering (OUL-FR-07) och omtilldelning till en annan handläggare (OUL-FR-18) påverkar inte listan.
-
-### OUL-FR-15 — Villkorsutvärdering
-
-- **OUL-FR-15.1** Villkorstypen `eq` innebär att ett fält ska vara exakt lika med angivet värde.
-- **OUL-FR-15.2** Villkorstypen `contains` innebär att ett textfält ska innehålla angiven delsträng.
-- **OUL-FR-15.3** Villkorstypen `between` innebär att ett datumfält ska ligga inom ett angivet intervall (inklusive).
-- **OUL-FR-15.4** Villkorstypen `offset_to_now` innebär att ett datumfält ska ligga inom ett relativt intervall från nu, uttryckt som en offset (t.ex. `-7d` för de senaste 7 dagarna).
-- **OUL-FR-15.5** Alla villkor inom en post utvärderas med AND-semantik — samtliga måste vara uppfyllda för att uppgiften ska matcha posten.
 
 ---
 
