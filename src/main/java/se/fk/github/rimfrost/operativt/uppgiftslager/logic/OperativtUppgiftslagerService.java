@@ -484,6 +484,11 @@ public class OperativtUppgiftslagerService
    /**
     * Updates the handläggare assignment on the given uppgift.
     * Throws {@link UppgiftNotFoundException} (→ HTTP 404) if the uppgift does not exist.
+    * Throws {@link SidNotAuthorizedException} (→ HTTP 403) if {@code handlaggarId} is non-null,
+    * the uppgift is SID-märkt, and the target handläggare lacks SID-behörighet — a SID-märkt
+    * uppgift may never be assigned to an unauthorized handläggare, even via this administrative
+    * management endpoint (same rule as {@link #reassignUppgift}, OUL-FR-18.6). Clearing the
+    * assignment ({@code handlaggarId == null}) is never blocked by this check.
     *
     * @param uppgiftId    the uppgift to update
     * @param handlaggarId the new handläggare identity, or {@code null} to clear
@@ -491,6 +496,15 @@ public class OperativtUppgiftslagerService
     */
    public UppgiftDto updateTask(UUID uppgiftId, Idtyp handlaggarId)
    {
+      if (handlaggarId != null)
+      {
+         var current = storage.findUppgiftById(uppgiftId);
+         if (!resolveSidBehorighet(handlaggarId) && resolveContainsSid(current.handlaggningId(), uppgiftId))
+         {
+            throw new SidNotAuthorizedException(uppgiftId);
+         }
+      }
+
       var uppgift = storage.updateUppgift(uppgiftId, handlaggarId);
       notifyStatusUpdate(uppgift);
       return logicMapper.toUppgiftDto(uppgift);

@@ -1,7 +1,10 @@
 package se.fk.github.rimfrost.operativt.uppgiftslager;
 
+import com.github.tomakehurst.wiremock.WireMockServer;
+import com.github.tomakehurst.wiremock.client.WireMock;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -26,6 +29,14 @@ import static se.fk.github.rimfrost.operativt.uppgiftslager.OulTestData.oulHandl
 })
 public class OulManagementTest extends OulTestBase
 {
+   private static WireMockServer wireMockServer;
+
+   @BeforeAll
+   static void setup()
+   {
+      wireMockServer = WireMockTestResource.getWireMockServer();
+   }
+
    @Test
    @DisplayName("OUL-FR-01.1, OUL-FR-01.2, OUL-FR-01.3, OUL-FR-01.6, OUL-FR-01.7: Skapa uppgift — status NY, uppgift_id genereras, CloudEvent-attribut bevaras")
    public void should_create_uppgift()
@@ -217,6 +228,107 @@ public class OulManagementTest extends OulTestBase
       assignedTask = assignedTasks.getOperativaUppgifter().stream()
             .filter(u -> u.getUppgiftId().equals(assignResponse.getOperativUppgift().getUppgiftId())).findFirst();
       assertTrue(assignedTask.isEmpty());
+   }
+
+   @Test
+   @DisplayName("OUL-FR-07 (SID-spärr): PATCH /uppgifter/{id} returns 403 and leaves uppgift unchanged when moving a SID-märkt uppgift to a handläggare without SID-behörighet")
+   public void should_return_403_and_leaveUppgiftUnchanged_whenMovingSidUppgiftToUnauthorizedHandlaggare()
+   {
+      var handlaggningId = UUID.randomUUID();
+      var createUppgiftRequest = newCreateUppgiftRequest(handlaggningId);
+      sendCreateUppgiftRequest(createUppgiftRequest);
+
+      var handlaggareId = UUID.randomUUID();
+      var assignResponse = assignTaskToHandlaggare(handlaggareId);
+      var uppgiftId = assignResponse.getOperativUppgift().getUppgiftId();
+
+      // Uppgiften blir sid-märkt efter den ursprungliga (obegränsade) tilldelningen.
+      // Den ursprungliga handläggaren har SID-behörighet (till skillnad från målet nedan), så
+      // att kontrollen nedan verkligen prövar PATCH-spärren och inte råkar sammanblandas med
+      // FKPOC-940:s egna listnings-ombedömning (som annars skulle ta bort uppgiften från
+      // handlaggareId:s lista av ett helt annat, redan täckt skäl).
+      wireMockServer.stubFor(WireMock.post(WireMock.urlPathEqualTo("/sid/status"))
+            .willReturn(WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json")
+                  .withBody("{\"sid\":true}")));
+      wireMockServer.stubFor(WireMock.get(WireMock.urlPathEqualTo(
+            "/individ/" + oulHandlaggareTypId + "/" + handlaggareId + "/hasSidPermission"))
+            .willReturn(WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json")
+                  .withBody("true")));
+
+      var targetHandlaggareId = UUID.randomUUID();
+      // targetHandlaggareId har ingen hasSidPermission-stubb → saknar SID-behörighet
+
+      Idtyp newHandlaggare = new Idtyp();
+      newHandlaggare.setTypId(oulHandlaggareTypId);
+      newHandlaggare.setVarde(targetHandlaggareId.toString());
+
+      UpdateUppgiftRequest updateUppgiftRequest = new UpdateUppgiftRequest();
+      updateUppgiftRequest.setHandlaggarId(newHandlaggare);
+
+      updateTask(uppgiftId, updateUppgiftRequest, 403);
+
+      var assignedTasks = getAssignedTasks(handlaggareId);
+      var assignedTask = assignedTasks.getOperativaUppgifter().stream()
+            .filter(u -> u.getUppgiftId().equals(uppgiftId)).findFirst();
+      assertTrue(assignedTask.isPresent());
+   }
+
+   @Test
+   @DisplayName("OUL-FR-07 (SID-spärr): PATCH /uppgifter/{id} succeeds when moving a SID-märkt uppgift to a handläggare with SID-behörighet")
+   public void should_moveSidUppgift_whenTargetHasSidBehorighet()
+   {
+      var handlaggningId = UUID.randomUUID();
+      var createUppgiftRequest = newCreateUppgiftRequest(handlaggningId);
+      sendCreateUppgiftRequest(createUppgiftRequest);
+
+      var handlaggareId = UUID.randomUUID();
+      var assignResponse = assignTaskToHandlaggare(handlaggareId);
+      var uppgiftId = assignResponse.getOperativUppgift().getUppgiftId();
+
+      wireMockServer.stubFor(WireMock.post(WireMock.urlPathEqualTo("/sid/status"))
+            .willReturn(WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json")
+                  .withBody("{\"sid\":true}")));
+
+      var targetHandlaggareId = UUID.randomUUID();
+      wireMockServer.stubFor(WireMock.get(WireMock.urlPathEqualTo(
+            "/individ/" + oulHandlaggareTypId + "/" + targetHandlaggareId + "/hasSidPermission"))
+            .willReturn(WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json")
+                  .withBody("true")));
+
+      Idtyp newHandlaggare = new Idtyp();
+      newHandlaggare.setTypId(oulHandlaggareTypId);
+      newHandlaggare.setVarde(targetHandlaggareId.toString());
+
+      UpdateUppgiftRequest updateUppgiftRequest = new UpdateUppgiftRequest();
+      updateUppgiftRequest.setHandlaggarId(newHandlaggare);
+
+      var updateResponse = updateTask(uppgiftId, updateUppgiftRequest);
+
+      assertNotNull(updateResponse);
+      assertEquals(newHandlaggare, updateResponse.getHandlaggarId());
+   }
+
+   @Test
+   @DisplayName("OUL-FR-07 (SID-spärr): avtilldelning av en SID-märkt uppgift spärras inte, även utan SID-behörighet någonstans")
+   public void should_allowUnassign_ofSidUppgift_regardlessOfSidBehorighet()
+   {
+      var handlaggningId = UUID.randomUUID();
+      var createUppgiftRequest = newCreateUppgiftRequest(handlaggningId);
+      sendCreateUppgiftRequest(createUppgiftRequest);
+
+      var handlaggareId = UUID.randomUUID();
+      var assignResponse = assignTaskToHandlaggare(handlaggareId);
+      var uppgiftId = assignResponse.getOperativUppgift().getUppgiftId();
+
+      wireMockServer.stubFor(WireMock.post(WireMock.urlPathEqualTo("/sid/status"))
+            .willReturn(WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json")
+                  .withBody("{\"sid\":true}")));
+
+      var unassignResponse = unassignTask(uppgiftId);
+
+      assertNotNull(unassignResponse);
+      assertNull(unassignResponse.getHandlaggarId());
+      assertEquals("NY", unassignResponse.getStatus());
    }
 
    @Test

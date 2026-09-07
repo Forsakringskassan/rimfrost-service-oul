@@ -95,6 +95,7 @@ via villkor och styra sorteringsriktning inom sin grupp.
 
 - **OUL-FR-07.1** En Administratör ska kunna uppdatera en befintlig uppgift via `PATCH /uppgifter/{id}`.
 - **OUL-FR-07.2** Om specificerad uppgift inte finns ska HTTP 404 returneras.
+- **OUL-FR-07.3** Om `handlaggarId` anges (inte `null`) och uppgiften är SID-märkt ska den angivna handläggarens SID-behörighet kontrolleras, på samma sätt som vid ommarkering (OUL-FR-18.6). Saknas behörighet ska HTTP 403 returneras och uppgiften lämnas helt oförändrad — en SID-märkt uppgift får aldrig tilldelas en obehörig handläggare, inte ens via denna administrativa endpoint. En rensning av tilldelningen (`handlaggarId: null`) berörs inte av denna spärr.
 
 ### OUL-FR-08 — Ta bort tilldelning av uppgift (management)
 
