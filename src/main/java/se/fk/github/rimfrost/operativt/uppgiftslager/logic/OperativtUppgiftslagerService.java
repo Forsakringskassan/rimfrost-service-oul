@@ -242,7 +242,7 @@ public class OperativtUppgiftslagerService
          throw new NotAssignedHandlaggareException(uppgiftId);
       }
 
-      var updated = storage.unassignUppgift(uppgiftId); // TODO: Replace with different call when uppgift handlaggare blocklist is implemented
+      var updated = storage.unassignAndBlockUppgift(uppgiftId);
       notifyStatusUpdate(updated);
       log.info("Unassigned uppgift: {} from handlaggarId: {}", uppgiftId, callerHandlaggare.varde());
    }
