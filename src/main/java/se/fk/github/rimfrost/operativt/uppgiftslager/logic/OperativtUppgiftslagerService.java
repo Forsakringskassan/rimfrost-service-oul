@@ -201,10 +201,11 @@ public class OperativtUppgiftslagerService
     * @param callerHandlaggare the new handläggare identity
     * @return the updated uppgift
     */
+   @Transactional
    public UppgiftDto reassignUppgift(UUID uppgiftId, Idtyp callerHandlaggare)
    {
       log.info("Reassigning uppgift {} to handlaggarId: {}", uppgiftId, callerHandlaggare.varde());
-      var current = storage.findUppgiftById(uppgiftId);
+      var current = storage.findUppgiftById(uppgiftId, LockModeType.PESSIMISTIC_WRITE);
 
       if (current.handlaggarId() == null || !teamService.isSameTeam(callerHandlaggare, current.handlaggarId()))
       {
