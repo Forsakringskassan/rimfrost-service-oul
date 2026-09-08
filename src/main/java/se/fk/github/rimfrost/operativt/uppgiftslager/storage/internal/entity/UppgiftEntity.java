@@ -86,8 +86,7 @@ public class UppgiftEntity
 
    private String reason;
 
-   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-   @JoinColumn(name = "uppgift_id", nullable = false, insertable = false, updatable = false)
+   @OneToMany(mappedBy = "uppgift", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
    private List<UppgiftCloudEventAttributeEntity> cloudEventAttributes;
 
    @PrePersist

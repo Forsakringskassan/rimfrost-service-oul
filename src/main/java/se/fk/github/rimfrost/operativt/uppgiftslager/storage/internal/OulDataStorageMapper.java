@@ -40,7 +40,7 @@ public class OulDataStorageMapper
       entity.setErbjudandeNamn(uppgift.erbjudande().namn());
       entity.setReason(uppgift.reason());
       entity.setCloudEventAttributes(uppgift.cloudeventAttributes().entrySet().stream()
-            .map(e -> toCloudEventAttributeEntity(uppgift.uppgiftId(), e.getKey(), e.getValue())).toList());
+            .map(e -> toCloudEventAttributeEntity(entity, e.getKey(), e.getValue())).toList());
 
       var handlaggareId = uppgift.handlaggarId();
       if (handlaggareId != null)
@@ -95,10 +95,11 @@ public class OulDataStorageMapper
             .build();
    }
 
-   private UppgiftCloudEventAttributeEntity toCloudEventAttributeEntity(UUID uppgiftId, String key, String value)
+   private UppgiftCloudEventAttributeEntity toCloudEventAttributeEntity(
+         se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.entity.UppgiftEntity uppgift, String key, String value)
    {
       var entity = new UppgiftCloudEventAttributeEntity();
-      entity.setUppgiftId(uppgiftId);
+      entity.setUppgift(uppgift);
       entity.setCloudEventAttributeKey(key);
       entity.setCloudEventAttributeValue(value);
       return entity;
