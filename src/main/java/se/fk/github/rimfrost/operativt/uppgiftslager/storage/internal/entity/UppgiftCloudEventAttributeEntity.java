@@ -8,7 +8,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.MapsId;
 import jakarta.persistence.Table;
+
+import java.util.UUID;
 
 @Entity
 @IdClass(UppgiftCloudEventAttributeId.class)
@@ -16,9 +19,8 @@ import jakarta.persistence.Table;
 public class UppgiftCloudEventAttributeEntity
 {
    @Id
-   @ManyToOne(fetch = FetchType.LAZY)
-   @JoinColumn(name = "uppgift_id", nullable = false)
-   private UppgiftEntity uppgift;
+   @Column(name = "uppgift_id", nullable = false)
+   private UUID uppgiftId;
 
    @Id
    @Column(name = "cloud_event_attribute_key", nullable = false)
@@ -26,6 +28,11 @@ public class UppgiftCloudEventAttributeEntity
 
    @Column(name = "cloud_event_attribute_value")
    private String cloudEventAttributeValue;
+
+   @ManyToOne(fetch = FetchType.LAZY)
+   @JoinColumn(name = "uppgift_id", nullable = false)
+   @MapsId("uppgiftId")
+   private UppgiftEntity uppgift;
 
    @SuppressFBWarnings("EI_EXPOSE_REP")
    public UppgiftEntity getUppgift()
