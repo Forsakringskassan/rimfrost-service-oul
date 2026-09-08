@@ -1,12 +1,14 @@
 package se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.entity;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-
-import java.util.UUID;
 
 @Entity
 @IdClass(UppgiftCloudEventAttributeId.class)
@@ -14,8 +16,9 @@ import java.util.UUID;
 public class UppgiftCloudEventAttributeEntity
 {
    @Id
-   @Column(name = "uppgift_id", nullable = false)
-   private UUID uppgiftId;
+   @ManyToOne(fetch = FetchType.LAZY)
+   @JoinColumn(name = "uppgift_id", nullable = false)
+   private UppgiftEntity uppgift;
 
    @Id
    @Column(name = "cloud_event_attribute_key", nullable = false)
@@ -24,14 +27,16 @@ public class UppgiftCloudEventAttributeEntity
    @Column(name = "cloud_event_attribute_value")
    private String cloudEventAttributeValue;
 
-   public UUID getUppgiftId()
+   @SuppressFBWarnings("EI_EXPOSE_REP")
+   public UppgiftEntity getUppgift()
    {
-      return uppgiftId;
+      return uppgift;
    }
 
-   public void setUppgiftId(UUID uppgiftId)
+   @SuppressFBWarnings("EI_EXPOSE_REP2")
+   public void setUppgift(UppgiftEntity uppgift)
    {
-      this.uppgiftId = uppgiftId;
+      this.uppgift = uppgift;
    }
 
    public String getCloudEventAttributeKey()

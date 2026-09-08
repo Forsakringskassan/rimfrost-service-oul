@@ -81,6 +81,7 @@ public class OulManagementTest extends OulTestBase
       assertEquals(createResponse.getUppgiftId(), endResponse.getUppgiftId());
       assertEquals(handlaggningId, endResponse.getHandlaggningId());
       assertEquals("AVSLUTAD", endResponse.getStatus());
+      assertEquals(1, endResponse.getProcessInfo().getCloudeventAttributes().size());
       assertEquals(createUppgiftRequest.getProcessInfo().getCloudeventAttributes(),
             endResponse.getProcessInfo().getCloudeventAttributes());
       assertEquals(createUppgiftRequest.getProcessInfo().getReplyTopic(), endResponse.getProcessInfo().getReplyTopic());
