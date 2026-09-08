@@ -8,13 +8,20 @@ import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.MapsId;
 import jakarta.persistence.Table;
+
+import java.util.UUID;
 
 @Entity
 @IdClass(UppgiftAssignBlocklistId.class)
 @Table(name = "uppgift_assign_blocklist")
 public class UppgiftAssignBlocklistEntity
 {
+   @Id
+   @Column(name = "uppgift_id", nullable = false)
+   private UUID uppgiftId;
+
    @Id
    @Column(name = "handlaggare_id_typ_id", nullable = false)
    private String handlaggareIdTypId;
@@ -23,9 +30,9 @@ public class UppgiftAssignBlocklistEntity
    @Column(name = "handlaggare_id_varde", nullable = false)
    private String handlaggareIdVarde;
 
-   @Id
    @ManyToOne(fetch = FetchType.LAZY)
    @JoinColumn(name = "uppgift_id", nullable = false)
+   @MapsId("uppgiftId")
    private UppgiftEntity uppgift;
 
    public String getHandlaggareIdTypId()
