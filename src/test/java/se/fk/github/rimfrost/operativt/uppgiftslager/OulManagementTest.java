@@ -55,6 +55,26 @@ public class OulManagementTest extends OulTestBase
    }
 
    @Test
+   @DisplayName("FKPOC-1022: Skapa uppgift är idempotent — samma handlaggningId/regel/erbjudande "
+         + "returnerar den befintliga uppgiften i stället för att skapa en dubblett")
+   public void should_not_create_duplicate_uppgift_for_same_handlaggning_regel_erbjudande()
+   {
+      var handlaggningId = UUID.randomUUID();
+      var createUppgiftRequest = newCreateUppgiftRequest(handlaggningId);
+
+      var firstResponse = sendCreateUppgiftRequest(createUppgiftRequest);
+      var secondResponse = sendCreateUppgiftRequest(createUppgiftRequest);
+
+      assertEquals(firstResponse.getUppgiftId(), secondResponse.getUppgiftId());
+
+      var page = getUppgifter(100);
+      var matchingCount = page.getItems().stream()
+            .filter(item -> handlaggningId.equals(item.getHandlaggningId()))
+            .count();
+      assertEquals(1, matchingCount);
+   }
+
+   @Test
    public void should_return_400_when_process_info_is_null_during_create_uppgift()
    {
       var handlaggningId = UUID.randomUUID();

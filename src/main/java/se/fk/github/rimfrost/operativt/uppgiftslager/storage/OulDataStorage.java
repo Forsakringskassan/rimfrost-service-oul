@@ -58,6 +58,21 @@ public interface OulDataStorage
    UppgiftEntity findUppgiftById(UUID id, LockModeType lockModeType);
 
    /**
+    * Returns the existing uppgift matching the given business key, if one exists.
+    * Used to make uppgift creation idempotent: a case (handläggning) has at most one open
+    * uppgift per {@code (handlaggningId, regel, erbjudandeId)} combination — enforced at the
+    * database level by a unique constraint on the same columns — so a caller that retries a
+    * creation request can be handed back the existing uppgift instead of creating a duplicate.
+    *
+    * @param handlaggningId the handläggning the uppgift belongs to
+    * @param regel          the rule that produced the uppgift
+    * @param erbjudandeId   the erbjudande the uppgift concerns
+    * @return the matching uppgift, or empty if none exists
+    */
+   Optional<UppgiftEntity> findByHandlaggningIdAndRegelAndErbjudandeId(UUID handlaggningId, String regel,
+         String erbjudandeId);
+
+   /**
     * Returns all uppgifter assigned to the given handläggare, ordered by the given sorteringsordning.
     *
     * @param handlaggarId      the handläggare identity

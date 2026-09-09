@@ -60,6 +60,17 @@ public class OperativtUppgiftslagerService
          String replyTopic, Map<String, String> cloudeventAttributes)
    {
       log.info("Adding new task");
+
+      var existing = storage.findByHandlaggningIdAndRegelAndErbjudandeId(addRequest.handlaggningId(),
+            addRequest.regel(), addRequest.erbjudande().id());
+      if (existing.isPresent())
+      {
+         log.info("Uppgift already exists for handlaggningId {}, regel {}, erbjudande {} — returning uppgift {} "
+               + "instead of creating a duplicate", addRequest.handlaggningId(), addRequest.regel(),
+               addRequest.erbjudande().id(), existing.get().uppgiftId());
+         return logicMapper.toUppgiftDto(existing.get());
+      }
+
       var uppgift = ImmutableUppgiftEntity.builder()
             .uppgiftId(UUID.randomUUID())
             .handlaggningId(addRequest.handlaggningId())
