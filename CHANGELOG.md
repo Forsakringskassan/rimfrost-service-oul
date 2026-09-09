@@ -2,6 +2,40 @@
 
 Changelog of rimfrost-service-oul.
 
+## 1.7.0 (2026-09-09)
+
+### Features
+
+-  Add support for assign blocklist ([397c5](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/397c5a94431f3cc) Lars Persson)  
+-  Add support for self-unassigning tasks ([31b23](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/31b2321e6f19cfb) Lars Persson)  
+
+### Bug Fixes
+
+-  Fix race condition in reassignUppgift ([b4271](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/b42712c6b8ef6d7) Lars Persson)  
+-  Refactor composite keys to use mapsId ([95f19](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/95f1993bc5fe721) Lars Persson)  
+-  Refactor UppgiftCloudEventAttributeEntity to match UppgiftAssignBlocklistEntity ([255cc](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/255cc19fb1b5722) Lars Persson)  
+-  block PATCH /uppgifter/{id} from assigning a SID-märkt uppgift to an unauthorized handläggare ([23431](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/23431ed7287c49f) LisaWedin_Ductus)  
+-  Reorder krav according to number order ([efd44](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/efd448a8ced4415) Lars Persson)  
+-  resolve caller behörighet once, restore short-circuit when both authorized ([ae8e6](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/ae8e6d58596082a) LisaWedin_Ductus)  
+-  filter team-uppgift listing against caller's SID-behörighet, not owner's ([8704c](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/8704c9a4c6dc35a) LisaWedin_Ductus)  
+-  adds plan to ensure no handläggare sees a SID task in team list ([6f1f8](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/6f1f812c7140330) LisaWedin_Ductus)  
+
+### Dependency updates
+
+- pin forsakringskassan/.github action to d1349e6 ([0ba00](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/0ba00b355e3ac0c) renovate[bot])  
+### Other changes
+
+**Merge branch 'docs/FKPOC-999-krav' of https://github.com/Forsakringskassan/rimfrost-service-oul into docs/FKPOC-999-krav**
+
+
+[e7ce3](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/e7ce3020fdf3f67) LisaWedin_Ductus *2026-09-04 06:46:47*
+
+**Merge branch 'main' into docs/FKPOC-999-krav**
+
+
+[4fbe1](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/4fbe15edbe6a1f0) LisaWedin-Ductus *2026-09-04 06:25:30*
+
+
 ## 1.6.1 (2026-09-04)
 
 ### Bug Fixes
