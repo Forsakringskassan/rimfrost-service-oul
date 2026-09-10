@@ -176,6 +176,16 @@ public class PanacheOulDataStorage implements OulDataStorage
    }
 
    @Override
+   public Optional<UppgiftEntity> findByHandlaggningIdAndRegelAndErbjudandeId(UUID handlaggningId, String regel,
+         String erbjudandeId)
+   {
+      return uppgiftRepository
+            .find("handlaggningId = ?1 and regel = ?2 and erbjudandeId = ?3", handlaggningId, regel, erbjudandeId)
+            .firstResultOptional()
+            .map(oulDataStorageMapper::toUppgiftEntity);
+   }
+
+   @Override
    public void deleteUppgift(UUID id)
    {
       uppgiftRepository.deleteById(id);
