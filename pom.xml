@@ -55,22 +55,22 @@
     <dependency>
       <groupId>se.fk.rimfrost.oul.handlaggning</groupId>
       <artifactId>rimfrost-service-oul-openapi-jaxrs-spec</artifactId>
-      <version>2.3.0</version>
+      <version>2.3.1</version>
     </dependency>
     <dependency>
       <groupId>se.fk.rimfrost</groupId>
       <artifactId>rimfrost-service-oul-asyncapi</artifactId>
-      <version>1.1.1</version>
+      <version>1.1.2</version>
     </dependency>
     <dependency>
       <groupId>se.fk.rimfrost.oul.management</groupId>
       <artifactId>rimfrost-service-oul-management-api-jaxrs-spec</artifactId>
-      <version>1.4.0</version>
+      <version>1.4.1</version>
     </dependency>
     <dependency>
       <groupId>se.fk.rimfrost.oul.management.regler</groupId>
       <artifactId>rimfrost-service-oul-management-regler-api-jaxrs-spec</artifactId>
-      <version>0.0.6</version>
+      <version>0.0.7</version>
     </dependency>
     <dependency>
       <groupId>se.fk.rimfrost.team</groupId>
@@ -80,7 +80,7 @@
     <dependency>
       <groupId>se.fk.rimfrost.framework.handlaggning</groupId>
       <artifactId>rimfrost-framework-handlaggning-adapter</artifactId>
-      <version>1.2.3</version>
+      <version>1.2.4</version>
     </dependency>
     <dependency>
       <groupId>se.fk.rimfrost.adapter.team</groupId>
