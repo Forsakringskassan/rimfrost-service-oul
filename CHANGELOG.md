@@ -2,6 +2,13 @@
 
 Changelog of rimfrost-service-oul.
 
+## 1.7.1 (2026-09-22)
+
+### Bug Fixes
+
+-  Bump dependency versions ([c7784](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/c77846c90759a03) Lars Persson)  
+-  FKPOC-1022 make uppgift creation idempotent to stop duplicate assignment ([82eea](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/82eeaf6d17cd6f6) LisaWedin_Ductus)  
+
 ## 1.7.0 (2026-09-09)
 
 ### Features
