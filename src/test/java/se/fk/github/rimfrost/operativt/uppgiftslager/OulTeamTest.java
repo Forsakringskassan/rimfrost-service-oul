@@ -224,11 +224,11 @@ public class OulTeamTest extends OulTestBase
             .willReturn(WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json")
                   .withBody("{\"sid\":true}")));
       wireMockServer.stubFor(WireMock.get(WireMock.urlPathEqualTo(
-            "/individ/" + oulHandlaggareTypId + "/" + TEAM_MEMBER_2 + "/hasSidPermission"))
+            "/" + oulHandlaggareTypId + "/" + TEAM_MEMBER_2 + "/hasSidPermission"))
             .willReturn(WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json")
                   .withBody("true")));
       wireMockServer.stubFor(WireMock.get(WireMock.urlPathEqualTo(
-            "/individ/" + oulHandlaggareTypId + "/" + TEAM_MEMBER_3 + "/hasSidPermission"))
+            "/" + oulHandlaggareTypId + "/" + TEAM_MEMBER_3 + "/hasSidPermission"))
             .willReturn(WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json")
                   .withBody("true")));
 
@@ -255,7 +255,7 @@ public class OulTeamTest extends OulTestBase
             .willReturn(WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json")
                   .withBody("{\"sid\":true}")));
       wireMockServer.stubFor(WireMock.get(WireMock.urlPathEqualTo(
-            "/individ/" + oulHandlaggareTypId + "/" + TEAM_MEMBER_1 + "/hasSidPermission"))
+            "/" + oulHandlaggareTypId + "/" + TEAM_MEMBER_1 + "/hasSidPermission"))
             .willReturn(WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json")
                   .withBody("true")));
 
@@ -280,11 +280,11 @@ public class OulTeamTest extends OulTestBase
             .willReturn(WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json")
                   .withBody("{\"sid\":true}")));
       wireMockServer.stubFor(WireMock.get(WireMock.urlPathEqualTo(
-            "/individ/" + oulHandlaggareTypId + "/" + TEAM_MEMBER_1 + "/hasSidPermission"))
+            "/" + oulHandlaggareTypId + "/" + TEAM_MEMBER_1 + "/hasSidPermission"))
             .willReturn(WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json")
                   .withBody("true")));
       wireMockServer.stubFor(WireMock.get(WireMock.urlPathEqualTo(
-            "/individ/" + oulHandlaggareTypId + "/" + TEAM_MEMBER_3 + "/hasSidPermission"))
+            "/" + oulHandlaggareTypId + "/" + TEAM_MEMBER_3 + "/hasSidPermission"))
             .willReturn(WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json")
                   .withBody("true")));
 
@@ -313,7 +313,7 @@ public class OulTeamTest extends OulTestBase
       // conflated with FKPOC-940's own list-time SID-recheck, which would otherwise also remove
       // it from TEAM_MEMBER_1's list if they too lacked behörighet.
       wireMockServer.stubFor(WireMock.get(WireMock.urlPathEqualTo(
-            "/individ/" + oulHandlaggareTypId + "/" + TEAM_MEMBER_1 + "/hasSidPermission"))
+            "/" + oulHandlaggareTypId + "/" + TEAM_MEMBER_1 + "/hasSidPermission"))
             .willReturn(WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json")
                   .withBody("true")));
 
@@ -340,7 +340,7 @@ public class OulTeamTest extends OulTestBase
                   .withBody("{\"sid\":true}")));
 
       wireMockServer.stubFor(WireMock.get(WireMock.urlPathEqualTo(
-            "/individ/" + oulHandlaggareTypId + "/" + TEAM_MEMBER_2 + "/hasSidPermission"))
+            "/" + oulHandlaggareTypId + "/" + TEAM_MEMBER_2 + "/hasSidPermission"))
             .willReturn(WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json")
                   .withBody("true")));
 
@@ -361,7 +361,7 @@ public class OulTeamTest extends OulTestBase
             .willReturn(WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json")
                   .withBody("{\"sid\":true}")));
 
-      wireMockServer.stubFor(WireMock.get(WireMock.urlPathMatching("/individ/.+/hasSidPermission"))
+      wireMockServer.stubFor(WireMock.get(WireMock.urlPathMatching("/.+/hasSidPermission"))
             .willReturn(WireMock.aResponse().withStatus(500)));
 
       reassignTask(uppgiftId, TEAM_MEMBER_2, 403);

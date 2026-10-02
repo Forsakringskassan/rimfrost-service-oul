@@ -30,7 +30,8 @@ public class WireMockTestResource implements QuarkusTestResourceLifecycleManager
    @Override
    public Map<String, String> start()
    {
-      server = new WireMockServer(options().dynamicPort().usingFilesUnderDirectory("src/test/resources"));
+      server = new WireMockServer(
+            options().dynamicPort().usingFilesUnderDirectory("src/test/resources"));
       server.start();
       return wiremockMapping(server);
    }
@@ -50,6 +51,8 @@ public class WireMockTestResource implements QuarkusTestResourceLifecycleManager
       map.put("handlaggning.api.base-url", server.baseUrl());
       map.put("sid.api.base-url", server.baseUrl());
       map.put("team.api.base-url", server.baseUrl());
+      map.put("quarkus.rest-client.identity-api.url", server.baseUrl());
+      map.put("permissions.api.base-url", server.baseUrl());
       return map;
    }
 }
