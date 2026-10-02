@@ -177,7 +177,7 @@ public class OulHandlaggareTest extends OulTestBase
             .willReturn(WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json")
                   .withBody("{\"sid\":true}")));
       wireMockServer.stubFor(WireMock.get(WireMock.urlPathEqualTo(
-            "/individ/" + oulHandlaggareTypId + "/" + newHandlaggare + "/hasSidPermission"))
+            "/" + oulHandlaggareTypId + "/" + newHandlaggare + "/hasSidPermission"))
             .willReturn(WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json")
                   .withBody("true")));
 
@@ -203,7 +203,7 @@ public class OulHandlaggareTest extends OulTestBase
             .willReturn(WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json")
                   .withBody("{\"sid\":true}")));
       wireMockServer.stubFor(WireMock.get(WireMock.urlPathEqualTo(
-            "/individ/" + oulHandlaggareTypId + "/" + handlaggareId + "/hasSidPermission"))
+            "/" + oulHandlaggareTypId + "/" + handlaggareId + "/hasSidPermission"))
             .willReturn(WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json")
                   .withBody("true")));
 
@@ -377,7 +377,7 @@ public class OulHandlaggareTest extends OulTestBase
       var handlaggareId = UUID.randomUUID();
 
       wireMockServer.stubFor(WireMock.get(WireMock.urlPathEqualTo(
-            "/individ/" + oulHandlaggareTypId + "/" + handlaggareId + "/hasSidPermission"))
+            "/" + oulHandlaggareTypId + "/" + handlaggareId + "/hasSidPermission"))
             .willReturn(WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json")
                   .withBody("true")));
 
@@ -396,7 +396,7 @@ public class OulHandlaggareTest extends OulTestBase
             .willReturn(WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json")
                   .withBody("{\"sid\":true}")));
 
-      wireMockServer.stubFor(WireMock.get(WireMock.urlPathMatching("/individ/.+/hasSidPermission"))
+      wireMockServer.stubFor(WireMock.get(WireMock.urlPathMatching("/.+/hasSidPermission"))
             .willReturn(WireMock.aResponse().withStatus(500)));
 
       var handlaggareId = UUID.randomUUID();

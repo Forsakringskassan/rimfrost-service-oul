@@ -64,25 +64,6 @@ public class TeamApiService implements TeamService
    }
 
    /**
-    * Returns whether the given handläggare has SID-behörighet. Returns {@code false} if the
-    * handläggare is not found (404) — this is indistinguishable from "found, but no SID
-    * rights" from the caller's perspective; see {@code callOrNotFound}'s log line if that
-    * distinction ever matters for an audit trail.
-    *
-    * @param handlaggare the handläggare identity
-    * @return {@code true} if the handläggare has SID-behörighet
-    */
-   @Override
-   public boolean harSidBehorighet(Idtyp handlaggare)
-   {
-      return callOrNotFound(
-            () -> teamAdapter.hasSidPermission(handlaggare.typId(), handlaggare.varde()),
-            false,
-            "Handläggare {} not found when checking SID-behörighet; treating as no behörighet",
-            handlaggare.varde());
-   }
-
-   /**
     * Returns the members of the given team.
     * Returns an empty stream if the team is not found (404) — guards against
     * a race condition where a team ID returned by the individ lookup no longer exists.
