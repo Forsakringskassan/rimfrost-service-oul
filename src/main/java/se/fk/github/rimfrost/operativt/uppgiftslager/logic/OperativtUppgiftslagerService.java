@@ -11,6 +11,7 @@ import jakarta.inject.Inject;
 import jakarta.persistence.LockModeType;
 import jakarta.transaction.Transactional;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.SorteringsordningEntity;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.exception.AssignableFilterNotSupportedException;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.exception.HandlaggningReadException;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.exception.NotAssignedHandlaggareException;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.exception.SidUppgiftException;
@@ -66,6 +67,9 @@ public class OperativtUppgiftslagerService
 
    @Inject
    IndividMatcher individMatcher;
+
+   @Inject
+   SidBehorighetChecker sidBehorighetChecker;
 
    public UppgiftDto addOperativeTask(OperativtUppgiftslagerAddRequest addRequest, String notificationTopic,
          String replyTopic, Map<String, String> cloudeventAttributes)
