@@ -86,6 +86,9 @@ public class UppgiftEntity
 
    private String reason;
 
+   @Column(nullable = false)
+   private boolean assignable;
+
    @OneToMany(mappedBy = "uppgift", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
    private List<UppgiftCloudEventAttributeEntity> cloudEventAttributes;
 
@@ -286,6 +289,16 @@ public class UppgiftEntity
    public void setReason(String reason)
    {
       this.reason = reason;
+   }
+
+   public boolean isAssignable()
+   {
+      return assignable;
+   }
+
+   public void setAssignable(boolean assignable)
+   {
+      this.assignable = assignable;
    }
 
    public List<UppgiftCloudEventAttributeEntity> getCloudEventAttributes()

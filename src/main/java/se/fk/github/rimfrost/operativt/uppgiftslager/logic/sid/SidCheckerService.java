@@ -29,7 +29,7 @@ public class SidCheckerService implements SidChecker
       try
       {
          var handlaggning = handlaggningAdapter.readHandlaggning(handlaggningId);
-         return sidAdapter.containsSid(handlaggning.yrkande().individYrkandeRoller().stream().map(
+         return sidAdapter.containsSid(handlaggning.yrkande().rollerIYrkande().stream().map(
                individYrkandeRoll -> (se.fk.rimfrost.framework.sid.model.Idtyp) se.fk.rimfrost.framework.sid.model.ImmutableIdtyp
                      .builder()
                      .typId(individYrkandeRoll.individ().typId())

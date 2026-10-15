@@ -12,6 +12,8 @@ import org.junit.jupiter.api.BeforeEach;
 import se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.GetUppgifterHandlaggareResponse;
 import se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.PostUppgiftHandlaggareResponse;
 import se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.PostUppgifterHandlaggareResponse;
+import se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.PostUppgifterIndividRequest;
+import se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.PostUppgifterIndividResponse;
 import se.fk.rimfrost.oul.management.regler.jaxrsspec.controllers.generatedsource.model.CreateUppgiftRequest;
 import se.fk.rimfrost.oul.management.regler.jaxrsspec.controllers.generatedsource.model.EndUppgiftRequest;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.OperativUppgift;
@@ -289,6 +291,41 @@ public abstract class OulTestBase
             .when().post("/sorteringsordning")
             .then().statusCode(201)
             .extract().as(SorteringsordningResponse.class);
+   }
+
+   /**
+    * Posts to /uppgifter/individ and returns the response, expecting HTTP 200.
+    *
+    * @param request      the search request
+    * @param handlaggarId the caller's handläggare identity
+    * @return the individ search response
+    */
+   public static PostUppgifterIndividResponse postUppgifterIndivid(PostUppgifterIndividRequest request,
+         UUID handlaggarId)
+   {
+      return given().contentType(ContentType.JSON)
+            .header("Authorization", bearerToken(handlaggarId))
+            .body(request)
+            .when().post("/uppgifter/individ")
+            .then().statusCode(200)
+            .extract().as(PostUppgifterIndividResponse.class);
+   }
+
+   /**
+    * Posts to /uppgifter/individ, expecting the given HTTP status code.
+    *
+    * @param request        the search request
+    * @param handlaggarId   the caller's handläggare identity
+    * @param expectedStatus expected HTTP response status
+    */
+   public static void postUppgifterIndivid(PostUppgifterIndividRequest request, UUID handlaggarId,
+         int expectedStatus)
+   {
+      given().contentType(ContentType.JSON)
+            .header("Authorization", bearerToken(handlaggarId))
+            .body(request)
+            .when().post("/uppgifter/individ")
+            .then().statusCode(expectedStatus);
    }
 
    public static void sendCreateSorteringsordningRequest(SorteringsordningSpec spec, int expectedStatus)

@@ -436,6 +436,27 @@ public class PanacheOulDataStorage implements OulDataStorage
    }
 
    /**
+    * {@inheritDoc}
+    * <p>
+    * Uses a JPQL query via Panache; no ordering is applied since the caller is expected to
+    * filter further before presenting results.
+    */
+   @Override
+   public List<UppgiftEntity> findUppgifterByAssignableAndStatuses(boolean assignable, List<UppgiftStatus> statuses)
+   {
+      List<se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.entity.UppgiftEntity> results;
+      if (statuses == null || statuses.isEmpty())
+      {
+         results = uppgiftRepository.find("assignable = ?1", assignable).list();
+      }
+      else
+      {
+         results = uppgiftRepository.find("assignable = ?1 and status in ?2", assignable, statuses).list();
+      }
+      return results.stream().map(oulDataStorageMapper::toUppgiftEntity).toList();
+   }
+
+   /**
     * Resets the in-process count cache so that the next read triggers a fresh {@code COUNT(*)}.
     * Package-private: only {@link se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.StorageTestCleaner}
     * should call this.

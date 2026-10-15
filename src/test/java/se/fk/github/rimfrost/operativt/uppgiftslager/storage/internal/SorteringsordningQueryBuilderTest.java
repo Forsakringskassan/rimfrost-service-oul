@@ -612,8 +612,24 @@ public class SorteringsordningQueryBuilderTest
             .build();
       var built = builder.buildAssignQuery(entity(List.of()), List.of(), handlaggareId);
 
-      assertTrue(built.pageSql().contains("handlaggar_id_varde IS NULL AND NOT EXISTS ("));
+      assertTrue(built.pageSql().contains("handlaggar_id_varde IS NULL AND assignable = TRUE AND NOT EXISTS ("));
       assertTrue(built.pageSql().contains("SELECT 1 FROM " + builder.schema + ".uppgift_assign_blocklist"));
+   }
+
+   /**
+    * OUL-FR-04.8: Uppgifter med {@code assignable=false} ska exkluderas vid automatisk tilldelning.
+    * The WHERE clause must include {@code assignable = TRUE} to prevent such tasks from being
+    * picked up by the auto-assign mechanism.
+    */
+   @Test
+   @DisplayName("OUL-FR-04.8: buildAssignQuery filtrerar bort assignable=false-uppgifter")
+   public void assign_query_excludes_non_assignable_tasks()
+   {
+      var handlaggareId = ImmutableIdtyp.builder().typId(UUID.randomUUID().toString()).varde(UUID.randomUUID().toString())
+            .build();
+      var built = builder.buildAssignQuery(entity(List.of()), List.of(), handlaggareId);
+
+      assertTrue(built.pageSql().contains("assignable = TRUE"));
    }
 
    // --- builders ---
