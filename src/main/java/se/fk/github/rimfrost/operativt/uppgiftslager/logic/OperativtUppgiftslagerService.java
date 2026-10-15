@@ -15,6 +15,8 @@ import se.fk.github.rimfrost.operativt.uppgiftslager.logic.exception.Handlaggnin
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.exception.NotAssignedHandlaggareException;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.exception.SidUppgiftException;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.exception.UppgiftNotFoundException;
+import se.fk.rimfrost.adapter.permissions.adapter.PermissionsAdapter;
+import se.fk.rimfrost.adapter.permissions.adapter.PermissionsException;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.SorteringsordningSpec;
 import se.fk.github.rimfrost.operativt.uppgiftslager.integration.kafka.OperativtUppgiftslagerProducer;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.Idtyp;
@@ -55,6 +57,9 @@ public class OperativtUppgiftslagerService
 
    @Inject
    SidChecker sidChecker;
+
+   @Inject
+   PermissionsAdapter permissionsAdapter;
 
    public UppgiftDto addOperativeTask(OperativtUppgiftslagerAddRequest addRequest, String notificationTopic,
          String replyTopic, Map<String, String> cloudeventAttributes)
@@ -323,9 +328,9 @@ public class OperativtUppgiftslagerService
    {
       try
       {
-         return teamService.harSidBehorighet(handlaggare);
+         return permissionsAdapter.hasSidPermission(handlaggare.typId(), handlaggare.varde());
       }
-      catch (RuntimeException e)
+      catch (RuntimeException | PermissionsException e)
       {
          log.warn("Failed to resolve SID-behörighet for handlaggarId: {}; treating as no behörighet",
                handlaggare.varde(), e);
