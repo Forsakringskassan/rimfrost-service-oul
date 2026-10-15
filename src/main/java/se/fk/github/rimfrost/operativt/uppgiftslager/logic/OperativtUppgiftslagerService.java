@@ -11,6 +11,7 @@ import jakarta.inject.Inject;
 import jakarta.persistence.LockModeType;
 import jakarta.transaction.Transactional;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.SorteringsordningEntity;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.exception.AssignableFilterNotSupportedException;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.exception.HandlaggningReadException;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.exception.NotAssignedHandlaggareException;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.exception.SidUppgiftException;
@@ -21,12 +22,15 @@ import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.Idtyp;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.ImmutableIdtyp;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.OperativtUppgiftslagerAddRequest;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.UppgiftDto;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.UppgiftMedYrkanderollDto;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.ImmutableUppgiftEntity;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.UppgiftEntity;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.enums.UppgiftStatus;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.exception.NotTeamMemberException;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.exception.SidNotAuthorizedException;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.exception.SorteringsordningNotFoundException;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.individ.IndividMatcher;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.permissions.SidBehorighetChecker;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.sid.SidChecker;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.team.TeamService;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.OulDataStorage;
@@ -55,6 +59,12 @@ public class OperativtUppgiftslagerService
 
    @Inject
    SidChecker sidChecker;
+
+   @Inject
+   SidBehorighetChecker sidBehorighetChecker;
+
+   @Inject
+   IndividMatcher individMatcher;
 
    public UppgiftDto addOperativeTask(OperativtUppgiftslagerAddRequest addRequest, String notificationTopic,
          String replyTopic, Map<String, String> cloudeventAttributes)
@@ -85,6 +95,7 @@ public class OperativtUppgiftslagerService
             .replyTopic(replyTopic)
             .cloudeventAttributes(cloudeventAttributes)
             .erbjudande(addRequest.erbjudande())
+            .assignable(addRequest.assignable())
             .build();
 
       storage.createUppgift(uppgift);
@@ -202,7 +213,9 @@ public class OperativtUppgiftslagerService
    /**
     * Reassigns the given uppgift to the calling handläggare.
     * Throws {@link UppgiftNotFoundException} (→ HTTP 404) if the uppgift does not exist.
-    * Throws {@link NotTeamMemberException} (→ HTTP 403) if the current assignee is not a team member.
+    * Throws {@link NotTeamMemberException} (→ HTTP 403) if the uppgift has {@code assignable=true}
+    * and the current assignee is not a team member (OUL-FR-18.3). The team-check is bypassed for
+    * {@code assignable=false} uppgifter (OUL-FR-18.8).
     * Throws {@link SidNotAuthorizedException} (→ HTTP 403) if the uppgift is SID-märkt and the
     * caller lacks SID-behörighet — unlike {@link #assignNewTask}, there is no "next uppgift" to
     * fall back to, so the attempt is rejected outright and the uppgift is left untouched.
@@ -218,7 +231,9 @@ public class OperativtUppgiftslagerService
       log.info("Reassigning uppgift {} to handlaggarId: {}", uppgiftId, callerHandlaggare.varde());
       var current = storage.findUppgiftById(uppgiftId, LockModeType.PESSIMISTIC_WRITE);
 
-      if (current.handlaggarId() == null || !teamService.isSameTeam(callerHandlaggare, current.handlaggarId()))
+      // OUL-FR-18.8: team-check is skipped entirely for assignable=false tasks
+      if (current.assignable() &&
+            (current.handlaggarId() == null || !teamService.isSameTeam(callerHandlaggare, current.handlaggarId())))
       {
          throw new NotTeamMemberException(uppgiftId);
       }
@@ -310,10 +325,7 @@ public class OperativtUppgiftslagerService
    /**
     * Resolves whether {@code handlaggare} has SID-behörighet. Used by {@link #assignNewTask}
     * (once per call rather than once per retry), {@link #reassignUppgift}, and
-    * {@link #isSidBlocked}. Fails open (treats as {@code false}, i.e. no behörighet) on any
-    * failure beyond a plain "not found" — a Team API outage should degrade to the old
-    * unconditional-skip/reject behaviour for SID uppgifter, not turn assignment, ommarkering, or
-    * listing into a hard failure whenever the uppgift in question happens to be SID-marked.
+    * {@link #isSidBlocked}. Delegates fail-open behaviour to {@link SidBehorighetChecker}.
     *
     * @param handlaggare the handläggare identity
     * @return whether the handläggare has SID-behörighet, or {@code false} if that could not
@@ -321,16 +333,7 @@ public class OperativtUppgiftslagerService
     */
    private boolean resolveSidBehorighet(Idtyp handlaggare)
    {
-      try
-      {
-         return teamService.harSidBehorighet(handlaggare);
-      }
-      catch (RuntimeException e)
-      {
-         log.warn("Failed to resolve SID-behörighet for handlaggarId: {}; treating as no behörighet",
-               handlaggare.varde(), e);
-         return false;
-      }
+      return sidBehorighetChecker.hasSidBehorighet(handlaggare);
    }
 
    /**
@@ -613,6 +616,61 @@ public class OperativtUppgiftslagerService
    public void setAktivSorteringsordning(UUID id)
    {
       storage.setAktivSorteringsordning(id);
+   }
+
+   /**
+    * Returns all uppgifter that belong to the given individ, filtered by the caller's SID-behörighet.
+    * Only {@code assignable=false} is currently supported; all other combinations throw
+    * {@link AssignableFilterNotSupportedException} (→ HTTP 501, OUL-FR-21).
+    *
+    * <p>For each candidate: the handläggning is read to verify that the searched individ
+    * appears in {@code yrkande.rollerIYrkande()}. Uppgifter where the individ is not found are
+    * silently excluded. SID-märkta uppgifter are excluded when the caller lacks SID-behörighet
+    * (OUL-FR-21.6). A failure to determine SID status propagates as-is, causing HTTP 500
+    * (OUL-FR-21.7).
+    *
+    * @param individ    the individ identity to search for
+    * @param statuses   optional status filter; null or empty means all statuses
+    * @param assignable must be {@code Boolean.FALSE}; other values → HTTP 501
+    * @param handlaggare the calling handläggare, used for SID-behörighet check
+    * @return matched uppgifter paired with the yrkanderoll that connects them to the individ
+    * @throws AssignableFilterNotSupportedException if {@code assignable} is null or true
+    */
+   public List<UppgiftMedYrkanderollDto> getUppgifterForIndivid(
+         Idtyp individ, List<UppgiftStatus> statuses, Boolean assignable, Idtyp handlaggare)
+   {
+      if (assignable == null || Boolean.TRUE.equals(assignable))
+      {
+         throw new AssignableFilterNotSupportedException();
+      }
+
+      var callerHasSidBehorighet = resolveSidBehorighet(handlaggare);
+      var candidates = storage.findUppgifterByAssignableAndStatuses(false, statuses);
+      var result = new ArrayList<UppgiftMedYrkanderollDto>();
+
+      // Note: individMatcher and sidChecker each call readHandlaggning independently, so each
+      // candidate triggers two network calls. Acceptable given the typically small result set
+      // for assignable=false individ searches. If this becomes a bottleneck, a request-scoped
+      // HandlaggningAdapter cache would eliminate the duplicate reads without SoC changes.
+      for (var candidate : candidates)
+      {
+         var yrkandeRoll = individMatcher.findYrkanderoll(candidate.handlaggningId(), candidate.uppgiftId(), individ);
+         if (yrkandeRoll.isEmpty())
+         {
+            continue;
+         }
+
+         // OUL-FR-21.6: exclude SID-märkta uppgifter when caller lacks SID-behörighet.
+         // OUL-FR-21.7: propagate SID-check failures as HTTP 500 (fail loud).
+         if (!callerHasSidBehorighet && sidChecker.containsSid(candidate.handlaggningId(), candidate.uppgiftId()))
+         {
+            continue;
+         }
+
+         result.add(new UppgiftMedYrkanderollDto(logicMapper.toUppgiftDto(candidate), yrkandeRoll.get()));
+      }
+
+      return result;
    }
 
    private void notifyStatusUpdate(UppgiftEntity uppgift)

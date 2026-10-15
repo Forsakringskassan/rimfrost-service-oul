@@ -45,4 +45,6 @@ public interface UppgiftDto
    Map<String, String> cloudeventAttributes();
 
    Erbjudande erbjudande();
+
+   boolean assignable();
 }

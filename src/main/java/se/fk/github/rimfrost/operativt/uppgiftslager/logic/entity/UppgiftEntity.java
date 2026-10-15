@@ -57,6 +57,8 @@ public interface UppgiftEntity
 
    Erbjudande erbjudande();
 
+   boolean assignable();
+
    @Nullable
    String reason();
 }

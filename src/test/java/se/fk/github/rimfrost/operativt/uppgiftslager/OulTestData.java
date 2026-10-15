@@ -44,6 +44,7 @@ public class OulTestData
       processInfo.setCloudeventAttributes(Map.of("kogitoprocinstanceid", "test-proc-instance-id"));
       request.setProcessInfo(processInfo);
       request.setErbjudande(erbjudande);
+      request.setAssignable(true);
 
       return request;
    }
