@@ -40,6 +40,7 @@ via villkor och styra sorteringsriktning inom sin grupp.
 - **OUL-FR-01.5** Uppgiften ska vara kopplad till ett erbjudande.
 - **OUL-FR-01.6** Uppgiften ska innehålla CloudEvent-attribut som OUL bevarar och returnerar oförändrade, för att möjliggöra korrelation mellan regeln och dess flödesprocess.
 - **OUL-FR-01.7** OUL ska returnera ett unikt uppgifts-ID vid skapandet.
+- **OUL-FR-01.9** Fältet `assignable` (boolean) ska tas emot vid skapandet via Regler-API:ets `POST /uppgifter` och sparas persistent på uppgiften.
 - **OUL-FR-01.8** OUL ska inte lagra eller returnera berörda individer. Individer hämtas av OUL internt vid behov (t.ex. SID-kontroll vid tilldelning) direkt från handläggningstjänsten via det `handlaggningId` som uppgiften är knuten till. Konsumenter som behöver individinformation ska hämta den från handläggningstjänsten.
 
 ### OUL-FR-02 — Avsluta uppgift
@@ -70,6 +71,7 @@ via villkor och styra sorteringsriktning inom sin grupp.
 - **OUL-FR-04.5** Vid tilldelning ska en statusnotifiering publiceras på Kafka.
 - **OUL-FR-04.6** Vid tilldelning av uppgift så ska SID status tas hänsyn till. Om en uppgift är SID markerad och handläggaren inte har SID roll så ska uppgiften hoppas över och nästa uppgift utvärderas.
 - **OUL-FR-04.7** Om handläggningsinformationen för en uppgift inte kan läsas ska uppgiften hoppas över och nästa utvärderas (jfr OUL-FR-04.6). Felet loggas på WARN-nivå. Överhoppningen gäller endast det aktuella anropet.
+- **OUL-FR-04.8** Uppgifter med `assignable=false` ska exkluderas vid automatisk tilldelning, på samma sätt som SID-blockerade uppgifter (jfr OUL-FR-04.6).
 
 ### OUL-FR-05 — Lista tilldelade uppgifter (handläggare)
 
@@ -173,6 +175,8 @@ via villkor och styra sorteringsriktning inom sin grupp.
 - **OUL-FR-18.4** Om angiven uppgift inte finns ska HTTP 404 returneras.
 - **OUL-FR-18.5** Vid omtilldelning ska en statusnotifiering publiceras på Kafka i enlighet med OUL-FR-06.
 - **OUL-FR-18.6** Om uppgiften är SID-märkt och den anropande handläggaren saknar SID-behörighet ska HTTP 403 returneras och uppgiften ska lämnas oförändrad. Om SID-status eller SID-behörighet inte kan avgöras ska 403 returneras (fail-closed).
+- **OUL-FR-18.7** En handläggare ska kunna tilldela sig en uppgift vars `assignable`-flagga är `false` via `POST /uppgifter/{uppgift_id}/handlaggare`.
+- **OUL-FR-18.8** Team-checken (OUL-FR-18.3) gäller inte för uppgifter med `assignable=false` — en handläggare kan tilldela sig en sådan uppgift oavsett om den är otilldelad eller tilldelad en handläggare i ett annat team. SID-check (OUL-FR-18.6) gäller fortfarande.
 
 ### OUL-FR-19 — Lämna tillbaka uppgift (handläggare)
 
@@ -190,6 +194,20 @@ via villkor och styra sorteringsriktning inom sin grupp.
 - **OUL-FR-20.3** Listan är en permanent egenskap hos uppgiften — den rensas inte när uppgiften tilldelas någon annan handläggare.
 - **OUL-FR-20.4** En handläggare som inte finns i listan påverkas inte av denna spärr.
 - **OUL-FR-20.5** Endast unassignade via OUL-FR-19 (handläggarens egen, självbetjänade avtilldelning) lägger till i listan. Administratörens unassign (OUL-FR-08), administratörens uppdatering (OUL-FR-07) och omtilldelning till en annan handläggare (OUL-FR-18) påverkar inte listan.
+
+### OUL-FR-21 — Sök uppgifter för individ
+
+- **OUL-FR-21.1** Det ska finnas en endpoint `POST /uppgifter/individ` för att söka efter uppgifter kopplade till en specifik individ.
+- **OUL-FR-21.2** Request body ska innehålla:
+  - `id_typ` (obligatorisk) — typ av individidentifierare (t.ex. personnummer)
+  - `id_varde` (obligatorisk) — värdet för individidentifieraren
+  - `statuses` (valfri) — uppgiftsstatusar att filtrera på (t.ex. `NY`, `TILLDELAD`). Om ej angiven returneras uppgifter oavsett status.
+  - `assignable` (valfri, boolean) — filter på tilldelningsbarhet. Om ej angivet returneras uppgifter oavsett tilldelningsbarhet.
+- **OUL-FR-21.3** Om `assignable=false` anges ska enbart icke tilldelningsbara uppgifter returneras.
+- **OUL-FR-21.4** OUL kan i nuläget returnera HTTP 501 om `assignable` ej anges eller om `assignable=true` anges — dessa kombinationer är inte implementerade i den initiala versionen.
+- **OUL-FR-21.5** OUL filtrerar först uppgifter i egen databas på `status` och `assignable`. För varje matchande uppgift anropas handläggningstjänsten med uppgiftens `handlaggningId` för att avgöra om individen (via `id_typ`/`id_varde`) förekommer i någon yrkanderoll. Uppgifter där individen inte matchar exkluderas ur svaret.
+- **OUL-FR-21.6** SID-märkta uppgifter ska exkluderas ur svaret om den anropande handläggaren saknar SID-behörighet, på samma sätt som i OUL-FR-17.5.
+- **OUL-FR-21.7** Om SID-status för en uppgift eller handläggarens SID-behörighet inte kan avgöras ska hela anropet returnera HTTP 500 (jfr OUL-FR-05.6).
 
 ---
 

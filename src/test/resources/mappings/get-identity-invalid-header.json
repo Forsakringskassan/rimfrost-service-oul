@@ -1,0 +1,21 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPathPattern": "/identity",
+    "headers": {
+      "Authorization": {
+        "not": {
+          "matches": "Bearer .+:.+",
+          "caseInsensitive": true
+        }
+      }
+    }
+  },
+  "response": {
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": null
+  }
+}

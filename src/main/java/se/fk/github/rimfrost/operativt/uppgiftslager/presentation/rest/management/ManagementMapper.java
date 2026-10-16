@@ -40,6 +40,7 @@ public class ManagementMapper
             .roll(request.getRoll())
             .url(request.getUrl())
             .erbjudande(toErbjudande(request.getErbjudande()))
+            .assignable(request.getAssignable())
             .build();
    }
 

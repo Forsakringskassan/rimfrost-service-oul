@@ -286,7 +286,7 @@ public class OulManagementTest extends OulTestBase
             .willReturn(WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json")
                   .withBody("{\"sid\":true}")));
       wireMockServer.stubFor(WireMock.get(WireMock.urlPathEqualTo(
-            "/individ/" + oulHandlaggareTypId + "/" + handlaggareId + "/hasSidPermission"))
+            "/" + oulHandlaggareTypId + "/" + handlaggareId + "/hasSidPermission"))
             .willReturn(WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json")
                   .withBody("true")));
 
@@ -326,7 +326,7 @@ public class OulManagementTest extends OulTestBase
 
       var targetHandlaggareId = UUID.randomUUID();
       wireMockServer.stubFor(WireMock.get(WireMock.urlPathEqualTo(
-            "/individ/" + oulHandlaggareTypId + "/" + targetHandlaggareId + "/hasSidPermission"))
+            "/" + oulHandlaggareTypId + "/" + targetHandlaggareId + "/hasSidPermission"))
             .willReturn(WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json")
                   .withBody("true")));
 

@@ -10,6 +10,7 @@ import se.fk.github.rimfrost.operativt.uppgiftslager.storage.exception.Sortering
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.exception.SorteringsordningNotFoundException;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.exception.UppgiftNotFoundException;
 
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.enums.UppgiftStatus;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -204,4 +205,14 @@ public interface OulDataStorage
     * @throws SorteringsordningNotFoundException if no sorteringsordning with the given id exists
     */
    void setAktivSorteringsordning(UUID id);
+
+   /**
+    * Returns all uppgifter matching the given assignable flag and optional status filter.
+    * When {@code statuses} is empty or null all statuses are included.
+    *
+    * @param assignable the assignable flag to filter on
+    * @param statuses   optional status restriction; empty or null means no status filter
+    * @return matching uppgifter, in unspecified order
+    */
+   List<UppgiftEntity> findUppgifterByAssignableAndStatuses(boolean assignable, List<UppgiftStatus> statuses);
 }

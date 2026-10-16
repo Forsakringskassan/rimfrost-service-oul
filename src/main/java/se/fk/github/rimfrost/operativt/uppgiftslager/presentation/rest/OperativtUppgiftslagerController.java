@@ -4,22 +4,25 @@ import io.vertx.ext.web.RoutingContext;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.HttpHeaders;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.OperativtUppgiftslagerService;
-import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.util.BearerTokenExtractor;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.ImmutableIdtyp;
+import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.util.IdentityUtil;
 import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.util.PresentationRestMapper;
 import se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.OperativtUppgiftslagerControllerApi;
 import se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.GetUppgifterHandlaggareResponse;
 import se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.PostUppgiftHandlaggareResponse;
 import se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.PostUppgifterHandlaggareResponse;
-
+import se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.PostUppgifterIndividRequest;
+import se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.PostUppgifterIndividResponse;
 import java.util.UUID;
 
 /**
  * REST controller exposing handläggare uppgifter operations.
  *
- * <p>Handläggare identity is read from the {@code Authorization: Bearer <typId>:<varde>} header on every request.
+ * <p>Handläggare identity is read from the {@code Authorization} header on every request.
  */
 @SuppressWarnings("unused")
 @Produces("application/json")
@@ -37,13 +40,13 @@ public class OperativtUppgiftslagerController implements OperativtUppgiftslagerC
    PresentationRestMapper presentationRestMapper;
 
    @Inject
-   BearerTokenExtractor bearerTokenExtractor;
+   IdentityUtil identityUtil;
 
    @Inject
    RoutingContext routingContext;
 
    /**
-    * Returns tasks assigned to the calling handläggare (identity from bearer token).
+    * Returns tasks assigned to the calling handläggare (identity from authorization header).
     *
     * @return assigned tasks
     */
@@ -52,13 +55,13 @@ public class OperativtUppgiftslagerController implements OperativtUppgiftslagerC
    @Override
    public GetUppgifterHandlaggareResponse getUppgifterHandlaggare()
    {
-      var handlaggare = bearerTokenExtractor.extract(routingContext.request().getHeader("Authorization"));
+      var handlaggare = identityUtil.getIdentity(routingContext.request().getHeader(HttpHeaders.AUTHORIZATION));
       var uppgifter = operativtUppgiftslagerService.getUppgifterHandlaggare(handlaggare.typId(), handlaggare.varde());
       return presentationRestMapper.toGetUppgifterHandlaggareResponse(uppgifter);
    }
 
    /**
-    * Returns all tasks assigned to any team member of the calling handläggare (identity from bearer token).
+    * Returns all tasks assigned to any team member of the calling handläggare (identity from authorization header).
     *
     * @return team tasks
     */
@@ -67,13 +70,13 @@ public class OperativtUppgiftslagerController implements OperativtUppgiftslagerC
    @Override
    public GetUppgifterHandlaggareResponse getUppgifterTeam()
    {
-      var handlaggare = bearerTokenExtractor.extract(routingContext.request().getHeader("Authorization"));
+      var handlaggare = identityUtil.getIdentity(routingContext.request().getHeader(HttpHeaders.AUTHORIZATION));
       var uppgifter = operativtUppgiftslagerService.getUppgifterTeam(handlaggare);
       return presentationRestMapper.toGetUppgifterHandlaggareResponse(uppgifter);
    }
 
    /**
-    * Assigns a new task to the calling handläggare (identity from bearer token).
+    * Assigns a new task to the calling handläggare (identity from authorization header).
     *
     * @return the assigned task
     */
@@ -82,13 +85,13 @@ public class OperativtUppgiftslagerController implements OperativtUppgiftslagerC
    @Override
    public PostUppgifterHandlaggareResponse postUppgifterHandlaggare()
    {
-      var handlaggare = bearerTokenExtractor.extract(routingContext.request().getHeader("Authorization"));
+      var handlaggare = identityUtil.getIdentity(routingContext.request().getHeader(HttpHeaders.AUTHORIZATION));
       var uppgift = operativtUppgiftslagerService.assignNewTask(handlaggare.typId(), handlaggare.varde());
       return presentationRestMapper.toPostUppgifterHandlaggareResponse(uppgift);
    }
 
    /**
-    * Reassigns the given uppgift to the calling handläggare (identity from bearer token).
+    * Reassigns the given uppgift to the calling handläggare (identity from authorization header).
     *
     * @param uppgiftId the ID of the uppgift to reassign
     * @return the updated uppgift
@@ -98,13 +101,13 @@ public class OperativtUppgiftslagerController implements OperativtUppgiftslagerC
    @Override
    public PostUppgiftHandlaggareResponse postUppgiftHandlaggare(@PathParam("uppgift_id") UUID uppgiftId)
    {
-      var handlaggare = bearerTokenExtractor.extract(routingContext.request().getHeader("Authorization"));
+      var handlaggare = identityUtil.getIdentity(routingContext.request().getHeader(HttpHeaders.AUTHORIZATION));
       var uppgift = operativtUppgiftslagerService.reassignUppgift(uppgiftId, handlaggare);
       return presentationRestMapper.toPostUppgiftHandlaggareResponse(uppgift);
    }
 
    /**
-    * Unassigns the given uppgift from the calling handläggare (identity from bearer token).
+    * Unassigns the given uppgift from the calling handläggare (identity from authorization header).
     *
     * @param uppgiftId the ID of the uppgift to unassign
     */
@@ -113,7 +116,30 @@ public class OperativtUppgiftslagerController implements OperativtUppgiftslagerC
    @Override
    public void deleteUppgiftHandlaggare(@PathParam("uppgift_id") UUID uppgiftId)
    {
-      var handlaggare = bearerTokenExtractor.extract(routingContext.request().getHeader("Authorization"));
+      var handlaggare = identityUtil.getIdentity(routingContext.request().getHeader(HttpHeaders.AUTHORIZATION));
       operativtUppgiftslagerService.unassignHandlaggareUppgift(uppgiftId, handlaggare);
+   }
+
+   /**
+    * Returns all uppgifter for the given individ (OUL-FR-21). Only {@code assignable=false} is
+    * supported; other combinations return HTTP 501.
+    *
+    * @param postUppgifterIndividRequest the search request with individ identity and optional filters
+    * @return matched uppgifter paired with their yrkanderoll
+    */
+   @POST
+   @Path("/individ")
+   @Override
+   public PostUppgifterIndividResponse postUppgifterIndivid(PostUppgifterIndividRequest postUppgifterIndividRequest)
+   {
+      var handlaggare = identityUtil.getIdentity(routingContext.request().getHeader(HttpHeaders.AUTHORIZATION));
+      var individ = ImmutableIdtyp.builder()
+            .typId(postUppgifterIndividRequest.getIdTyp())
+            .varde(postUppgifterIndividRequest.getIdVarde())
+            .build();
+      var statuses = presentationRestMapper.toUppgiftStatuses(postUppgifterIndividRequest.getStatuses());
+      var uppgifter = operativtUppgiftslagerService.getUppgifterForIndivid(
+            individ, statuses, postUppgifterIndividRequest.getAssignable(), handlaggare);
+      return presentationRestMapper.toPostUppgifterIndividResponse(uppgifter);
    }
 }
