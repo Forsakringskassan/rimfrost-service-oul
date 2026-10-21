@@ -13,10 +13,13 @@ import java.util.UUID;
 import static io.smallrye.common.constraint.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static se.fk.github.rimfrost.operativt.uppgiftslager.OulTestData.AKTIVITET_ID;
+import static se.fk.github.rimfrost.operativt.uppgiftslager.OulTestData.PROCESSVY_URL;
 import static se.fk.github.rimfrost.operativt.uppgiftslager.OulTestData.TEAM_MEMBER_1;
 import static se.fk.github.rimfrost.operativt.uppgiftslager.OulTestData.TEAM_MEMBER_2;
 import static se.fk.github.rimfrost.operativt.uppgiftslager.OulTestData.TEAM_MEMBER_3;
 import static se.fk.github.rimfrost.operativt.uppgiftslager.OulTestData.newCreateUppgiftRequest;
+import static se.fk.github.rimfrost.operativt.uppgiftslager.OulTestData.newCreateUppgiftRequestWithProcessvy;
 import static se.fk.github.rimfrost.operativt.uppgiftslager.OulTestData.oulHandlaggareTypId;
 
 /**
@@ -129,6 +132,24 @@ public class OulTeamTest extends OulTestBase
       assertEquals("TILLDELAD", statusMessage.getStatus());
       assertEquals(oulHandlaggareTypId, statusMessage.getUtforarId().getTypId());
       assertEquals(TEAM_MEMBER_2.toString(), statusMessage.getUtforarId().getVarde());
+   }
+
+   @Test
+   @DisplayName("OUL-FR-21.2: Teamets uppgifter och omtilldelning — aktivitet och processvy-länk returneras bredvid url")
+   public void teamTasksAndReassign_returnAktivitetIdAndProcessvyUrl()
+   {
+      sendCreateUppgiftRequest(newCreateUppgiftRequestWithProcessvy(UUID.randomUUID()));
+      var uppgiftId = assignTaskToHandlaggare(TEAM_MEMBER_1).getOperativUppgift().getUppgiftId();
+
+      var teamTask = getTeamTasks(TEAM_MEMBER_3).getOperativaUppgifter().getFirst();
+
+      assertEquals(AKTIVITET_ID, teamTask.getAktivitetId());
+      assertEquals(PROCESSVY_URL, teamTask.getProcessvyUrl());
+
+      var reassigned = reassignTask(uppgiftId, TEAM_MEMBER_2).getOperativUppgift();
+
+      assertEquals(AKTIVITET_ID, reassigned.getAktivitetId());
+      assertEquals(PROCESSVY_URL, reassigned.getProcessvyUrl());
    }
 
    @Test

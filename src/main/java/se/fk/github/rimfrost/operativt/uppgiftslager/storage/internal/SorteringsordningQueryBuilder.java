@@ -72,7 +72,7 @@ public class SorteringsordningQueryBuilder
    private static final String UPPGIFT_COLUMNS = "u.id, u.handlaggning_id, u.handlaggar_id_typ_id, u.handlaggar_id_varde, "
          + "u.skapad, u.planerad_till, u.utford, u.status, u.regel, u.beskrivning, "
          + "u.verksamhetslogik, u.roll, u.url, u.sub_topic, u.reply_topic, u.erbjudande_id, u.erbjudande_namn, "
-         + "u.reason, u.version, u.created_at, u.updated_at";
+         + "u.reason, u.aktivitet_id, u.processvy_url, u.version, u.created_at, u.updated_at";
 
    @ConfigProperty(name = "quarkus.flyway.default-schema", defaultValue = "public")
    String schema;

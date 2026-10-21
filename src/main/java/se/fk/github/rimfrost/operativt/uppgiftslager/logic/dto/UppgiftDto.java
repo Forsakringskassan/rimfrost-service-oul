@@ -45,4 +45,10 @@ public interface UppgiftDto
    Map<String, String> cloudeventAttributes();
 
    Erbjudande erbjudande();
+
+   @Nullable
+   UUID aktivitetId();
+
+   @Nullable
+   String processvyUrl();
 }

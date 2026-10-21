@@ -86,6 +86,10 @@ public class UppgiftEntity
 
    private String reason;
 
+   private UUID aktivitetId;
+
+   private String processvyUrl;
+
    @OneToMany(mappedBy = "uppgift", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
    private List<UppgiftCloudEventAttributeEntity> cloudEventAttributes;
 
@@ -286,6 +290,26 @@ public class UppgiftEntity
    public void setReason(String reason)
    {
       this.reason = reason;
+   }
+
+   public UUID getAktivitetId()
+   {
+      return aktivitetId;
+   }
+
+   public void setAktivitetId(UUID aktivitetId)
+   {
+      this.aktivitetId = aktivitetId;
+   }
+
+   public String getProcessvyUrl()
+   {
+      return processvyUrl;
+   }
+
+   public void setProcessvyUrl(String processvyUrl)
+   {
+      this.processvyUrl = processvyUrl;
    }
 
    public List<UppgiftCloudEventAttributeEntity> getCloudEventAttributes()

@@ -18,7 +18,10 @@ import static io.smallrye.common.constraint.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static se.fk.github.rimfrost.operativt.uppgiftslager.OulTestData.AKTIVITET_ID;
+import static se.fk.github.rimfrost.operativt.uppgiftslager.OulTestData.PROCESSVY_URL;
 import static se.fk.github.rimfrost.operativt.uppgiftslager.OulTestData.newCreateUppgiftRequest;
+import static se.fk.github.rimfrost.operativt.uppgiftslager.OulTestData.newCreateUppgiftRequestWithProcessvy;
 import static se.fk.github.rimfrost.operativt.uppgiftslager.OulTestData.newEndUppgiftRequest;
 import static se.fk.github.rimfrost.operativt.uppgiftslager.OulTestData.oulHandlaggareTypId;
 
@@ -81,6 +84,41 @@ public class OulManagementTest extends OulTestBase
       var createUppgiftRequest = newCreateUppgiftRequest(handlaggningId);
       createUppgiftRequest.setProcessInfo(null);
       sendCreateUppgiftRequest(createUppgiftRequest, 400);
+   }
+
+   @Test
+   @DisplayName("OUL-FR-21.1: Skapa uppgift med aktivitet och processvy-länk — fälten sparas på uppgiften")
+   public void should_create_uppgift_with_aktivitet_id_and_processvy_url()
+   {
+      var createUppgiftRequest = newCreateUppgiftRequestWithProcessvy(UUID.randomUUID());
+      var createResponse = sendCreateUppgiftRequest(createUppgiftRequest);
+
+      assertNotNull(createResponse.getUppgiftId());
+      assertEquals("NY", createResponse.getStatus());
+
+      var assignResponse = assignTaskToHandlaggare(UUID.randomUUID());
+
+      assertEquals(createResponse.getUppgiftId(), assignResponse.getOperativUppgift().getUppgiftId());
+      assertEquals(AKTIVITET_ID, assignResponse.getOperativUppgift().getAktivitetId());
+      assertEquals(PROCESSVY_URL, assignResponse.getOperativUppgift().getProcessvyUrl());
+   }
+
+   @Test
+   @DisplayName("OUL-FR-21.1: Skapa uppgift utan aktivitet och processvy-länk — uppgiften skapas som vanligt")
+   public void should_create_uppgift_without_aktivitet_id_and_processvy_url()
+   {
+      var createUppgiftRequest = newCreateUppgiftRequest(UUID.randomUUID());
+      var createResponse = sendCreateUppgiftRequest(createUppgiftRequest);
+
+      assertNotNull(createResponse.getUppgiftId());
+      assertEquals("NY", createResponse.getStatus());
+
+      var assignResponse = assignTaskToHandlaggare(UUID.randomUUID());
+
+      assertEquals(createResponse.getUppgiftId(), assignResponse.getOperativUppgift().getUppgiftId());
+      assertEquals(createUppgiftRequest.getUrl(), assignResponse.getOperativUppgift().getUrl());
+      assertNull(assignResponse.getOperativUppgift().getAktivitetId());
+      assertNull(assignResponse.getOperativUppgift().getProcessvyUrl());
    }
 
    @ParameterizedTest

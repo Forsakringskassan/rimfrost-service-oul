@@ -40,6 +40,8 @@ public class ManagementMapper
             .roll(request.getRoll())
             .url(request.getUrl())
             .erbjudande(toErbjudande(request.getErbjudande()))
+            .aktivitetId(request.getProcessInfo().getAktivitetId())
+            .processvyUrl(request.getProcessInfo().getProcessvyUrl())
             .build();
    }
 

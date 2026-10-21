@@ -13,6 +13,8 @@ import se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.Ope
 import se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.GetUppgifterHandlaggareResponse;
 import se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.PostUppgiftHandlaggareResponse;
 import se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.PostUppgifterHandlaggareResponse;
+import se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.PostUppgifterIndividRequest;
+import se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.PostUppgifterIndividResponse;
 
 import java.util.UUID;
 
@@ -115,5 +117,19 @@ public class OperativtUppgiftslagerController implements OperativtUppgiftslagerC
    {
       var handlaggare = bearerTokenExtractor.extract(routingContext.request().getHeader("Authorization"));
       operativtUppgiftslagerService.unassignHandlaggareUppgift(uppgiftId, handlaggare);
+   }
+
+   /**
+    * Search for uppgifter by individ. Not implemented yet (FKPOC-1122), returns 501 as allowed by the API.
+    *
+    * @param postUppgifterIndividRequest the individ to search for
+    * @return never returns normally
+    */
+   @POST
+   @Path("/individ")
+   @Override
+   public PostUppgifterIndividResponse postUppgifterIndivid(PostUppgifterIndividRequest postUppgifterIndividRequest)
+   {
+      throw new WebApplicationException(501);
    }
 }
