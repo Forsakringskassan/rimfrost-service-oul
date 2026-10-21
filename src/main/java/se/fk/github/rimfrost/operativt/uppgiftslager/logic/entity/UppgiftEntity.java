@@ -59,4 +59,10 @@ public interface UppgiftEntity
 
    @Nullable
    String reason();
+
+   @Nullable
+   UUID aktivitetId();
+
+   @Nullable
+   String processvyUrl();
 }

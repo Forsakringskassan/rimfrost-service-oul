@@ -191,6 +191,11 @@ via villkor och styra sorteringsriktning inom sin grupp.
 - **OUL-FR-20.4** En handläggare som inte finns i listan påverkas inte av denna spärr.
 - **OUL-FR-20.5** Endast unassignade via OUL-FR-19 (handläggarens egen, självbetjänade avtilldelning) lägger till i listan. Administratörens unassign (OUL-FR-08), administratörens uppdatering (OUL-FR-07) och omtilldelning till en annan handläggare (OUL-FR-18) påverkar inte listan.
 
+### OUL-FR-21 — Aktivitet och processvy-länk
+
+- **OUL-FR-21.1** OUL ska spara `aktivitet_id` och `processvy_url` från `process_info` när en uppgift skapas. Båda är valfria, och en uppgift utan dem skapas som vanligt.
+- **OUL-FR-21.2** OUL ska returnera fälten på uppgiften (`OperativUppgift`) i samma svar som innehåller uppgiftens `url`, när de finns.
+
 ---
 
 ## Uppgiftsstatus

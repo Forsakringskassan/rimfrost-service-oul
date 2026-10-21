@@ -35,6 +35,8 @@ public class PresentationRestMapper
          uppgift.setVerksamhetslogik(uppgiftDto.verksamhetslogik());
          uppgift.setRoll(uppgiftDto.roll());
          uppgift.setUrl(uppgiftDto.url());
+         uppgift.setAktivitetId(uppgiftDto.aktivitetId());
+         uppgift.setProcessvyUrl(uppgiftDto.processvyUrl());
       }
       return uppgift;
    }
