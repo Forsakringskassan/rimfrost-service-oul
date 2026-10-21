@@ -18,7 +18,10 @@ import static io.smallrye.common.constraint.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static se.fk.github.rimfrost.operativt.uppgiftslager.OulTestData.AKTIVITET_ID;
+import static se.fk.github.rimfrost.operativt.uppgiftslager.OulTestData.PROCESSVY_URL;
 import static se.fk.github.rimfrost.operativt.uppgiftslager.OulTestData.newCreateUppgiftRequest;
+import static se.fk.github.rimfrost.operativt.uppgiftslager.OulTestData.newCreateUppgiftRequestWithProcessvy;
 import static se.fk.github.rimfrost.operativt.uppgiftslager.OulTestData.newEndUppgiftRequest;
 import static se.fk.github.rimfrost.operativt.uppgiftslager.OulTestData.newSorteringsordningSpecWithEqConstraint;
 import static se.fk.github.rimfrost.operativt.uppgiftslager.OulTestData.oulHandlaggareTypId;
@@ -126,6 +129,24 @@ public class OulHandlaggareTest extends OulTestBase
       assertEquals(assignResponse.getOperativUppgift().getVerksamhetslogik(), assignedTask.getVerksamhetslogik());
       assertEquals(assignResponse.getOperativUppgift().getRoll(), assignedTask.getRoll());
       assertEquals(assignResponse.getOperativUppgift().getUrl(), assignedTask.getUrl());
+   }
+
+   @Test
+   @DisplayName("OUL-FR-21.2: Hämta ny uppgift och lista tilldelade uppgifter — aktivitet och processvy-länk returneras bredvid url")
+   public void should_return_aktivitet_id_and_processvy_url_on_assign_and_list()
+   {
+      var handlaggareId = UUID.randomUUID();
+
+      sendCreateUppgiftRequest(newCreateUppgiftRequestWithProcessvy(UUID.randomUUID()));
+      var assignResponse = assignTaskToHandlaggare(handlaggareId);
+
+      assertEquals(AKTIVITET_ID, assignResponse.getOperativUppgift().getAktivitetId());
+      assertEquals(PROCESSVY_URL, assignResponse.getOperativUppgift().getProcessvyUrl());
+
+      var assignedTask = getAssignedTasks(handlaggareId).getOperativaUppgifter().getFirst();
+
+      assertEquals(AKTIVITET_ID, assignedTask.getAktivitetId());
+      assertEquals(PROCESSVY_URL, assignedTask.getProcessvyUrl());
    }
 
    @Test

@@ -86,6 +86,10 @@ public class UppgiftEntity
 
    private String reason;
 
+   private UUID aktivitetId;
+
+   private String processvyUrl;
+
    @Column(nullable = false)
    private boolean assignable;
 
@@ -289,6 +293,26 @@ public class UppgiftEntity
    public void setReason(String reason)
    {
       this.reason = reason;
+   }
+
+   public UUID getAktivitetId()
+   {
+      return aktivitetId;
+   }
+
+   public void setAktivitetId(UUID aktivitetId)
+   {
+      this.aktivitetId = aktivitetId;
+   }
+
+   public String getProcessvyUrl()
+   {
+      return processvyUrl;
+   }
+
+   public void setProcessvyUrl(String processvyUrl)
+   {
+      this.processvyUrl = processvyUrl;
    }
 
    public boolean isAssignable()

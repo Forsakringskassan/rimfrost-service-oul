@@ -62,6 +62,8 @@ public class LogicMapper
             .replyTopic(uppgift.replyTopic())
             .cloudeventAttributes(uppgift.cloudeventAttributes())
             .erbjudande(uppgift.erbjudande())
+            .aktivitetId(uppgift.aktivitetId())
+            .processvyUrl(uppgift.processvyUrl())
             .assignable(uppgift.assignable())
             .build();
    }

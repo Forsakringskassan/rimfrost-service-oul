@@ -209,6 +209,10 @@ via villkor och styra sorteringsriktning inom sin grupp.
 - **OUL-FR-21.6** SID-märkta uppgifter ska exkluderas ur svaret om den anropande handläggaren saknar SID-behörighet, på samma sätt som i OUL-FR-17.5.
 - **OUL-FR-21.7** Om SID-status för en uppgift eller handläggarens SID-behörighet inte kan avgöras ska hela anropet returnera HTTP 500 (jfr OUL-FR-05.6).
 
+### OUL-FR-22 — Aktivitet och processvy-länk
+
+- **OUL-FR-22.1** OUL ska spara `aktivitet_id` och `processvy_url` från `process_info` när en uppgift skapas. Båda är valfria, och en uppgift utan dem skapas som vanligt.
+- **OUL-FR-22.2** OUL ska returnera fälten på uppgiften (`OperativUppgift`) i samma svar som innehåller uppgiftens `url`, när de finns.
 ---
 
 ## Uppgiftsstatus
