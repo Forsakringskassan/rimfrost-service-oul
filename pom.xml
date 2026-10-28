@@ -85,7 +85,7 @@
     <dependency>
       <groupId>se.fk.rimfrost.adapter.team</groupId>
       <artifactId>rimfrost-adapter-team</artifactId>
-      <version>0.0.1</version>
+      <version>0.0.2</version>
     </dependency>
     <dependency>
       <groupId>se.fk.rimfrost.framework.sid</groupId>
