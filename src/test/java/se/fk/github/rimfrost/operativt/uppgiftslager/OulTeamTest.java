@@ -137,7 +137,7 @@ public class OulTeamTest extends OulTestBase
    }
 
    @Test
-   @DisplayName("OUL-FR-21.2: Teamets uppgifter och omtilldelning — aktivitet och processvy-länk returneras bredvid url")
+   @DisplayName("OUL-FR-22.2: Teamets uppgifter och omtilldelning — aktivitet och processvy-länk returneras bredvid url")
    public void teamTasksAndReassign_returnAktivitetIdAndProcessvyUrl()
    {
       sendCreateUppgiftRequest(newCreateUppgiftRequestWithProcessvy(UUID.randomUUID()));

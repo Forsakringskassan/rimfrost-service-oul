@@ -132,7 +132,7 @@ public class OulHandlaggareTest extends OulTestBase
    }
 
    @Test
-   @DisplayName("OUL-FR-21.2: Hämta ny uppgift och lista tilldelade uppgifter — aktivitet och processvy-länk returneras bredvid url")
+   @DisplayName("OUL-FR-22.2: Hämta ny uppgift och lista tilldelade uppgifter — aktivitet och processvy-länk returneras bredvid url")
    public void should_return_aktivitet_id_and_processvy_url_on_assign_and_list()
    {
       var handlaggareId = UUID.randomUUID();

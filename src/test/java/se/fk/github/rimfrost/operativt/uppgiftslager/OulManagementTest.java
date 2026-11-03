@@ -87,7 +87,7 @@ public class OulManagementTest extends OulTestBase
    }
 
    @Test
-   @DisplayName("OUL-FR-21.1: Skapa uppgift med aktivitet och processvy-länk — fälten sparas på uppgiften")
+   @DisplayName("OUL-FR-22.1: Skapa uppgift med aktivitet och processvy-länk — fälten sparas på uppgiften")
    public void should_create_uppgift_with_aktivitet_id_and_processvy_url()
    {
       var createUppgiftRequest = newCreateUppgiftRequestWithProcessvy(UUID.randomUUID());
@@ -104,7 +104,7 @@ public class OulManagementTest extends OulTestBase
    }
 
    @Test
-   @DisplayName("OUL-FR-21.1: Skapa uppgift utan aktivitet och processvy-länk — uppgiften skapas som vanligt")
+   @DisplayName("OUL-FR-22.1: Skapa uppgift utan aktivitet och processvy-länk — uppgiften skapas som vanligt")
    public void should_create_uppgift_without_aktivitet_id_and_processvy_url()
    {
       var createUppgiftRequest = newCreateUppgiftRequest(UUID.randomUUID());
