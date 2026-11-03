@@ -1,0 +1,20 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPathPattern": "/identity",
+    "headers": {
+      "authorization": {
+        "matches": "Bearer .+:.+",
+        "caseInsensitive": true
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "body": "{{regexExtract request.headers.Authorization 'Bearer (.+):(.+)' 'parts'}}{\"identity\": {\"typId\":\"{{parts.0}}\", \"varde\": \"{{parts.1}}\"}}",
+    "transformers": ["response-template"]
+  }
+}

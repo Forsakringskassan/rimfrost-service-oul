@@ -285,8 +285,8 @@ public class OulManagementTest extends OulTestBase
       wireMockServer.stubFor(WireMock.post(WireMock.urlPathEqualTo("/sid/status"))
             .willReturn(WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json")
                   .withBody("{\"sid\":true}")));
-      wireMockServer.stubFor(WireMock.get(WireMock.urlPathEqualTo(
-            "/individ/" + oulHandlaggareTypId + "/" + handlaggareId + "/hasSidPermission"))
+      wireMockServer.stubFor(WireMock.post(WireMock.urlPathEqualTo("/hasSidPermission"))
+            .withRequestBody(WireMock.matchingJsonPath("$.idVarde", WireMock.equalTo(handlaggareId.toString())))
             .willReturn(WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json")
                   .withBody("true")));
 
@@ -325,8 +325,8 @@ public class OulManagementTest extends OulTestBase
                   .withBody("{\"sid\":true}")));
 
       var targetHandlaggareId = UUID.randomUUID();
-      wireMockServer.stubFor(WireMock.get(WireMock.urlPathEqualTo(
-            "/individ/" + oulHandlaggareTypId + "/" + targetHandlaggareId + "/hasSidPermission"))
+      wireMockServer.stubFor(WireMock.post(WireMock.urlPathEqualTo("/hasSidPermission"))
+            .withRequestBody(WireMock.matchingJsonPath("$.idVarde", WireMock.equalTo(targetHandlaggareId.toString())))
             .willReturn(WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json")
                   .withBody("true")));
 
