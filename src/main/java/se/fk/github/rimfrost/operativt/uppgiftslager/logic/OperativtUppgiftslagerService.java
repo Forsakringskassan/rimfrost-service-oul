@@ -11,7 +11,6 @@ import jakarta.inject.Inject;
 import jakarta.persistence.LockModeType;
 import jakarta.transaction.Transactional;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.entity.SorteringsordningEntity;
-import se.fk.github.rimfrost.operativt.uppgiftslager.logic.exception.AssignableFilterNotSupportedException;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.exception.HandlaggningReadException;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.exception.NotAssignedHandlaggareException;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.exception.SidUppgiftException;
@@ -630,9 +629,8 @@ public class OperativtUppgiftslagerService
    }
 
    /**
-    * Returns all uppgifter that belong to the given individ, filtered by the caller's SID-behörighet.
-    * Only {@code assignable=false} is currently supported; all other combinations throw
-    * {@link AssignableFilterNotSupportedException} (→ HTTP 501, OUL-FR-21).
+    * Returns all unassignable uppgifter that belong to the given individ, filtered by the caller's
+    * SID-behörighet (OUL-FR-21).
     *
     * <p>For each candidate: the handläggning is read to verify that the searched individ
     * appears in {@code yrkande.rollerIYrkande()}. Uppgifter where the individ is not found are
@@ -640,21 +638,14 @@ public class OperativtUppgiftslagerService
     * (OUL-FR-21.6). A failure to determine SID status propagates as-is, causing HTTP 500
     * (OUL-FR-21.7).
     *
-    * @param individ    the individ identity to search for
-    * @param statuses   optional status filter; null or empty means all statuses
-    * @param assignable must be {@code Boolean.FALSE}; other values → HTTP 501
+    * @param individ     the individ identity to search for
+    * @param statuses    optional status filter; null or empty means all statuses
     * @param handlaggare the calling handläggare, used for SID-behörighet check
     * @return matched uppgifter paired with the yrkanderoll that connects them to the individ
-    * @throws AssignableFilterNotSupportedException if {@code assignable} is null or true
     */
    public List<UppgiftMedYrkanderollDto> getUppgifterForIndivid(
-         Idtyp individ, List<UppgiftStatus> statuses, Boolean assignable, Idtyp handlaggare)
+         Idtyp individ, List<UppgiftStatus> statuses, Idtyp handlaggare)
    {
-      if (assignable == null || Boolean.TRUE.equals(assignable))
-      {
-         throw new AssignableFilterNotSupportedException();
-      }
-
       var callerHasSidBehorighet = resolveSidBehorighet(handlaggare);
       var candidates = storage.findUppgifterByAssignableAndStatuses(false, statuses);
       var result = new ArrayList<UppgiftMedYrkanderollDto>();

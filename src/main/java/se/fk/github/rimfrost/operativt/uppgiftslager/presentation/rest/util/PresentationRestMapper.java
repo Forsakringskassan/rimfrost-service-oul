@@ -82,14 +82,15 @@ public class PresentationRestMapper
    }
 
    /**
-    * Maps a list of {@link UppgiftMedYrkanderollDto} to a {@link PostUppgifterIndividResponse}.
+    * Maps a list of {@link UppgiftMedYrkanderollDto} to a {@link PostUppgifterIndividUnassignableResponse}.
     *
     * @param uppgifter the matched uppgifter paired with their yrkanderoll
     * @return the mapped response
     */
-   public PostUppgifterIndividResponse toPostUppgifterIndividResponse(List<UppgiftMedYrkanderollDto> uppgifter)
+   public PostUppgifterIndividUnassignableResponse toPostUppgifterIndividUnassignableResponse(
+         List<UppgiftMedYrkanderollDto> uppgifter)
    {
-      PostUppgifterIndividResponse response = new PostUppgifterIndividResponse();
+      PostUppgifterIndividUnassignableResponse response = new PostUppgifterIndividUnassignableResponse();
       response.setOperativaUppgifter(uppgifter.stream().map(this::toUppgiftYrkanderoll).toList());
       return response;
    }
@@ -126,13 +127,14 @@ public class PresentationRestMapper
    }
 
    /**
-    * Maps a nullable list of {@link PostUppgifterIndividRequest.StatusesEnum} to domain
+    * Maps a nullable list of {@link PostUppgifterIndividUnassignableRequest.StatusesEnum} to domain
     * {@link UppgiftStatus} values. A null input is treated as "no filter" and returns an empty list.
     *
     * @param statuses the API status filter, or {@code null}
     * @return the corresponding domain enum values, never null
     */
-   public List<UppgiftStatus> toUppgiftStatuses(List<PostUppgifterIndividRequest.StatusesEnum> statuses)
+   public List<UppgiftStatus> toUppgiftStatuses(
+         List<PostUppgifterIndividUnassignableRequest.StatusesEnum> statuses)
    {
       if (statuses == null)
       {
@@ -141,7 +143,7 @@ public class PresentationRestMapper
       return statuses.stream().map(this::toUppgiftStatus).toList();
    }
 
-   private UppgiftStatus toUppgiftStatus(PostUppgifterIndividRequest.StatusesEnum statusesEnum)
+   private UppgiftStatus toUppgiftStatus(PostUppgifterIndividUnassignableRequest.StatusesEnum statusesEnum)
    {
       return switch (statusesEnum)
       {

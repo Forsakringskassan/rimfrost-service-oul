@@ -7,7 +7,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.PostUppgifterIndividRequest;
+import se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.PostUppgifterIndividUnassignableRequest;
 import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -36,27 +36,6 @@ public class OulIndividTest extends OulTestBase
    }
 
    @Test
-   @DisplayName("OUL-FR-21.4: Returns 501 when assignable not specified")
-   public void should_return_501_when_assignable_not_specified()
-   {
-      var handlaggareId = UUID.randomUUID();
-      var request = new PostUppgifterIndividRequest(INDIVID_TYP_ID, INDIVID_VARDE);
-
-      postUppgifterIndivid(request, handlaggareId, 501);
-   }
-
-   @Test
-   @DisplayName("OUL-FR-21.4: Returns 501 when assignable=true")
-   public void should_return_501_when_assignable_true()
-   {
-      var handlaggareId = UUID.randomUUID();
-      var request = new PostUppgifterIndividRequest(INDIVID_TYP_ID, INDIVID_VARDE);
-      request.setAssignable(true);
-
-      postUppgifterIndivid(request, handlaggareId, 501);
-   }
-
-   @Test
    @DisplayName("OUL-FR-21.3, OUL-FR-21.5: Returns matched uppgift with yrkanderoll when individ found in rollerIYrkande")
    public void should_return_uppgift_with_yrkanderoll_when_individ_found()
    {
@@ -72,10 +51,9 @@ public class OulIndividTest extends OulTestBase
       createRequest.setAssignable(false);
       var createResponse = sendCreateUppgiftRequest(createRequest);
 
-      var request = new PostUppgifterIndividRequest(INDIVID_TYP_ID, INDIVID_VARDE);
-      request.setAssignable(false);
+      var request = new PostUppgifterIndividUnassignableRequest(INDIVID_TYP_ID, INDIVID_VARDE);
 
-      var response = postUppgifterIndivid(request, handlaggareId);
+      var response = postUppgifterIndividUnassignable(request, handlaggareId);
 
       assertEquals(1, response.getOperativaUppgifter().size());
       var uppgift = response.getOperativaUppgifter().getFirst();
@@ -101,10 +79,9 @@ public class OulIndividTest extends OulTestBase
       createRequest.setAssignable(false);
       sendCreateUppgiftRequest(createRequest);
 
-      var request = new PostUppgifterIndividRequest(INDIVID_TYP_ID, INDIVID_VARDE);
-      request.setAssignable(false);
+      var request = new PostUppgifterIndividUnassignableRequest(INDIVID_TYP_ID, INDIVID_VARDE);
 
-      var response = postUppgifterIndivid(request, handlaggareId);
+      var response = postUppgifterIndividUnassignable(request, handlaggareId);
 
       assertEquals(0, response.getOperativaUppgifter().size());
    }
@@ -130,10 +107,9 @@ public class OulIndividTest extends OulTestBase
       createRequest.setAssignable(false);
       sendCreateUppgiftRequest(createRequest);
 
-      var request = new PostUppgifterIndividRequest(INDIVID_TYP_ID, INDIVID_VARDE);
-      request.setAssignable(false);
+      var request = new PostUppgifterIndividUnassignableRequest(INDIVID_TYP_ID, INDIVID_VARDE);
 
-      var response = postUppgifterIndivid(request, handlaggareId);
+      var response = postUppgifterIndividUnassignable(request, handlaggareId);
 
       assertEquals(0, response.getOperativaUppgifter().size());
    }
@@ -163,10 +139,9 @@ public class OulIndividTest extends OulTestBase
       createRequest.setAssignable(false);
       var createResponse = sendCreateUppgiftRequest(createRequest);
 
-      var request = new PostUppgifterIndividRequest(INDIVID_TYP_ID, INDIVID_VARDE);
-      request.setAssignable(false);
+      var request = new PostUppgifterIndividUnassignableRequest(INDIVID_TYP_ID, INDIVID_VARDE);
 
-      var response = postUppgifterIndivid(request, handlaggareId);
+      var response = postUppgifterIndividUnassignable(request, handlaggareId);
 
       assertEquals(1, response.getOperativaUppgifter().size());
       assertEquals(createResponse.getUppgiftId(), response.getOperativaUppgifter().getFirst().getUppgiftId());
@@ -189,11 +164,10 @@ public class OulIndividTest extends OulTestBase
       createRequest.setAssignable(false);
       sendCreateUppgiftRequest(createRequest);
 
-      var request = new PostUppgifterIndividRequest(INDIVID_TYP_ID, INDIVID_VARDE);
-      request.setAssignable(false);
-      request.addStatusesItem(PostUppgifterIndividRequest.StatusesEnum.TILLDELAD);
+      var request = new PostUppgifterIndividUnassignableRequest(INDIVID_TYP_ID, INDIVID_VARDE);
+      request.addStatusesItem(PostUppgifterIndividUnassignableRequest.StatusesEnum.TILLDELAD);
 
-      var response = postUppgifterIndivid(request, handlaggareId);
+      var response = postUppgifterIndividUnassignable(request, handlaggareId);
 
       assertEquals(0, response.getOperativaUppgifter().size());
    }
@@ -214,11 +188,10 @@ public class OulIndividTest extends OulTestBase
       createRequest.setAssignable(false);
       var createResponse = sendCreateUppgiftRequest(createRequest);
 
-      var request = new PostUppgifterIndividRequest(INDIVID_TYP_ID, INDIVID_VARDE);
-      request.setAssignable(false);
-      request.addStatusesItem(PostUppgifterIndividRequest.StatusesEnum.NY);
+      var request = new PostUppgifterIndividUnassignableRequest(INDIVID_TYP_ID, INDIVID_VARDE);
+      request.addStatusesItem(PostUppgifterIndividUnassignableRequest.StatusesEnum.NY);
 
-      var response = postUppgifterIndivid(request, handlaggareId);
+      var response = postUppgifterIndividUnassignable(request, handlaggareId);
 
       assertEquals(1, response.getOperativaUppgifter().size());
       assertEquals(createResponse.getUppgiftId(), response.getOperativaUppgifter().getFirst().getUppgiftId());
@@ -238,10 +211,9 @@ public class OulIndividTest extends OulTestBase
       createRequest.setAssignable(false);
       sendCreateUppgiftRequest(createRequest);
 
-      var request = new PostUppgifterIndividRequest(INDIVID_TYP_ID, INDIVID_VARDE);
-      request.setAssignable(false);
+      var request = new PostUppgifterIndividUnassignableRequest(INDIVID_TYP_ID, INDIVID_VARDE);
 
-      postUppgifterIndivid(request, handlaggareId, 500);
+      postUppgifterIndividUnassignable(request, handlaggareId, 500);
    }
 
    @Test
@@ -262,10 +234,9 @@ public class OulIndividTest extends OulTestBase
       createRequest.setAssignable(false);
       sendCreateUppgiftRequest(createRequest);
 
-      var request = new PostUppgifterIndividRequest(INDIVID_TYP_ID, INDIVID_VARDE);
-      request.setAssignable(false);
+      var request = new PostUppgifterIndividUnassignableRequest(INDIVID_TYP_ID, INDIVID_VARDE);
 
-      postUppgifterIndivid(request, handlaggareId, 500);
+      postUppgifterIndividUnassignable(request, handlaggareId, 500);
    }
 
    /**

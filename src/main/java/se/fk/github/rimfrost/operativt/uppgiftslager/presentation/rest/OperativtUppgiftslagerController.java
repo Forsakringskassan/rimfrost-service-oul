@@ -15,8 +15,8 @@ import se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.Ope
 import se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.GetUppgifterHandlaggareResponse;
 import se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.PostUppgiftHandlaggareResponse;
 import se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.PostUppgifterHandlaggareResponse;
-import se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.PostUppgifterIndividRequest;
-import se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.PostUppgifterIndividResponse;
+import se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.PostUppgifterIndividUnassignableRequest;
+import se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.PostUppgifterIndividUnassignableResponse;
 import java.util.UUID;
 
 /**
@@ -121,25 +121,24 @@ public class OperativtUppgiftslagerController implements OperativtUppgiftslagerC
    }
 
    /**
-    * Returns all uppgifter for the given individ (OUL-FR-21). Only {@code assignable=false} is
-    * supported; other combinations return HTTP 501.
+    * Returns all unassignable uppgifter for the given individ (OUL-FR-21).
     *
-    * @param postUppgifterIndividRequest the search request with individ identity and optional filters
+    * @param request the search request with individ identity and optional status filters
     * @return matched uppgifter paired with their yrkanderoll
     */
    @POST
-   @Path("/individ")
+   @Path("/individ/unassignable")
    @Override
-   public PostUppgifterIndividResponse postUppgifterIndivid(PostUppgifterIndividRequest postUppgifterIndividRequest)
+   public PostUppgifterIndividUnassignableResponse postUppgifterIndividUnassignable(
+         PostUppgifterIndividUnassignableRequest request)
    {
       var handlaggare = identityUtil.getIdentity(routingContext.request().getHeader(HttpHeaders.AUTHORIZATION));
       var individ = ImmutableIdtyp.builder()
-            .typId(postUppgifterIndividRequest.getIdTyp())
-            .varde(postUppgifterIndividRequest.getIdVarde())
+            .typId(request.getIdTyp())
+            .varde(request.getIdVarde())
             .build();
-      var statuses = presentationRestMapper.toUppgiftStatuses(postUppgifterIndividRequest.getStatuses());
-      var uppgifter = operativtUppgiftslagerService.getUppgifterForIndivid(
-            individ, statuses, postUppgifterIndividRequest.getAssignable(), handlaggare);
-      return presentationRestMapper.toPostUppgifterIndividResponse(uppgifter);
+      var statuses = presentationRestMapper.toUppgiftStatuses(request.getStatuses());
+      var uppgifter = operativtUppgiftslagerService.getUppgifterForIndivid(individ, statuses, handlaggare);
+      return presentationRestMapper.toPostUppgifterIndividUnassignableResponse(uppgifter);
    }
 }
