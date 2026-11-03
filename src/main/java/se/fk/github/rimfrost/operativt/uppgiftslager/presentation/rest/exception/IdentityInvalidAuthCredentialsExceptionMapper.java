@@ -4,6 +4,9 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
 
+/**
+ * Maps {@link IdentityInvalidAuthCredentialsException} to HTTP 401 Unauthorized.
+ */
 @Provider
 public class IdentityInvalidAuthCredentialsExceptionMapper implements ExceptionMapper<IdentityInvalidAuthCredentialsException>
 {

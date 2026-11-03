@@ -7,6 +7,8 @@ import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.Idtyp;
+import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.UpdateUppgiftRequest;
 
 import java.util.UUID;
 
@@ -391,6 +393,73 @@ public class OulTeamTest extends OulTestBase
 
       wireMockServer.stubFor(WireMock.post(WireMock.urlPathMatching("/sid/status"))
             .willReturn(WireMock.aResponse().withStatus(500)));
+
+      reassignTask(uppgiftId, TEAM_MEMBER_2, 403);
+   }
+
+   @Test
+   @DisplayName("OUL-FR-18.8: POST /uppgifter/{id}/handlaggare succeeds for assignable=false when uppgift is unassigned (no team to check)")
+   public void reassignTask_succeeds_forAssignableFalse_whenUppgiftIsUnassigned()
+   {
+      var createRequest = newCreateUppgiftRequest(UUID.randomUUID());
+      createRequest.setAssignable(false);
+      var created = sendCreateUppgiftRequest(createRequest);
+      var uppgiftId = created.getUppgiftId();
+
+      // Uppgift is unassigned (handlaggarId == null) — team check must not be applied
+      var result = reassignTask(uppgiftId, TEAM_MEMBER_1);
+
+      assertEquals(TEAM_MEMBER_1.toString(), result.getOperativUppgift().getHandlaggarId().getVarde());
+   }
+
+   @Test
+   @DisplayName("OUL-FR-18.7, OUL-FR-18.8: POST /uppgifter/{id}/handlaggare succeeds for assignable=false even when current assignee is outside team")
+   public void reassignTask_succeeds_forAssignableFalse_whenCurrentAssigneeIsOutsideTeam()
+   {
+      var outsider = UUID.randomUUID();
+      var createRequest = newCreateUppgiftRequest(UUID.randomUUID());
+      createRequest.setAssignable(false);
+      var created = sendCreateUppgiftRequest(createRequest);
+      var uppgiftId = created.getUppgiftId();
+
+      // Assign directly via management endpoint since assignable=false is excluded from auto-assign
+      var outsiderIdtyp = new Idtyp();
+      outsiderIdtyp.setTypId(oulHandlaggareTypId);
+      outsiderIdtyp.setVarde(outsider.toString());
+      var updateRequest = new UpdateUppgiftRequest();
+      updateRequest.setHandlaggarId(outsiderIdtyp);
+      updateTask(uppgiftId, updateRequest);
+
+      var result = reassignTask(uppgiftId, TEAM_MEMBER_1);
+
+      assertEquals(TEAM_MEMBER_1.toString(), result.getOperativUppgift().getHandlaggarId().getVarde());
+   }
+
+   @Test
+   @DisplayName("OUL-FR-18.8: POST /uppgifter/{id}/handlaggare returns 403 for assignable=false when SID-märkt and caller lacks SID-behörighet")
+   public void reassignTask_returns403_forAssignableFalse_whenSidUppgiftAndCallerLacksSidBehorighet()
+   {
+      var createRequest = newCreateUppgiftRequest(UUID.randomUUID());
+      createRequest.setAssignable(false);
+      var created = sendCreateUppgiftRequest(createRequest);
+      var uppgiftId = created.getUppgiftId();
+
+      // Assign directly via management endpoint since assignable=false is excluded from auto-assign
+      var member1Idtyp = new Idtyp();
+      member1Idtyp.setTypId(oulHandlaggareTypId);
+      member1Idtyp.setVarde(TEAM_MEMBER_1.toString());
+      var updateRequest = new UpdateUppgiftRequest();
+      updateRequest.setHandlaggarId(member1Idtyp);
+      updateTask(uppgiftId, updateRequest);
+
+      wireMockServer.stubFor(WireMock.post(WireMock.urlPathEqualTo("/sid/status"))
+            .willReturn(WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json")
+                  .withBody("{\"sid\":true}")));
+      // TEAM_MEMBER_1 has SID-behörighet so it stays in their list; TEAM_MEMBER_2 has none (no stub)
+      wireMockServer.stubFor(WireMock.get(WireMock.urlPathEqualTo(
+            "/" + oulHandlaggareTypId + "/" + TEAM_MEMBER_1 + "/hasSidPermission"))
+            .willReturn(WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json")
+                  .withBody("true")));
 
       reassignTask(uppgiftId, TEAM_MEMBER_2, 403);
    }

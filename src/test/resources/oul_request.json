@@ -6,5 +6,6 @@
   "beskrivning" : "TestUppgiftBeskrivning",
   "verksamhetslogik" : "TestUppgiftVerksamhetslogik",
   "roll" : "TestUppgiftRoll",
-  "url" : "http://localhost:8888/regel/rtf-manuell/5367f6b8-cc4a-11f0-8de9-199901011234"
+  "url" : "http://localhost:8888/regel/rtf-manuell/5367f6b8-cc4a-11f0-8de9-199901011234",
+  "assignable" : true
 }

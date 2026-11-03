@@ -4,6 +4,9 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
 
+/**
+ * Maps {@link IdentityStatusException} to HTTP 500 Internal Server Error.
+ */
 @Provider
 public class IdentityStatusExceptionMapper implements ExceptionMapper<IdentityStatusException>
 {

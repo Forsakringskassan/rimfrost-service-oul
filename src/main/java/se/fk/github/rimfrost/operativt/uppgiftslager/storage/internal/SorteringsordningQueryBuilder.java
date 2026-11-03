@@ -72,7 +72,7 @@ public class SorteringsordningQueryBuilder
    private static final String UPPGIFT_COLUMNS = "u.id, u.handlaggning_id, u.handlaggar_id_typ_id, u.handlaggar_id_varde, "
          + "u.skapad, u.planerad_till, u.utford, u.status, u.regel, u.beskrivning, "
          + "u.verksamhetslogik, u.roll, u.url, u.sub_topic, u.reply_topic, u.erbjudande_id, u.erbjudande_namn, "
-         + "u.reason, u.version, u.created_at, u.updated_at";
+         + "u.reason, u.assignable, u.version, u.created_at, u.updated_at";
 
    @ConfigProperty(name = "quarkus.flyway.default-schema", defaultValue = "public")
    String schema;
@@ -245,7 +245,9 @@ public class SorteringsordningQueryBuilder
       Objects.requireNonNull(targetHandlaggareId, "targetHandlaggareId is null");
 
       var table = schema + ".uppgift";
-      StringBuilder unassignedFilter = new StringBuilder("handlaggar_id_typ_id IS NULL AND handlaggar_id_varde IS NULL");
+      // OUL-FR-04.8: only assignable=true tasks are eligible for automatic assignment
+      StringBuilder unassignedFilter = new StringBuilder(
+            "handlaggar_id_typ_id IS NULL AND handlaggar_id_varde IS NULL AND assignable = TRUE");
 
       unassignedFilter.append(" AND NOT EXISTS (SELECT 1 FROM " + schema
             + ".uppgift_assign_blocklist WHERE handlaggare_id_typ_id=:handlaggare_id_typ_id AND handlaggare_id_varde=:handlaggare_id_varde AND uppgift_id="

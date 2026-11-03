@@ -11,6 +11,11 @@ import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.exception
 import se.fk.rimfrost.adapter.identity.adapter.IdentityAdapter;
 import se.fk.rimfrost.adapter.identity.exception.IdentityException;
 
+/**
+ * Resolves the caller's identity from the Authorization header via the identity adapter.
+ * Throws {@link IdentityInvalidAuthCredentialsException} on invalid credentials (→ HTTP 401)
+ * and {@link IdentityStatusException} on any other adapter failure (→ HTTP 500).
+ */
 @ApplicationScoped
 public class IdentityUtil
 {
@@ -19,6 +24,14 @@ public class IdentityUtil
    @Inject
    IdentityAdapter identityAdapter;
 
+   /**
+    * Resolves the caller identity from the given Authorization header value.
+    *
+    * @param headerValue the raw Authorization header value
+    * @return the resolved caller identity
+    * @throws IdentityInvalidAuthCredentialsException if the credentials are invalid
+    * @throws IdentityStatusException if identity resolution fails unexpectedly
+    */
    public Idtyp getIdentity(String headerValue)
    {
       try

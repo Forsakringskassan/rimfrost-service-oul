@@ -8,13 +8,15 @@ import jakarta.ws.rs.core.HttpHeaders;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.OperativtUppgiftslagerService;
+import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.ImmutableIdtyp;
 import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.util.IdentityUtil;
 import se.fk.github.rimfrost.operativt.uppgiftslager.presentation.rest.util.PresentationRestMapper;
 import se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.OperativtUppgiftslagerControllerApi;
 import se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.GetUppgifterHandlaggareResponse;
 import se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.PostUppgiftHandlaggareResponse;
 import se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.PostUppgifterHandlaggareResponse;
-
+import se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.PostUppgifterIndividUnassignableRequest;
+import se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.PostUppgifterIndividUnassignableResponse;
 import java.util.UUID;
 
 /**
@@ -116,5 +118,27 @@ public class OperativtUppgiftslagerController implements OperativtUppgiftslagerC
    {
       var handlaggare = identityUtil.getIdentity(routingContext.request().getHeader(HttpHeaders.AUTHORIZATION));
       operativtUppgiftslagerService.unassignHandlaggareUppgift(uppgiftId, handlaggare);
+   }
+
+   /**
+    * Returns all unassignable uppgifter for the given individ (OUL-FR-21).
+    *
+    * @param request the search request with individ identity and optional status filters
+    * @return matched uppgifter paired with their yrkanderoll
+    */
+   @POST
+   @Path("/individ/unassignable")
+   @Override
+   public PostUppgifterIndividUnassignableResponse postUppgifterIndividUnassignable(
+         PostUppgifterIndividUnassignableRequest request)
+   {
+      var handlaggare = identityUtil.getIdentity(routingContext.request().getHeader(HttpHeaders.AUTHORIZATION));
+      var individ = ImmutableIdtyp.builder()
+            .typId(request.getIdTyp())
+            .varde(request.getIdVarde())
+            .build();
+      var statuses = presentationRestMapper.toUppgiftStatuses(request.getStatuses());
+      var uppgifter = operativtUppgiftslagerService.getUppgifterForIndivid(individ, statuses, handlaggare);
+      return presentationRestMapper.toPostUppgifterIndividUnassignableResponse(uppgifter);
    }
 }
