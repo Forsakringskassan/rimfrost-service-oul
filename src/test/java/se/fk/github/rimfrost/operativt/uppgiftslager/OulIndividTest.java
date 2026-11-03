@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test;
 import se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.PostUppgifterIndividRequest;
 import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static se.fk.github.rimfrost.operativt.uppgiftslager.OulTestData.oulHandlaggareTypId;
 
 @QuarkusTest
 @QuarkusTestResource.List(
@@ -154,8 +153,8 @@ public class OulIndividTest extends OulTestBase
             .willReturn(WireMock.aResponse().withStatus(200)
                   .withHeader("Content-Type", "application/json")
                   .withBody("{\"sid\":true}")));
-      wireMockServer.stubFor(WireMock.get(WireMock.urlPathEqualTo(
-            "/" + oulHandlaggareTypId + "/" + handlaggareId + "/hasSidPermission"))
+      wireMockServer.stubFor(WireMock.post(WireMock.urlPathEqualTo("/hasSidPermission"))
+            .withRequestBody(WireMock.matchingJsonPath("$.idVarde", WireMock.equalTo(handlaggareId.toString())))
             .willReturn(WireMock.aResponse().withStatus(200)
                   .withHeader("Content-Type", "application/json")
                   .withBody("true")));
