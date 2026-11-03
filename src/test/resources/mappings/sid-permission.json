@@ -1,7 +1,7 @@
 {
   "request": {
-    "method": "GET",
-    "urlPathPattern": "/.+/.+/hasSidPermission"
+    "method": "POST",
+    "urlPathPattern": "/hasSidPermission"
   },
   "response": {
     "status": 200,
