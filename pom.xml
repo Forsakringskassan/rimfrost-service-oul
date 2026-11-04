@@ -65,7 +65,7 @@
     <dependency>
       <groupId>se.fk.rimfrost.oul.management</groupId>
       <artifactId>rimfrost-service-oul-management-api-jaxrs-spec</artifactId>
-      <version>1.4.1</version>
+      <version>1.4.2</version>
     </dependency>
     <dependency>
       <groupId>se.fk.rimfrost.oul.management.regler</groupId>
@@ -80,17 +80,17 @@
     <dependency>
       <groupId>se.fk.rimfrost.framework.handlaggning</groupId>
       <artifactId>rimfrost-framework-handlaggning-adapter</artifactId>
-      <version>1.2.6</version>
+      <version>1.2.7</version>
     </dependency>
     <dependency>
       <groupId>se.fk.rimfrost.adapter.team</groupId>
       <artifactId>rimfrost-adapter-team</artifactId>
-      <version>0.0.1</version>
+      <version>0.0.3</version>
     </dependency>
     <dependency>
       <groupId>se.fk.rimfrost.framework.sid</groupId>
       <artifactId>rimfrost-framework-sid-adapter</artifactId>
-      <version>0.0.2</version>
+      <version>0.0.3</version>
     </dependency>
     <dependency>
       <groupId>se.fk.rimfrost.adapter.identity</groupId>
@@ -100,7 +100,7 @@
     <dependency>
       <groupId>se.fk.rimfrost.adapter.permissions</groupId>
       <artifactId>rimfrost-adapter-permissions</artifactId>
-      <version>0.0.2</version>
+      <version>0.0.3</version>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>

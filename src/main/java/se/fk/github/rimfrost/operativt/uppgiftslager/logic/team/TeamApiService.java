@@ -9,10 +9,10 @@ import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.Idtyp;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.ImmutableIdtyp;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.exception.NotTeamMemberException;
 import se.fk.rimfrost.adapter.team.adapter.TeamAdapter;
+import se.fk.rimfrost.adapter.team.adapter.TeamException;
 import se.fk.rimfrost.team.jaxrsspec.controllers.generatedsource.model.Team;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -99,9 +99,27 @@ public class TeamApiService implements TeamService
    }
 
    /**
+    * Functional interface for team API calls that may throw {@link TeamException}.
+    *
+    * @param <T> the return type
+    */
+   @FunctionalInterface
+   private interface TeamCall<T>
+   {
+      /**
+       * Executes the team API call.
+       *
+       * @return the result
+       * @throws TeamException if the team API reports an error
+       */
+      T call() throws TeamException;
+   }
+
+   /**
     * Calls the team API and returns a fallback value if the target is not found (404),
     * logging a WARN so a data-sync issue ("not found") is distinguishable in the logs from
     * a genuine negative result, even though both resolve to the same fallback here.
+    * Rethrows {@link TeamException} as an unchecked exception for all other failures.
     *
     * @param call the team API call to make
     * @param fallback the value to return if the target is not found
@@ -109,16 +127,25 @@ public class TeamApiService implements TeamService
     * @param args arguments for {@code notFoundMessage}
     * @return the call's result, or {@code fallback} if the target was not found
     */
-   private <T> T callOrNotFound(Supplier<T> call, T fallback, String notFoundMessage, Object... args)
+   private <T> T callOrNotFound(TeamCall<T> call, T fallback, String notFoundMessage, Object... args)
    {
       try
       {
-         return call.get();
+         return call.call();
       }
       catch (NotFoundException e)
       {
          log.warn(notFoundMessage, args);
          return fallback;
+      }
+      catch (TeamException e)
+      {
+         if (e.getCause() instanceof NotFoundException)
+         {
+            log.warn(notFoundMessage, args);
+            return fallback;
+         }
+         throw new RuntimeException(e);
       }
    }
 }
