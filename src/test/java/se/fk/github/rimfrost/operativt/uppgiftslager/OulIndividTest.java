@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test;
 import se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.model.PostUppgifterIndividUnassignableRequest;
 import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static se.fk.github.rimfrost.operativt.uppgiftslager.OulTestData.oulHandlaggareTypId;
 
 @QuarkusTest
 @QuarkusTestResource.List(
