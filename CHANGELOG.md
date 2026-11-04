@@ -2,6 +2,39 @@
 
 Changelog of rimfrost-service-oul.
 
+## 1.8.0 (2026-11-04)
+
+### Features
+
+-  Add assignable support and POST /uppgifter/individ endpoint (FKPOC-1122) ([87c55](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/87c552fe741ea2e) Ulf Slunga)  
+-  correct aktivitet/processvy test annotations from OUL-FR-21 to OUL-FR-22 ([289a0](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/289a01c03126bf5) Ulf Slunga)  
+-  store and return aktivitet_id and processvy_url on uppgift (FKPOC-1161) ([5b934](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/5b9345ed21f7e22) LisaWedin_Ductus)  
+-  adapt to spec 2.4.1 — rename individ endpoint to /individ/unassignable ([6f2a6](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/6f2a6836dcb08b5) Ulf Slunga)  
+-  Add assignable support and POST /uppgifter/individ endpoint (FKPOC-1122) ([bd3b2](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/bd3b26e68ec96cf) Ulf Slunga)  
+
+### Bug Fixes
+
+-  remove unused oulHandlaggareTypId import ([d4ab4](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/d4ab4fef63fdc83) Ulf Slunga)  
+-  remove unused SidBehorighetChecker injection from OperativtUppgiftslagerService ([020d2](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/020d27989bf5236) Ulf Slunga)  
+-  remove unused AssignableFilterNotSupportedException and its mapper ([34137](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/341377c4f20c44e) Ulf Slunga)  
+-  bump rimfrost dependencies and adapt TeamApiService for adapter-team 0.0.3 ([fb45c](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/fb45c9566ee0d19) Ulf Slunga)  
+-  Bump dependency versions ([10f2c](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/10f2caef08f6772) Ulf Slunga)  
+-  renumber assignable migration to V010 to resolve conflict with V009 ([7b0b1](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/7b0b15a20afbd9a) Ulf Slunga)  
+-  bump handlaggning-adapter to 1.2.6 to avoid stale CI cache on 1.2.5 ([4dd5a](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/4dd5a0d9788782c) Ulf Slunga)  
+-  bump dependencies and fix test stubs to restore green build on main ([7d6d9](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/7d6d949ddc49115) Ulf Slunga)  
+-  align WireMock hasSidPermission stubs with PermissionsAdapter POST contract ([ece09](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/ece09f9133243e3) Ulf Slunga)  
+-  update workflow files to use permissions blocks instead of explicit secrets ([663c5](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/663c53a17c0a6e5) Ulf Slunga)  
+-  Pin rimfrost-adapter-identity and rimfrost-adapter-permissions to release versions ([9b083](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/9b08366b8d9f95a) Ulf Slunga)  
+-  Use identity and permissions adapters ([3ccaf](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/3ccafcde1201448) Lars Persson)  
+-  **deps**  update dependency se.fk.rimfrost:rimfrost-service-oul-asyncapi to v1.1.3 ([2296f](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/2296f4c5b04af48) renovate[bot])  
+
+### Dependency updates
+
+- update forsakringskassan/.github digest to 625efb1 ([2aaa9](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/2aaa9cdf4c645ec) renovate[bot])  
+- update forsakringskassan/.github digest to cbd74f1 ([845f2](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/845f22f01256296) renovate[bot])  
+- update forsakringskassan/.github digest to bfb01f7 ([89098](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/890987d93c440fc) renovate[bot])  
+## rimfrost-1_2 (2026-09-22)
+
 ## 1.7.1 (2026-09-22)
 
 ### Bug Fixes
