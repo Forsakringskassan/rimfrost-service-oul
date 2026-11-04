@@ -31,7 +31,6 @@ import se.fk.github.rimfrost.operativt.uppgiftslager.logic.exception.NotTeamMemb
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.exception.SidNotAuthorizedException;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.exception.SorteringsordningNotFoundException;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.individ.IndividMatcher;
-import se.fk.github.rimfrost.operativt.uppgiftslager.logic.permissions.SidBehorighetChecker;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.sid.SidChecker;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.team.TeamService;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.OulDataStorage;
@@ -66,9 +65,6 @@ public class OperativtUppgiftslagerService
 
    @Inject
    IndividMatcher individMatcher;
-
-   @Inject
-   SidBehorighetChecker sidBehorighetChecker;
 
    public UppgiftDto addOperativeTask(OperativtUppgiftslagerAddRequest addRequest, String notificationTopic,
          String replyTopic, Map<String, String> cloudeventAttributes)
@@ -331,7 +327,7 @@ public class OperativtUppgiftslagerService
    /**
     * Resolves whether {@code handlaggare} has SID-behörighet. Used by {@link #assignNewTask}
     * (once per call rather than once per retry), {@link #reassignUppgift}, and
-    * {@link #isSidBlocked}. Delegates fail-open behaviour to {@link SidBehorighetChecker}.
+    * {@link #isSidBlocked}.
     *
     * @param handlaggare the handläggare identity
     * @return whether the handläggare has SID-behörighet, or {@code false} if that could not
