@@ -96,6 +96,8 @@ public class OperativtUppgiftslagerService
             .replyTopic(replyTopic)
             .cloudeventAttributes(cloudeventAttributes)
             .erbjudande(addRequest.erbjudande())
+            .aktivitetId(addRequest.aktivitetId())
+            .processvyUrl(addRequest.processvyUrl())
             .assignable(addRequest.assignable())
             .build();
 

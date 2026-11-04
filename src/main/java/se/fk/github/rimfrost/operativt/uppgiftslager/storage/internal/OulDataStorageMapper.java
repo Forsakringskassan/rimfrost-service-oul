@@ -39,6 +39,8 @@ public class OulDataStorageMapper
       entity.setErbjudandeId(uppgift.erbjudande().id());
       entity.setErbjudandeNamn(uppgift.erbjudande().namn());
       entity.setReason(uppgift.reason());
+      entity.setAktivitetId(uppgift.aktivitetId());
+      entity.setProcessvyUrl(uppgift.processvyUrl());
       entity.setAssignable(uppgift.assignable());
       entity.setCloudEventAttributes(uppgift.cloudeventAttributes().entrySet().stream()
             .map(e -> toCloudEventAttributeEntity(entity, e.getKey(), e.getValue())).toList());
@@ -92,6 +94,8 @@ public class OulDataStorageMapper
             .replyTopic(entity.getReplyTopic())
             .erbjudande(erbjudande)
             .reason(entity.getReason())
+            .aktivitetId(entity.getAktivitetId())
+            .processvyUrl(entity.getProcessvyUrl())
             .assignable(entity.isAssignable())
             .cloudeventAttributes(toCloudEventAttributesMap(entity.getCloudEventAttributes()))
             .build();

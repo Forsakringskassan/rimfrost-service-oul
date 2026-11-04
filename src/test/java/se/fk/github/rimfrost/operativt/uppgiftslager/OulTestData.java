@@ -1,9 +1,9 @@
 package se.fk.github.rimfrost.operativt.uppgiftslager;
 
+import se.fk.rimfrost.oul.management.regler.jaxrsspec.controllers.generatedsource.model.CreateUppgiftProcessInfo;
 import se.fk.rimfrost.oul.management.regler.jaxrsspec.controllers.generatedsource.model.CreateUppgiftRequest;
 import se.fk.rimfrost.oul.management.regler.jaxrsspec.controllers.generatedsource.model.EndUppgiftRequest;
 import se.fk.rimfrost.oul.management.regler.jaxrsspec.controllers.generatedsource.model.Erbjudande;
-import se.fk.rimfrost.oul.management.regler.jaxrsspec.controllers.generatedsource.model.CreateUppgiftProcessInfo;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.Constraint;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.ConstraintEq;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.SortBy;
@@ -23,6 +23,9 @@ public class OulTestData
    public static final UUID TEAM_MEMBER_1 = UUID.fromString("a1a1a1a1-0000-0000-0000-000000000001");
    public static final UUID TEAM_MEMBER_2 = UUID.fromString("a1a1a1a1-0000-0000-0000-000000000002");
    public static final UUID TEAM_MEMBER_3 = UUID.fromString("a1a1a1a1-0000-0000-0000-000000000003");
+
+   public static final UUID AKTIVITET_ID = UUID.fromString("b2b2b2b2-0000-0000-0000-000000000001");
+   public static final String PROCESSVY_URL = "/process/vah";
 
    public static CreateUppgiftRequest newCreateUppgiftRequest(UUID handlaggningId)
    {
@@ -46,6 +49,14 @@ public class OulTestData
       request.setErbjudande(erbjudande);
       request.setAssignable(true);
 
+      return request;
+   }
+
+   public static CreateUppgiftRequest newCreateUppgiftRequestWithProcessvy(UUID handlaggningId)
+   {
+      var request = newCreateUppgiftRequest(handlaggningId);
+      request.getProcessInfo().setAktivitetId(AKTIVITET_ID);
+      request.getProcessInfo().setProcessvyUrl(PROCESSVY_URL);
       return request;
    }
 
