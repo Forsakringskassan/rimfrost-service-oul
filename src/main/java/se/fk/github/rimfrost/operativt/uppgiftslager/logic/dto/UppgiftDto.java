@@ -46,6 +46,7 @@ public interface UppgiftDto
 
    Erbjudande erbjudande();
 
+   @Nullable
    UUID aktivitetId();
 
    @Nullable
