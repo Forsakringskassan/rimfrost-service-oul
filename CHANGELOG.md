@@ -2,6 +2,12 @@
 
 Changelog of rimfrost-service-oul.
 
+## 1.9.0 (2026-11-05)
+
+### Features
+
+-  Remove reply topic ([02604](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/0260415cb759798) Lars Persson)  
+
 ## 1.8.0 (2026-11-04)
 
 ### Features
