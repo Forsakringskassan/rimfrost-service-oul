@@ -62,11 +62,10 @@ public class UppgifterController implements UppgifterApi, ReglerApi
       var addRequest = managementMapper.toAddRequest(createUppgiftRequest);
       var processInfo = createUppgiftRequest.getProcessInfo();
       var uppgift = operativtUppgiftslagerService.addOperativeTask(addRequest, createUppgiftRequest.getSubTopic(),
-            processInfo.getReplyTopic(), processInfo.getCloudeventAttributes());
+            processInfo.getCloudeventAttributes());
 
       var responseProcessInfo = new ProcessInfo();
       responseProcessInfo.setCloudeventAttributes(uppgift.cloudeventAttributes());
-      responseProcessInfo.setReplyTopic(uppgift.replyTopic());
 
       var response = new UppgiftResponse();
       response.setUppgiftId(uppgift.uppgiftId());
@@ -87,7 +86,6 @@ public class UppgifterController implements UppgifterApi, ReglerApi
 
       var endResponseProcessInfo = new ProcessInfo();
       endResponseProcessInfo.setCloudeventAttributes(uppgift.cloudeventAttributes());
-      endResponseProcessInfo.setReplyTopic(uppgift.replyTopic());
 
       var response = new UppgiftResponse();
       response.setUppgiftId(uppgift.uppgiftId());

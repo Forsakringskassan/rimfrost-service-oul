@@ -40,8 +40,6 @@ public interface UppgiftDto
 
    String subTopic();
 
-   String replyTopic();
-
    Map<String, String> cloudeventAttributes();
 
    Erbjudande erbjudande();
