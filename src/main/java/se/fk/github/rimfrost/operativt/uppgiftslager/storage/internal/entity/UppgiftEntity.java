@@ -76,9 +76,6 @@ public class UppgiftEntity
    private String subTopic;
 
    @Column(nullable = false)
-   private String replyTopic;
-
-   @Column(nullable = false)
    private String erbjudandeId;
 
    @Column(nullable = false)
@@ -239,30 +236,20 @@ public class UppgiftEntity
       this.url = url;
    }
 
+   /**
+    * @return the topic to which status-update events for this uppgift are published
+    */
    public String getSubTopic()
    {
       return subTopic;
    }
 
+   /**
+    * @param subTopic the topic to which status-update events for this uppgift are published
+    */
    public void setSubTopic(String subTopic)
    {
       this.subTopic = subTopic;
-   }
-
-   /**
-    * @return the topic to which status-update events for this uppgift are published
-    */
-   public String getReplyTopic()
-   {
-      return replyTopic;
-   }
-
-   /**
-    * @param replyTopic the topic to which status-update events for this uppgift are published
-    */
-   public void setReplyTopic(String replyTopic)
-   {
-      this.replyTopic = replyTopic;
    }
 
    public String getErbjudandeId()

@@ -67,7 +67,7 @@ public class OperativtUppgiftslagerService
    IndividMatcher individMatcher;
 
    public UppgiftDto addOperativeTask(OperativtUppgiftslagerAddRequest addRequest, String notificationTopic,
-         String replyTopic, Map<String, String> cloudeventAttributes)
+         Map<String, String> cloudeventAttributes)
    {
       log.info("Adding new task");
 
@@ -92,7 +92,6 @@ public class OperativtUppgiftslagerService
             .roll(addRequest.roll())
             .url(addRequest.url())
             .subTopic(notificationTopic)
-            .replyTopic(replyTopic)
             .cloudeventAttributes(cloudeventAttributes)
             .erbjudande(addRequest.erbjudande())
             .aktivitetId(addRequest.aktivitetId())

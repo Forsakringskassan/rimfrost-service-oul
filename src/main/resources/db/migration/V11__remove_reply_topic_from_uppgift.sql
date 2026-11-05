@@ -1,0 +1,1 @@
+ALTER TABLE uppgift DROP COLUMN reply_topic;

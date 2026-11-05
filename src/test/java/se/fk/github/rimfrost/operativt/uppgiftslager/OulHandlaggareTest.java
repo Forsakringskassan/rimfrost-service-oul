@@ -73,7 +73,6 @@ public class OulHandlaggareTest extends OulTestBase
       assertEquals(createKafkaIdTyp(handlaggareId), statusMessage.getUtforarId());
       assertEquals(createUppgiftRequest.getProcessInfo().getCloudeventAttributes(),
             statusMessage.getProcessInfo().getCloudeventAttributes());
-      assertEquals(createUppgiftRequest.getProcessInfo().getReplyTopic(), statusMessage.getProcessInfo().getReplyTopic());
    }
 
    @Test

@@ -54,7 +54,6 @@ public class OulManagementTest extends OulTestBase
       assertEquals("NY", createResponse.getStatus());
       assertEquals(createUppgiftRequest.getProcessInfo().getCloudeventAttributes(),
             createResponse.getProcessInfo().getCloudeventAttributes());
-      assertEquals(createUppgiftRequest.getProcessInfo().getReplyTopic(), createResponse.getProcessInfo().getReplyTopic());
    }
 
    @Test
@@ -142,7 +141,6 @@ public class OulManagementTest extends OulTestBase
       assertEquals(1, endResponse.getProcessInfo().getCloudeventAttributes().size());
       assertEquals(createUppgiftRequest.getProcessInfo().getCloudeventAttributes(),
             endResponse.getProcessInfo().getCloudeventAttributes());
-      assertEquals(createUppgiftRequest.getProcessInfo().getReplyTopic(), endResponse.getProcessInfo().getReplyTopic());
    }
 
    @Test
