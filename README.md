@@ -172,6 +172,7 @@ Tjänsten publicerar statusnotifieringar när en uppgift tilldelas, frånsägs e
 | `KAFKA_BOOTSTRAP_SERVERS` | Kafka-anslutning (prod, via miljövariabler) |
 | `fullmakts.api.base-url` | Bas-URL till fullmakts-API:et |
 | `oul.uppgift.count-cache-ttl-ms` | TTL i millisekunder för `COUNT(*)`-cachen (standard: `5000`) |
+| `oul.status-notification.publish-timeout` | Max tid att vänta på kvittens från Kafka för en statusnotifiering (standard: `10s`) |
 
 I `dev`- och `test`-profil startas PostgreSQL och Kafka automatiskt som Dev Services-containrar.
 

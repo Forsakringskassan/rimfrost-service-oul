@@ -72,6 +72,7 @@ via villkor och styra sorteringsriktning inom sin grupp.
 - **OUL-FR-04.6** Vid tilldelning av uppgift så ska SID status tas hänsyn till. Om en uppgift är SID markerad och handläggaren inte har SID roll så ska uppgiften hoppas över och nästa uppgift utvärderas.
 - **OUL-FR-04.7** Om handläggningsinformationen för en uppgift inte kan läsas ska uppgiften hoppas över och nästa utvärderas (jfr OUL-FR-04.6). Felet loggas på WARN-nivå. Överhoppningen gäller endast det aktuella anropet.
 - **OUL-FR-04.8** Uppgifter med `assignable=false` ska exkluderas vid automatisk tilldelning, på samma sätt som SID-blockerade uppgifter (jfr OUL-FR-04.6).
+- **OUL-FR-04.9** Om statusnotifieringen vid tilldelning inte kan publiceras ska tilldelningen tas tillbaka (status `NY`, ingen handläggare), så att uppgiften kan hämtas igen.
 
 ### OUL-FR-05 — Lista tilldelade uppgifter (handläggare)
 
@@ -92,6 +93,8 @@ via villkor och styra sorteringsriktning inom sin grupp.
   - uppgiftens status
 - **OUL-FR-06.3** Meddelandet ska bära de CloudEvent-attribut som angavs vid skapandet av uppgiften.
 - **OUL-FR-06.4** Kafka-topic ska vara dynamiskt och styras av ett topic-prefix som regler anger vid skapandet av uppgiften, så att flödesprocesser kan prenumerera selektivt på sina egna notifieringar.
+- **OUL-FR-06.5** Om statusnotifieringen inte kan publiceras ska felet loggas och ett exception kastas till anroparen.
+- **OUL-FR-06.6** OUL ska inte vänta längre än en konfigurerbar tid på kvittens från Kafka. Om tiden går ut ska det hanteras som en misslyckad publicering enligt OUL-FR-06.5.
 
 ### OUL-FR-07 — Uppdatera uppgift (management)
 
