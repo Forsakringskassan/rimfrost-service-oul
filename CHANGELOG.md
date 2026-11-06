@@ -2,6 +2,13 @@
 
 Changelog of rimfrost-service-oul.
 
+## 1.9.1 (2026-11-06)
+
+### Bug Fixes
+
+-  lägg till exception mapper för StatusNotificationException (FKPOC-1320) ([3ff67](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/3ff671e61d2a834) julolsso)  
+-  vänta på kvittens från Kafka för statusnotifieringar och lämna tillbaka uppgiften vid fel (FKPOC-1320) ([6e9dd](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/6e9dd8e4b7c79af) julolsso)  
+
 ## 1.9.0 (2026-11-05)
 
 ### Features
