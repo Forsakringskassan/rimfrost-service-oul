@@ -1,6 +1,7 @@
 package se.fk.github.rimfrost.operativt.uppgiftslager;
 
 import io.quarkus.test.InjectMock;
+import io.restassured.http.ContentType;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.DisplayName;
@@ -12,6 +13,8 @@ import se.fk.rimfrost.oul.handlaggning.jaxrsspec.controllers.generatedsource.mod
 
 import java.util.UUID;
 
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.emptyString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static se.fk.github.rimfrost.operativt.uppgiftslager.OulTestData.newCreateUppgiftRequest;
 
@@ -34,7 +37,10 @@ public class OulStatusNotificationFailureTest extends OulTestBase
 
       Mockito.doThrow(new StatusNotificationException("Kafka unavailable", new RuntimeException("nack")))
             .when(producer).publishTaskStatusUpdate(Mockito.any(), Mockito.any());
-      assignTaskToHandlaggare(handlaggareId, 500);
+      given().contentType(ContentType.JSON)
+            .header("Authorization", bearerToken(handlaggareId))
+            .when().post("/uppgifter/handlaggare")
+            .then().statusCode(500).body(emptyString());
 
       Mockito.reset(producer);
       var assignResponse = assignTaskToHandlaggare(handlaggareId);
