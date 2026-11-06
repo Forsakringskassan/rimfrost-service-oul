@@ -19,6 +19,7 @@ import se.fk.rimfrost.adapter.permissions.adapter.PermissionsAdapter;
 import se.fk.rimfrost.adapter.permissions.adapter.PermissionsException;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.SorteringsordningSpec;
 import se.fk.github.rimfrost.operativt.uppgiftslager.integration.kafka.OperativtUppgiftslagerProducer;
+import se.fk.github.rimfrost.operativt.uppgiftslager.integration.kafka.StatusNotificationException;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.Idtyp;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.ImmutableIdtyp;
 import se.fk.github.rimfrost.operativt.uppgiftslager.logic.dto.OperativtUppgiftslagerAddRequest;
@@ -318,7 +319,16 @@ public class OperativtUppgiftslagerService
          return null;
       }
 
-      notifyStatusUpdate(uppgift);
+      try
+      {
+         notifyStatusUpdate(uppgift);
+      }
+      catch (StatusNotificationException e)
+      {
+         // OUL-FR-04.9: hand the uppgift back so the handläggare can fetch it again
+         storage.unassignUppgift(uppgift.uppgiftId());
+         throw e;
+      }
       log.info("Assigned task {} to handlaggarId: {}", uppgift.uppgiftId(), handlaggarId);
       return logicMapper.toUppgiftDto(uppgift);
    }

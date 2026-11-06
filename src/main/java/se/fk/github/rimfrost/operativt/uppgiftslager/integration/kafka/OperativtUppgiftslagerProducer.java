@@ -2,13 +2,15 @@ package se.fk.github.rimfrost.operativt.uppgiftslager.integration.kafka;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.reactive.messaging.Channel;
-import org.eclipse.microprofile.reactive.messaging.Emitter;
 import org.eclipse.microprofile.reactive.messaging.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import io.smallrye.reactive.messaging.MutinyEmitter;
 import io.smallrye.reactive.messaging.kafka.api.OutgoingKafkaRecordMetadata;
 import jakarta.enterprise.context.ApplicationScoped;
 import se.fk.rimfrost.OperativtUppgiftslagerStatusMessage;
+
+import java.time.Duration;
 
 @ApplicationScoped
 public class OperativtUppgiftslagerProducer
@@ -19,7 +21,10 @@ public class OperativtUppgiftslagerProducer
    String oulStatusNotificationTopicBase;
 
    @Channel("operativt-uppgiftslager-status-notification")
-   Emitter<OperativtUppgiftslagerStatusMessage> statusUpdateEmitter;
+   MutinyEmitter<OperativtUppgiftslagerStatusMessage> statusUpdateEmitter;
+
+   @ConfigProperty(name = "oul.status-notification.publish-timeout", defaultValue = "10s")
+   Duration publishTimeout;
 
    public void publishTaskStatusUpdate(OperativtUppgiftslagerStatusMessage statusMessage, String subTopic)
    {
@@ -32,6 +37,16 @@ public class OperativtUppgiftslagerProducer
       var message = Message.of(statusMessage).addMetadata(metadata);
 
       log.info("Publishing task StatusUpdate to topic '{}': {}", topic, statusMessage);
-      statusUpdateEmitter.send(message);
+      try
+      {
+         statusUpdateEmitter.sendMessage(message).await().atMost(publishTimeout);
+      }
+      catch (RuntimeException e)
+      {
+         log.error("Failed to publish task StatusUpdate to topic '{}'. uppgiftId: {}, status: {}",
+               topic, statusMessage.getUppgiftId(), statusMessage.getStatus(), e);
+         throw new StatusNotificationException(
+               "Failed to publish task StatusUpdate for uppgift " + statusMessage.getUppgiftId(), e);
+      }
    }
 }
