@@ -80,27 +80,27 @@
     <dependency>
       <groupId>se.fk.rimfrost.framework.handlaggning</groupId>
       <artifactId>rimfrost-framework-handlaggning-adapter</artifactId>
-      <version>1.2.7</version>
+      <version>1.2.9</version>
     </dependency>
     <dependency>
       <groupId>se.fk.rimfrost.adapter.team</groupId>
       <artifactId>rimfrost-adapter-team</artifactId>
-      <version>0.0.3</version>
+      <version>0.0.4</version>
     </dependency>
     <dependency>
       <groupId>se.fk.rimfrost.framework.sid</groupId>
       <artifactId>rimfrost-framework-sid-adapter</artifactId>
-      <version>0.0.3</version>
+      <version>0.0.4</version>
     </dependency>
     <dependency>
       <groupId>se.fk.rimfrost.adapter.identity</groupId>
       <artifactId>rimfrost-adapter-identity</artifactId>
-      <version>0.0.1</version>
+      <version>0.0.2</version>
     </dependency>
     <dependency>
       <groupId>se.fk.rimfrost.adapter.permissions</groupId>
       <artifactId>rimfrost-adapter-permissions</artifactId>
-      <version>0.0.3</version>
+      <version>0.0.4</version>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
