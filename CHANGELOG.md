@@ -2,6 +2,16 @@
 
 Changelog of rimfrost-service-oul.
 
+## 1.9.2 (2026-11-19)
+
+### Bug Fixes
+
+-  bump rimfrost adapter dependencies to latest versions ([a56c5](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/a56c5ddd947cac8) Ulf Slunga)  
+-  **deps**  update dependency se.fk.rimfrost.adapter.identity:rimfrost-adapter-identity to v0.0.2 ([cc42a](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/cc42a7aa498ac82) renovate[bot])  
+
+### Dependency updates
+
+- update forsakringskassan/.github digest to cbc0db8 ([4ff57](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/4ff5749bacc6b04) renovate[bot])  
 ## 1.9.1 (2026-11-06)
 
 ### Bug Fixes
