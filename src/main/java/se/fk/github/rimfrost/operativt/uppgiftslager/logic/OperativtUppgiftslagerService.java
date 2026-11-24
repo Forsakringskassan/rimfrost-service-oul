@@ -685,6 +685,26 @@ public class OperativtUppgiftslagerService
       return result;
    }
 
+   /**
+    * Returns the id of the assigned handlaggare of an uppgift
+    *
+    * @param uppgiftId The uppgift id
+    *
+    * @return The id of the assigned handlaggare or empty optional if none is assigned
+    */
+   public Optional<Idtyp> getUppgiftHandlaggare(UUID uppgiftId)
+   {
+      var uppgift = storage.findUppgiftById(uppgiftId);
+      var handlaggarId = uppgift.handlaggarId();
+
+      if (handlaggarId == null)
+      {
+         return Optional.empty();
+      }
+
+      return Optional.of(ImmutableIdtyp.builder().typId(handlaggarId.typId()).varde(handlaggarId.varde()).build());
+   }
+
    private void notifyStatusUpdate(UppgiftEntity uppgift)
    {
       var statusMessage = logicMapper.toStatusMessage(uppgift);

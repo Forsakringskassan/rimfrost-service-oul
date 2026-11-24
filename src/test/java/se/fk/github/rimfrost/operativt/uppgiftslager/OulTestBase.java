@@ -24,6 +24,8 @@ import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.UppgiftPage;
 import se.fk.github.rimfrost.operativt.uppgiftslager.storage.internal.StorageTestCleaner;
 import se.fk.rimfrost.oul.management.regler.jaxrsspec.controllers.generatedsource.model.UppgiftResponse;
+import se.fk.rimfrost.oul.management.regler.jaxrsspec.controllers.generatedsource.model.UppgiftUtforareResponse;
+
 import java.util.UUID;
 import static io.restassured.RestAssured.given;
 import static se.fk.github.rimfrost.operativt.uppgiftslager.OulTestData.oulHandlaggareTypId;
@@ -122,6 +124,20 @@ public abstract class OulTestBase
             .queryParam("sorteringsordningId", sorteringsordningId)
             .when().get("/uppgifter")
             .then().statusCode(expectedStatus);
+   }
+
+   public static UppgiftUtforareResponse getUppgiftUtforare(UUID uppgiftId)
+   {
+      return given().contentType(ContentType.JSON)
+            .when().get("/uppgifter/" + uppgiftId + "/utforare")
+            .then().statusCode(200).extract().as(UppgiftUtforareResponse.class);
+   }
+
+   public static void getUppgiftUtforare(UUID uppgiftId, int expectedStatusCode)
+   {
+      given().contentType(ContentType.JSON)
+            .when().get("/uppgifter/" + uppgiftId + "/utforare")
+            .then().statusCode(expectedStatusCode);
    }
 
    /**

@@ -426,6 +426,51 @@ public class OulManagementTest extends OulTestBase
       assertEquals(assignedUppgift, updateResponse);
    }
 
+   @Test
+   void should_return_404_on_uppgift_utforare_get_when_uppgift_not_found()
+   {
+      getUppgiftUtforare(UUID.randomUUID(), 404);
+   }
+
+   @Test
+   void should_return_null_utforare_on_uppgift_utforare_get_when_no_utforare_is_assigned()
+   {
+      var handlaggningId = UUID.randomUUID();
+
+      var createUppgiftRequest = newCreateUppgiftRequest(handlaggningId);
+      var uppgift = sendCreateUppgiftRequest(createUppgiftRequest);
+
+      assertNotNull(uppgift);
+      assertNotNull(uppgift.getUppgiftId());
+
+      var response = getUppgiftUtforare(uppgift.getUppgiftId());
+
+      assertNotNull(response);
+      assertNull(response.getUtforare());
+   }
+
+   @Test
+   void should_return_utforare_on_uppgift_utforare_get_when_utforare_is_assigned()
+   {
+      var handlaggningId = UUID.randomUUID();
+
+      var createUppgiftRequest = newCreateUppgiftRequest(handlaggningId);
+      sendCreateUppgiftRequest(createUppgiftRequest);
+
+      var handlaggareId = UUID.randomUUID();
+      var assignResponse = assignTaskToHandlaggare(handlaggareId);
+
+      assertNotNull(assignResponse);
+      assertNotNull(assignResponse.getOperativUppgift());
+
+      var response = getUppgiftUtforare(assignResponse.getOperativUppgift().getUppgiftId());
+
+      assertNotNull(response);
+      assertNotNull(response.getUtforare());
+      assertEquals(oulHandlaggareTypId, response.getUtforare().getTypId());
+      assertEquals(handlaggareId.toString(), response.getUtforare().getVarde());
+   }
+
    private se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.Erbjudande toErbjudande(
          se.fk.rimfrost.oul.management.regler.jaxrsspec.controllers.generatedsource.model.Erbjudande e)
    {

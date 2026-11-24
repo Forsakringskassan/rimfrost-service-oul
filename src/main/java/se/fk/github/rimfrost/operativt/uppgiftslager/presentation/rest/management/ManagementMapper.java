@@ -93,7 +93,22 @@ public class ManagementMapper
       return uppgift;
    }
 
-   public Idtyp toIdTyp(se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.Idtyp idtyp)
+   public se.fk.rimfrost.oul.management.regler.jaxrsspec.controllers.generatedsource.model.Idtyp toManagementReglerIdtyp(
+         Idtyp individ)
+   {
+      if (individ == null)
+      {
+         return null;
+      }
+
+      se.fk.rimfrost.oul.management.regler.jaxrsspec.controllers.generatedsource.model.Idtyp idtyp = new se.fk.rimfrost.oul.management.regler.jaxrsspec.controllers.generatedsource.model.Idtyp();
+      idtyp.setTypId(individ.typId());
+      idtyp.setVarde(individ.varde());
+
+      return idtyp;
+   }
+
+   public Idtyp toIdtyp(se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.Idtyp idtyp)
    {
       return ImmutableIdtyp.builder()
             .typId(idtyp.getTypId())

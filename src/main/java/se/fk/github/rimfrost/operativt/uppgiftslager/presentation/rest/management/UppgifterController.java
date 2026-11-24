@@ -30,6 +30,7 @@ import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.UpdateUppgiftRequest;
 import se.fk.rimfrost.oul.management.jaxrsspec.controllers.generatedsource.model.UppgiftPage;
 import se.fk.rimfrost.oul.management.regler.jaxrsspec.controllers.generatedsource.model.UppgiftResponse;
+import se.fk.rimfrost.oul.management.regler.jaxrsspec.controllers.generatedsource.model.UppgiftUtforareResponse;
 
 /**
  * REST controller for the {@code /uppgifter} resource.
@@ -97,6 +98,19 @@ public class UppgifterController implements UppgifterApi, ReglerApi
 
    @Override
    @GET
+   @Path("/{uppgiftId}/utforare")
+   public UppgiftUtforareResponse getUppgiftUtforare(@PathParam("uppgiftId") UUID uppgiftId)
+   {
+      var utforare = operativtUppgiftslagerService.getUppgiftHandlaggare(uppgiftId);
+
+      UppgiftUtforareResponse response = new UppgiftUtforareResponse();
+      response.setUtforare(utforare.map(idtyp -> managementMapper.toManagementReglerIdtyp(idtyp)).orElse(null));
+
+      return response;
+   }
+
+   @Override
+   @GET
    public UppgiftPage getUppgifter(@QueryParam("limit") @NotNull @Min(1) Integer limit,
          @QueryParam("sorteringsordningId") UUID sorteringsordningId,
          @QueryParam("offset") @DefaultValue("0") @Min(0) Integer offset)
@@ -123,7 +137,7 @@ public class UppgifterController implements UppgifterApi, ReglerApi
 
       if (updateUppgiftRequest.getHandlaggarId() != null)
       {
-         handlaggarId = managementMapper.toIdTyp(updateUppgiftRequest.getHandlaggarId());
+         handlaggarId = managementMapper.toIdtyp(updateUppgiftRequest.getHandlaggarId());
       }
 
       var uppgift = operativtUppgiftslagerService.updateTask(uppgiftId, handlaggarId);
