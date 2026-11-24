@@ -2,6 +2,14 @@
 
 Changelog of rimfrost-service-oul.
 
+## 1.9.3 (2026-11-24)
+
+### Bug Fixes
+
+-  Add support for fetching uppgift utforare ([5cfd6](https://github.com/Forsakringskassan/rimfrost-service-oul/commit/5cfd6ccacf2249b) Lars Persson)  
+
+## rimfrost-1_3 (2026-11-19)
+
 ## 1.9.2 (2026-11-19)
 
 ### Bug Fixes
